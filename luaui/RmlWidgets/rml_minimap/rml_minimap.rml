@@ -1,0 +1,70 @@
+<rml>
+
+  <head>
+    <title>Minimap</title>
+    <link type="text/rcss" href="../rml_styles.rcss" />
+    <link type="text/rcss" href="../rml_utils.rcss" />
+    <link type="text/rcss" href="rml_minimap.rcss" />
+  </head>
+
+  <body id="main">
+    <div id="minimap-widget" data-model="rml_minimap_model" class="h-sm">
+      <div id="minimap-widget__top-row" class="flex flex-row">
+        <div id="minimap-widget__minimap" class="border-translucent-black border-8 br-bottom-right-6 relative w-5xl h-5xl br-4">
+          <div class="w-5xl h-5xl br-4"></div>
+        </div>
+        <div id="minimap-widget__details" class="flex flex-col">
+          <div class="p-4 bg-translucent-black w-xl flex flex-col gap-4 pl-0 br-bottom-right-4">
+            <div
+              class="flex flex-row h-lg items-center justify-center gradient-dual-arm border border-dark-grey px-4 gap-8 br-2">
+              <span class="text-pastel-lavender text-xs text-glow flex-1 text-center">{{ gameTime }}</span>
+            </div>
+            <!-- TODO: This isn't dynamic, not sure what lava timing is all about. -->
+            <div data-if="displayLava == true"
+              class="flex flex-row h-lg items-center justify-between gradient-1 border border-dark-grey pl-6 gap-4 br-2 bg-translucent-black">
+              <texture class="icon-sm" src="luaui/images/rml_assets_temporary/arrowup_icexuick.png" />
+              <span class="text-pastel-sand text-sm text-glow">{{ lavaTiming }}</span>
+            </div>
+            <div data-if="displayTidal == true"
+              class="flex flex-row h-lg items-center justify-between gradient-1 border border-dark-grey pl-6 pr-4 gap-4 br-2 bg-translucent-black">
+              <texture class="icon-sm" src="luaui/images/rml_assets_temporary/tidal-waves.png" />
+              <span class="text-pastel-sand flex-1 text-sm text-glow text-center">{{ tidalSpeed }}</span>
+            </div>
+            <div
+              class="flex flex-row h-lg items-center justify-between gradient-1 border border-dark-grey pl-6 pr-4 gap-4 br-2 bg-translucent-black">
+              <texture class="icon-sm" src="luaui/images/rml_assets_temporary/wind.png" />
+              <div class="flex flex-col gap-2 flex-1 items-center">
+                <span class="text-xxs text-translucent-white text-glow">{{minWindSpeed}}-{{maxWindSpeed}}</span>
+                <span class="text-pastel-sand text-sm text-glow">{{ windSpeed }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="minimap-widget__overlay-toggles" class="flex flex-row h-md relative ov-hidden items-center">
+        <div class="h-xl invisible -overflow-trigger"></div>
+        <div class="flex flex-row gap-6 p-4 pt-0 pl-8 z-1">
+          <button data-event-click="clearMarks()"
+            class="clear-marks-button icon icon-md gradient-1 br-2 ov-hidden border bg-orange">
+            <texture class="icon icon-sm grayscale" src="luaui/images/rml_assets_temporary/eraser_icexuick.png" />
+          </button>
+          <button data-event-click="toggleOverlay('showReclaim')" data-class-active="showReclaim == true"
+            class="overlay-toggle icon icon-md gradient-1 br-2 ov-hidden bg-translucent-black">
+            <texture class="icon icon-sm grayscale" src="luaui/images/rml_assets_temporary/cursorreclamate_33.png" />
+          </button>
+          <button data-event-click="toggleOverlay('showMetal')" data-class-active="showMetal == true"
+            class="overlay-toggle icon icon-md gradient-1 br-2 ov-hidden bg-translucent-black">
+            <texture class="icon icon-sm grayscale p-2"
+              src="luaui/images/rml_assets_temporary/metal_toggle_icexuick.png" />
+          </button>
+          <button data-event-click="toggleOverlay('showTerrain')" data-class-active="showTerrain == true"
+            class="overlay-toggle icon icon-md gradient-1 br-2 ov-hidden bg-translucent-black">
+            <texture class="icon icon-sm grayscale"
+              src="luaui/images/rml_assets_temporary/mountain_icexuick_mupersega_edit.png" />
+          </button>
+        </div>
+        <div class="absolute w-5xl h-5xl rotate-45 bg-translucent-black z-0" style="top: -140dp; left: -140dp;"></div>
+      </div>
+    </div>
+  </body>
+</rml>

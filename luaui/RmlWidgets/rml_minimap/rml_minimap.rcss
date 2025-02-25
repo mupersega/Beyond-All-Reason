@@ -1,0 +1,47 @@
+.overlay-toggle {
+    /* filter: grayscale(100%); */
+    border-width: 1px;
+    border-color: #66666688;
+}
+
+/* a prop like this will not override a utils style set in template */
+.overlay-toggle:hover {
+    border-width: 1px;
+    border-color: #fd7e14;
+    background-color: #66666688;
+}
+
+.overlay-toggle.active {
+    filter: grayscale(0%);
+    background-color: #fd7e14;
+    border-color: #ffffff88;
+}
+
+.overlay-toggle:active {
+    background-color: #fea45b;
+    border-color: #fd7e14;
+}
+
+.overlay-toggle.active:active {
+    background-color: #fea45b;
+}
+
+.overlay-toggle.active:hover {
+    border-color: #fd7e14;
+}
+
+.clear-marks-button {
+    background-color: #dc354588;
+    border-color: #dc3545;
+}
+
+.clear-marks-button:active {
+    background-color: #dc3545;
+}
+
+.icon { display: flex; justify-content: center; align-items: center; }
+.icon-xs { width: 12dp; height: 12dp; }
+.icon-sm { width: 16dp; height: 16dp; }
+.icon-md { width: 24dp; height: 24dp; }
+.icon-lg { width: 32dp; height: 32dp; }
+.icon-xl { width: 48dp; height: 48dp; }
