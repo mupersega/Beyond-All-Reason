@@ -1,0 +1,80 @@
+/*
+file:    styles.rcss
+version: 1.0
+brief:   Global styles for all rml documents, should be imported once into every rml document.
+author:  Mupersega
+
+Copyright (C) 2025.
+Licensed under the terms of the GNU GPL, v2 or later.
+*/
+
+/*
+This file holds global styles and should be imported once into every rml document,
+that is, evry context root element, the main_layout.rml for example. Child elements
+of the context root element will inherit these styles.
+
+It is to set default styles for functionality on main element types, not single properties.
+
+It is not the rml_utils.rcss file which outlines the primary classes for single properties,
+usable directly in the rml template.
+
+This style sheet should:
+    1. be kept as small as possible,
+    2. make very few assumptions as to how any element should look,
+    3. provide a reason for each rule's inclusion.
+*/
+
+/*
+    Each document has a body and should default to be full screen with no pointer events such that
+    the body can be used purely as a container for all other elements. 
+*/
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: "Exo 2";
+    font-size: 16dp;
+    pointer-events: none;
+    position: relative;
+}
+
+/*
+    It is expected that every button element should be clickable by default,
+    regardless of parent pointer-events.
+*/
+button {
+    pointer-events: auto;
+}
+
+/*
+    Headings.
+    Headings have no intrinsic importance in rml other than being used for code clarity and speed of development.
+    Default font sizes and headings on headings will provide at least the expected visual weight on a first pass.
+*/
+h1, h2, h3, h4, h5, h6 {
+    font-weight: bold;
+}
+
+h1 {
+    font-size: 24dp;
+}
+
+h2 {
+    font-size: 20dp;
+}
+
+h3 {
+    font-size: 18dp;
+}
+
+h4 {
+    font-size: 16dp;
+}
+
+h5 {
+    font-size: 14dp;
+}
+
+h6 {
+    font-size: 12dp;
+}
