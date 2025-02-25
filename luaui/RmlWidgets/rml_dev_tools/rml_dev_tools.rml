@@ -1,0 +1,38 @@
+<rml>
+    <head>
+        <title>RmlUi Dev Tools</title>
+        <link type="text/rcss" href="../rml_styles.rcss" />
+        <link type="text/rcss" href="../rml_utils.rcss" />
+        <link type="text/rcss" href="rml_dev_tools.rcss" />
+    </head>
+
+    <body id="main">
+        <div id="rml_dev_tools_widget" class="flex flex-col bg-translucent-black border border-orange br-top-left-6 br-bottom-left-6 border-right-0" data-model="rml_dev_tools_model">
+            <h1 class="bg-orange text-dark-grey p-4">RmlUi Dev Tools</h1>
+            <h2 class="bg-white text-orange p-4">Active Contexts</h2>
+            <div data-for="context : contexts">
+                <div class="context-card flex flex-col bg-dark-grey p-4 br-4 m-4 border border-translucent-white text-sm">
+                    <h3 class="border-bottom border-translucent-grey">{{context.name}}</h3>
+                    <p class="context-info">
+                        <span class="status-indicator {{context.hasFocus ? 'active' : 'inactive'}}"></span>
+                        Focus: {{context.hasFocus ? 'Yes' : 'No'}}
+                    </p>
+                    <p class="context-info">
+                        <span class="status-indicator {{context.hasHover ? 'active' : 'inactive'}}"></span>
+                        Hover: {{context.hasHover ? 'Yes' : 'No'}}
+                    </p>
+                    <p class="context-info">Dimensions: {{context.dimensions.x}}x{{context.dimensions.y}}</p>
+                    <p class="context-info">Local DP Ratio: {{context.dp_ratio}}</p>
+                    <div class="flex flex-col">
+                        <h4 class="context-info">Documents: {{context.documentCount}}</h4>
+                        <div data-for="doc : context.documents" class="pl-4">
+                            <h5>{{doc.title}}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h2 class="bg-white text-orange p-4">TreeView</h2>
+            <div id="doctree"></div>
+        </div>
+    </body>
+</rml>

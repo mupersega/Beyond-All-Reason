@@ -1,0 +1,7 @@
+#rml_dev_tools_widget {
+    position: absolute;
+    top: 80dp;
+    right: 0;
+    width: 30%;
+    max-height: 60%;
+}
