@@ -1,0 +1,298 @@
+#rml_info_widget {
+    position: absolute;
+    bottom: 0;
+    left: 1000dp;
+    width: 420dp;
+    height: 180dp;
+    display: flex;
+    flex-direction: column;
+    clip: always;
+}
+
+#top-tab {
+    height: 24dp;
+    width: 180dp;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+#content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6dp;
+    background-color: #00000088;
+    padding: 6dp;
+}
+
+#portrait-wrapper {
+    flex: 1;
+    position: relative;
+}
+
+#unit-portrait {
+    width: 64dp;
+    height: 64dp;
+    position: relative;
+}
+
+#unit-info {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 2dp;
+}
+
+#unit-attrs {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex: 1;
+}
+
+#right-attrs {
+    display: flex;
+    flex-direction: row;
+    gap: 4dp;
+}
+
+/* values taken from figma */
+.text-los {
+    color: #FDFFA5;
+}
+
+.text-radar {
+    color: #5BE944;
+}
+
+.text-movespeed {
+    color: #2BA5EA;
+}
+
+.text-buildpower {
+    /* color: #FFE49D; */
+    color: #ffca45; /* changed to match the color of the buildpower icon and be further from los*/
+}
+
+.text-range {
+    color: #F2A77C;
+}
+
+.text-damage {
+    /* color: #F27C7C; */
+    color: #ff5858; /* changed to be closer to the damage icon less pink*/
+}
+
+.text-resource-deficit {
+    color: #FF7C7C
+}
+
+.text-resource-surplus {
+    color: #7CFF7C
+}
+
+/* figma greys */
+/* metal text grey #BCBCBC */
+/* tab heading grey #CACACA*/
+/* sub heading grey #DADADA*/
+/* energy grey #D9D0B1 <- not nice no use*/
+.text-light-grey {
+    color: #DADADA;
+}
+
+.text-metal-grey {
+    color: #BCBCBC;
+}
+
+.text-energy-grey {
+    color: #ffeb7ddc;
+}
+
+.icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 1;
+}
+.icon-xs { width: 12dp; height: 12dp; }
+.icon-sm {
+    width: 16dp;
+    height: 16dp;
+    min-width: 16dp;
+    min-height: 16dp;
+}
+.icon-md { width: 24dp; height: 24dp; }
+.icon-lg { width: 32dp; height: 32dp; }
+.icon-xl { width: 48dp; height: 48dp; }
+
+.iconned-text {
+    display: flex;
+    flex-direction: row;
+    gap: 4dp;
+    align-items: center;
+    font-weight:600;
+}
+
+#left-attrs {
+    display: flex;
+    flex-direction: row;
+    gap: 4dp;
+}
+
+#unit-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2dp;
+    justify-content: space-between;
+}
+
+#text-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2dp;
+}
+
+.parent {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    width: 156dp;
+    height: 24dp;
+    clip: always;
+}
+  
+.content {
+    display: block;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    z-index: 1;
+}
+  
+.bg-inner {
+    position: absolute;
+    top: -45dp;
+    left: -50dp;
+    width: 190dp;
+    height: 190dp;
+    transform: rotate(45deg);
+}
+
+.img {
+    width: 64dp;
+    height: 64dp;
+}
+
+.custom-radar-icon {
+    width: 14dp;
+    height: 14dp;
+    border-width: 1px;
+    border-radius: 10dp;
+    border-color: #45ea2bce;
+    box-shadow:#46EA2B 0px 0px 5px 1px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    decorator: conic-gradient(from 315deg, #45ea2ba9, transparent);
+}
+
+.custom-radar-icon.inner {
+    width: 8dp;
+    height: 8dp;
+    border-width: 1px;
+    border-radius: 8dp;
+    border-color: #46EA2B;
+    decorator: conic-gradient(from 315deg, #46EA2B, transparent);
+}
+
+/* custom storage icon to resemble a databse icon
+3 circles as ellipses above one another but sitting in box that has left and right borders */
+.custom-storage-icon {
+    width: 16dp;
+    height: 12dp;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    transform: scale(0.8);
+}
+
+.custom-storage-icon.metal>.part {
+    background-color: #333333;
+    border-color: #BCBCBC;
+}
+
+.custom-storage-icon.energy>.part {
+    background-color: #333333;
+    border-color: #ffeb7ddc;
+}
+
+.topper {
+    position: absolute;
+    top: -3dp;
+    left: 0;
+    width: 16dp;
+    height: 6dp;
+    border-top-left-radius: 16dp;
+    border-top-right-radius: 16dp;
+    border-width: 2px;
+    border-bottom-width: 0;
+    z-index: 4;
+}
+
+.top-circle {
+    position: absolute;
+    top: 1dp;
+    left: 0;
+    width: 16dp;
+    height: 6dp;
+    border-bottom-left-radius: 16dp;
+    border-bottom-right-radius: 16dp;
+    border-width: 2px;
+    border-top-width: 0;
+    z-index: 3;
+}
+
+.middle-circle {
+    position: absolute;
+    width: 16dp;
+    height: 6dp;
+    top: 3dp;
+    left: 0;
+    border-bottom-left-radius: 16dp;
+    border-bottom-right-radius: 16dp;
+    border-width: 2px;
+    z-index: 2;
+}
+
+.bottom-circle {
+    position: absolute;
+    width: 16dp;
+    height: 6dp;
+    top: 7dp;
+    left: 0;
+    border-bottom-right-radius: 16dp;
+    border-bottom-left-radius: 16dp;
+    border-width: 2px;
+    z-index: 1;
+}
+
+.tab-text {
+    color: #CACACA;
+}
+
+
+/* progress bar classes not responsive as described in the docs */
+.horizontal { 
+    background-color: #CACACA;
+	width: 200dp;
+	height: 34dp;
+}
+
+.horizontal fill {
+    border: 3px #4D9137;
+	background-color: #7AE857;
+}
