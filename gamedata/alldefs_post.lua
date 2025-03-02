@@ -534,6 +534,7 @@ function UnitDef_Post(name, uDef)
 			local numBuildoptions = #uDef.buildoptions
 			uDef.buildoptions[numBuildoptions + 1] = "legsrailt4"
 			uDef.buildoptions[numBuildoptions + 2] = "leggobt3"
+			uDef.buildoptions[numBuildoptions + 3] = "legpede"
 		elseif name == "armca" or name == "armck" or name == "armcv" then
 			--local numBuildoptions = #uDef.buildoptions
 		elseif name == "corca" or name == "corck" or name == "corcv" then
@@ -776,12 +777,12 @@ function UnitDef_Post(name, uDef)
 	}
 
 	local amphibList = {
-		VBOT5 = true,
+		VBOT6 = true,
 		COMMANDERBOT = true,
 		SCAVCOMMANDERBOT = true,
 		ATANK3 = true,
 		ABOT2 = true,
-		HABOT4 = true,
+		HABOT5 = true,
 		ABOTBOMB2 = true,
 		EPICBOT = true,
 		EPICALLTERRAIN = true
