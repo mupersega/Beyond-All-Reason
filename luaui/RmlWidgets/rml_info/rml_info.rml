@@ -8,113 +8,116 @@
 
     <body>
         <button onclick="widget:Reload()" class="bg-orange p-8">RELOAD SINGLE INFO</button>
-        <div id="rml_info_widget" data-model="rml_info_model" class="br-top-left-4">
-            <div class="parent text-translucent-white">
+        <button onclick="widget:ShowDebug()"  >Debug</button>
+        <div data-if="showing == true" id="rml_info_widget" data-model="rml_info_model" class="br-top-left-4 border-all">
+            <div class="flex-1 parent text-translucent-white">
                 <div class="tab-text content pl-8">
                   Selection Info
                 </div>
                 <div class="bg-inner bg-translucent-black"></div>
             </div>
-            <div id="content" class="flex flex-col gap-6 bg-translucent-black p-6 br-top-right-4">
-                <div class="flex flex-row gap-8 h-66">
+            <div id="content" class="flex flex-col bg-translucent-black br-top-right-4">
+                <div class="flex flex-row flex-3">
                     <div id="unit-portrait" class="flex-1 invisible">
                         <div id="portrait-wrapper" class="relative">
-                            <!-- TODO: How can I better reference this in lua? -->
-                            <img class="img" src="assets/attack_range_icexuick.png"/>
+                            <img class="img" src="luaui/rmlwidgets/assets/attack_range_icexuick.png"/>
                             <div id="top-left-decorator" class="absolute top-left text-black bg-white">X</div>
                             <div id="bottom-left-decorator" class="absolute bottom-left bg-red p-4">O</div>
                         </div>
                     </div>
-                    <div id="unit-info" class="flex flex-col gap-2 flex-3">
-                        <div id="text-info">
+                    <div id="unit-info" class="flex flex-col flex-3">
+                        <div id="text-info" class="flex flex-col flex-1">
                             <h2>{{unitName}}</h2>
                             <p class="text-sm text-nowrap ov-hidden text-light-grey">{{description}}</p>
                         </div>
-                        <div id="eco-info" class="text-xs">
-                            <div class="flex flex-row gap-8">
-                                <div class="flex flex-row gap-8 mt-4">
-                                    <div class="flex flex-col gap-8">
-                                        <div class="iconned-text w-xl">
-                                            <img class="icon icon-sm" src="assets/metal_toggle_icexuick.png"/>
-                                            <span data-class-text-resource-deficit="metalDeficit" data-class-text-resource-surplus="!metalDeficit">{{metal}}</span>
-                                        </div>
-                                        <div class="iconned-text w-xl">
-                                            <img class="icon icon-sm" src="assets/energy.png"/>
-                                            <span data-class-text-resource-deficit="energyDeficit" data-class-text-resource-surplus="!energyDeficit">{{energy}}</span>
-                                        </div>
+                        <div class="flex flex-row gap-8 w-3xl text-sm flex-1">
+                            <div class="flex flex-col gap-4 flex-1">
+                                <div class="iconned-text flex-1">
+                                    <img class="icon icon-sm" src="assets/metal_toggle_icexuick.png"/>
+                                    <span class="flex-3" data-class-text-resource-deficit="metalDeficit" data-class-text-resource-surplus="!metalDeficit">{{metal}}</span>
+                                </div>
+                                <div class="iconned-text flex-1">
+                                    <img class="icon icon-sm" src="assets/energy.png"/>
+                                    <span class="flex-3" data-class-text-resource-deficit="energyDeficit" data-class-text-resource-surplus="!energyDeficit">{{energy}}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-4 flex-1">
+                                <div class="iconned-text flex-1">
+                                    <span class="icon icon-sm custom-storage-icon metal">
+                                        <div class="topper part"></div>
+                                        <div class="top-circle part"></div>
+                                        <div class="middle-circle part"></div>
+                                        <div class="bottom-circle part"></div>
+                                    </span>
+                                    <span class="text-metal-grey">{{metalStorage}}</span>
+                                </div>
+                                <div class="iconned-text flex-1">
+                                    <div class="icon icon-sm custom-storage-icon energy">
+                                        <div class="topper part"></div>
+                                        <div class="top-circle part"></div>
+                                        <div class="middle-circle part"></div>
+                                        <div class="bottom-circle part"></div>
                                     </div>
-                                    <div class="flex flex-col gap-8">
-                                        <div class="iconned-text w-lg">
-                                            <!-- This incredibleness should probably be replaced when icons arrive. -->
-                                            <div class="custom-storage-icon metal">
-                                                <div class="topper part"></div>
-                                                <div class="top-circle part"></div>
-                                                <div class="middle-circle part"></div>
-                                                <div class="bottom-circle part"></div>
-                                            </div>
-                                            <span class="text-metal-grey">{{metalStorage}}</span>
-                                        </div>
-                                        <div class="iconned-text w-lg">
-                                            <div class="custom-storage-icon energy">
-                                                <div class="topper part"></div>
-                                                <div class="top-circle part"></div>
-                                                <div class="middle-circle part"></div>
-                                                <div class="bottom-circle part"></div>
-                                            </div>
-                                            <span class="text-energy-grey">{{energyStorage}}</span>
-                                        </div>
-                                    </div>
+                                    <span class="flex-3 text-energy-grey">{{energyStorage}}</span>
                                 </div>
                             </div>
                         </div>
+                        <!-- <div id="eco-info" class="text-xs flex flexflex-1"> -->
+                            <!-- <div class="flex flex-row gap-8"> -->
+                            <!-- </div> -->
+                        <!-- </div> -->
                     </div>
                 </div>
-                <div class="flex flex-col gap-2 h-33">
-                    <!-- this progress bar isnt responsive like in the docs. -->
-                    <!-- <progress class="horizontal" value="healthPercentage" max="1"></progress> -->
-                    <div id="unit-attrs" class="attrs text-xs flex-1 pl-8 pr-8">
-                        <div id="left-attrs" class="flex flex-row gap items-center gap-4">
-                            <div class="iconned-text w-lg">
-                                <img class="icon icon-sm" src="assets/sight_range_icexuick.png"/>
-                                <span class="text-los">
-                                    {{los}}
-                                </span>
-                            </div>
-                            <div class="iconned-text w-lg">
-                                <!-- <img width="16dp" height="16dp" src="../../../images/rml_assets_temporary/radar_icexuick.png"/> -->
-                                <div class="custom-radar-icon">
-                                    <div class="custom-radar-icon inner"></div>
-                                </div>
-                                <span class="text-radar">
-                                    {{radar}}
-                                </span>
-                            </div>
-                            <div class="iconned-text w-lg">
-                                <img class="icon icon-sm" src="assets/move_speed_icexuick.png"/>
-                                <span class="text-movespeed">
-                                    {{moveSpeed}}
-                                </span>
-                            </div>
-                            <div class="iconned-text w-lg">
-                                <img class="icon icon-sm" src="assets/buildpower_icexuick.png"/>
-                                <span class="text-buildpower">
-                                    {{buildPower}}
-                                </span>
-                            </div>
+                <div id="health-bar" class="flex flex-row flex-1 items-center pl-8">
+                    <img class="icon icon-sm" src="assets/heart_icexuick.png"/>
+                    <div class="flex flex-row bar-proper clip relative flex-1 m-8 items-center border border-green br-bottom-left-16">
+                        <span class="flex-1 text-center text-xs text-glow z-1">
+                            {{health}}
+                        </span>
+                        <div id="dynahealth" class="absolute top-left h-xs bg-bright-green"></div>
+                    </div>
+                </div>
+                <div id="unit-attrs" class="flex flex-row flex-1 gap-16 pl-8">
+                    <div id="left-attrs" class="flex flex-row flex-4 items-center">
+                        <div class="iconned-text flex-1">
+                            <img class="icon icon-sm" src="assets/sight_range_icexuick.png"/>
+                            <span class="text-los">
+                                {{los}}
+                            </span>
                         </div>
-                        <div id="right-attrs" class="gap-2 items-center">
-                            <div class="iconned-text w-lg">
-                                <img class="icon icon-sm" src="assets/attack_range_icexuick.png"/>
-                                <span class="text-range">
-                                    {{attackRange}}
-                                </span>
+                        <div class="iconned-text flex-1">
+                            <div class="custom-radar-icon">
+                                <div class="custom-radar-icon inner"></div>
                             </div>
-                            <div class="iconned-text  w-lg">
-                                <img class="icon icon-sm" src="assets/damage_icexuick.png"/>
-                                <span class="text-damage">
-                                    100
-                                </span>
-                            </div>
+                            <span class="text-radar">
+                                {{radar}}
+                            </span>
+                        </div>
+                        <div class="iconned-text flex-1">
+                            <img class="icon icon-sm" src="assets/move_speed_icexuick.png"/>
+                            <span class="text-movespeed">
+                                {{moveSpeed}}
+                            </span>
+                        </div>
+                        <div class="iconned-text flex-1">
+                            <img class="icon icon-sm" src="assets/buildpower_icexuick.png"/>
+                            <span class="text-buildpower">
+                                {{buildPower}}
+                            </span>
+                        </div>
+                    </div>
+                    <div id="right-attrs" class="flex flex-row flex-2 items-center justify-end pr-4">
+                        <div class="iconned-text flex-1">
+                            <img class="icon icon-sm" src="assets/attack_range_icexuick.png"/>
+                            <span class="text-range">
+                                {{attackRange}}
+                            </span>
+                        </div>
+                        <div class="iconned-text flex-1">
+                            <img class="icon icon-sm" src="assets/damage_icexuick.png"/>
+                            <span class="text-damage">
+                                100
+                            </span>
                         </div>
                     </div>
                 </div>

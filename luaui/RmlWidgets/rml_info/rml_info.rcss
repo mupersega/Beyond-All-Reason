@@ -1,12 +1,14 @@
 #rml_info_widget {
     position: absolute;
-    bottom: 0;
+    bottom: 600dp;
     left: 1000dp;
     width: 420dp;
     height: 180dp;
     display: flex;
     flex-direction: column;
     clip: always;
+    pointer-events: all;
+    /* background-color: #2BA5EA; */
 }
 
 #top-tab {
@@ -18,12 +20,10 @@
 }
 
 #content {
-    flex: 1;
+    flex: 5;
     display: flex;
     flex-direction: column;
-    gap: 6dp;
     background-color: #00000088;
-    padding: 6dp;
 }
 
 #portrait-wrapper {
@@ -45,16 +45,15 @@
 }
 
 #unit-attrs {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    flex: 1;
+    /* display: flex;
+    flex-direction: row; */
 }
 
 #right-attrs {
-    display: flex;
+    /* display: flex;
     flex-direction: row;
     gap: 4dp;
+    flex: 2; */
 }
 
 /* values taken from figma */
@@ -129,28 +128,35 @@
 .iconned-text {
     display: flex;
     flex-direction: row;
+    font-weight:600;
+    /* width: 80dp; */
+    height: 24dp;
     gap: 4dp;
     align-items: center;
-    font-weight:600;
+}
+
+.iconned-text__icon {
+    width: 20dp;
+    height: 20dp;
+}
+
+.iconned-text__text {
+    width: 160dp;
 }
 
 #left-attrs {
-    display: flex;
+    /* display: flex;
     flex-direction: row;
     gap: 4dp;
+    flex: 5; */
 }
 
 #unit-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2dp;
-    justify-content: space-between;
 }
 
 #text-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2dp;
+    /* display: flex;
+    flex-direction: column; */
 }
 
 .parent {

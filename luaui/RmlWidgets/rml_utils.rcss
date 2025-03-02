@@ -64,6 +64,7 @@ Licensed under the terms of the GNU GPL, v2 or later.
 .bg-light-grey { background-color: #666666; }
 .bg-blue { background-color: #007bff; }
 .bg-green { background-color: #28a745; }
+.bg-bright-green { background-color: #46EA2B; }
 .bg-red { background-color: #dc3545; }
 .bg-yellow { background-color: #ffc107; }
 .bg-orange { background-color: #fd7e14; }
@@ -117,6 +118,7 @@ Licensed under the terms of the GNU GPL, v2 or later.
 .border-light-grey { border-color: #666666; }
 .border-blue { border-color: #007bff; }
 .border-green { border-color: #28a745; }
+.border-bright-green { border-color: #46EA2B; }
 .border-red { border-color: #dc3545; }
 .border-yellow { border-color: #ffc107; }
 .border-orange { border-color: #fd7e14; }
@@ -168,6 +170,11 @@ Licensed under the terms of the GNU GPL, v2 or later.
 .br-top-right-8 { border-top-right-radius: 8dp; }
 .br-bottom-left-8 { border-bottom-left-radius: 8dp; }
 .br-bottom-right-8 { border-bottom-right-radius: 8dp; }
+
+.br-top-left-16 { border-top-left-radius: 16dp; }
+.br-top-right-16 { border-top-right-radius: 16dp; }
+.br-bottom-left-16 { border-bottom-left-radius: 16dp; }
+.br-bottom-right-16 { border-bottom-right-radius: 16dp; }
 
 /* Spacing - Updated scale */
 .m-0 { margin: 0; }
@@ -412,6 +419,8 @@ Licensed under the terms of the GNU GPL, v2 or later.
 .ov-auto { overflow: auto; }
 .ov-scroll { overflow: scroll; }
 
+.clip { clip: always; }
+
 .ov-x-hidden { overflow-x: hidden; }
 .ov-x-visible { overflow-x: visible; }
 .ov-x-auto { overflow-x: auto; }
@@ -477,6 +486,9 @@ Licensed under the terms of the GNU GPL, v2 or later.
 
 .flex-1 { flex: 1; }
 .flex-2 { flex: 2; }
+.flex-3 { flex: 3; }
+.flex-4 { flex: 4; }
+.flex-5 { flex: 5; }
 
 .gap-0 { gap: 0; }
 .gap-1 { gap: 1dp; }
@@ -501,6 +513,18 @@ Licensed under the terms of the GNU GPL, v2 or later.
 .grayscale { filter: grayscale(100%); }
 .sepia { filter: sepia(100%); }
 .blur { filter: blur(4px); }
+
+
+.debug {
+    border: 1px #ff5e00c5; }
+
+.debug-all * {
+    border: 1px #ff5e00c5;
+}
+
+.border-all {
+    border: 1px transparent;
+}
 
 /* Gradients */
 .gradient-1 { decorator: linear-gradient(to top, #00000027 0%, #ffffff32 100%); }

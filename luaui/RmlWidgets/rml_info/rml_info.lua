@@ -40,14 +40,15 @@ init_model = {
     buildPower = 0,
     attackRange = 0,
     health = 0,
-    healthPercentage = 100,
     energy = "",
     metal = "",
     energyDeficit = true,
     metalDeficit = true,
     damage = 0,
+    showing = true
 }
 
+local db
 function widget:Initialize()
     widget.rmlContext = RmlUi.GetContext("shared")
     if not widget.rmlContext then
@@ -69,12 +70,22 @@ function widget:Initialize()
 
     document:ReloadStyleSheet()
     document:Show()
+    db = RmlUi.SetDebugContext(widget.rmlContext)
     -- This widget will not show by default and so no need to call document:Show()...yet.
 end
 
 function widget:Reload()
     widget:Shutdown()
     widget:Initialize()
+end
+
+function widget:ShowDebug()
+    if document then
+        local elt = document:GetElementById("rml_info_widget")
+        if elt then
+            elt:SetClass("debug-all", not elt:IsClassSet("debug-all"))
+        end
+    end
 end
 
 local function updateModelStatics(unitDefID, uID)
@@ -114,8 +125,7 @@ local function updateModelDynamics()
     dm_handle.metal = resourceToString(metal)
     dm_handle.energyDeficit = energy < 0
     dm_handle.metalDeficit = metal < 0
-    dm_handle.health = Spring.GetUnitHealth(focusedUnitID) or 0
-    dm_handle.healthPercentage = (dm_handle.health / dm_handle.maxHealth)
+    dm_handle.health =  string.format("%0." .. 0 .. "f", math.round(Spring.GetUnitHealth(focusedUnitID) or 0, 0))
 end
 
 function widget:Print(ev, text)
@@ -129,30 +139,63 @@ function widget:Shutdown()
     end
 end
 
-function widget:Update()
-    local mouseX, mouseY = Spring.GetMouseState()
-    local hoverType, hoverData = Spring.TraceScreenRay(mouseX, mouseY)
-    
-    if hoverType == "unit" then
-        focusedUnitID = hoverData
-        focusedUnitDefID = spGetUnitDefID(focusedUnitID)
-        if focusedUnitDefID ~= lastUnitDefID then
-            lastUnitDefID = focusedUnitDefID
-            updateModelStatics(focusedUnitDefID, focusedUnitID)
+local sec = 0
+local hpUpdate = 0
+
+local function UpdateHealthBar()
+    local healthBar = document:GetElementById("dynahealth")
+    if not healthBar then
+        Spring.Echo("Health bar not found")
+        return
+    end
+    if healthBar then
+        local newWidth = math.floor((dm_handle.health / dm_handle.maxHealth) * 100)
+        if newWidth < 0 then
+            newWidth = 0
         end
-        updateModelDynamics()
-        document:Show()
-    elseif selectedUnit then
-        focusedUnitID = selectedUnit
-        focusedUnitDefID = selectedUnitDefID
-        if focusedUnitDefID ~= lastUnitDefID then
-            lastUnitDefID = focusedUnitDefID
-            updateModelStatics(focusedUnitDefID, focusedUnitID)
+        local stringWidth = newWidth .. "%"
+        healthBar.style.width = stringWidth
+    end
+end
+
+
+function widget:Update(dt)
+    sec = sec + dt
+    hpUpdate = hpUpdate + dt
+    if sec > 0.033 then
+        sec = 0
+        local mouseX, mouseY = Spring.GetMouseState()
+        local hoverType, hoverData = Spring.TraceScreenRay(mouseX, mouseY)
+        
+        if hoverType == "unit" then
+            focusedUnitID = hoverData
+            focusedUnitDefID = spGetUnitDefID(focusedUnitID)
+            if focusedUnitDefID ~= lastUnitDefID then
+                lastUnitDefID = focusedUnitDefID
+                updateModelStatics(focusedUnitDefID, focusedUnitID)
+            end
+            updateModelDynamics()
+            if hpUpdate > 0.033 then
+                hpUpdate = 0
+                UpdateHealthBar()
+            end
+            dm_handle.showing = true
+        elseif selectedUnit then
+            focusedUnitID = selectedUnit
+            focusedUnitDefID = selectedUnitDefID
+            if focusedUnitDefID ~= lastUnitDefID then
+                lastUnitDefID = focusedUnitDefID
+                updateModelStatics(focusedUnitDefID, focusedUnitID)
+            end
+            updateModelDynamics()
+            if hpUpdate > 0.033 then
+                hpUpdate = 0
+                UpdateHealthBar()
+            end
+            dm_handle.showing = true
+        else
+            dm_handle.showing = false
         end
-        updateModelDynamics()
-        document:Show()
-    else
-        document:Hide()
     end
 end
 
