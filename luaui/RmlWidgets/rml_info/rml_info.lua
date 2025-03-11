@@ -4,7 +4,7 @@ end
 
 function widget:GetInfo()
     return {
-        name      = "rml Single Info",
+        name      = "rml Info",
         desc      = "Main unit info display when single unit selected.",
         author    = "Mupersega",
         date      = "February 2025",

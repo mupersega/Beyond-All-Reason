@@ -1,6 +1,6 @@
 #rml_info_widget {
     position: absolute;
-    bottom: 0;
+    bottom: -185dp;
     left: 0;
     width: 420dp;
     height: 180dp;
@@ -8,7 +8,13 @@
     flex-direction: column;
     /* clip: always; */
     pointer-events: auto;
+    transition: bottom 0.15s circular-in-out;
     /* background-color: #2BA5EA; */
+}
+
+#rml_info_widget.showing {
+    bottom: 0;
+    left: 0;
 }
 
 #top-tab {

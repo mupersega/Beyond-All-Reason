@@ -8,7 +8,7 @@
 
     <body>
         <button onclick="widget:Reload()" class="bg-orange p-8 absolute bottom-right">RELOAD SINGLE INFO</button>
-        <div data-if="showing == true" id="rml_info_widget" data-model="rml_info_model" class="br-top-left-4 border-all">
+        <div data-class-showing="showing == true" id="rml_info_widget" data-model="rml_info_model" class="br-top-left-4 border-all">
             <div class="flex-1 parent text-translucent-white">
                 <div class="tab-text content pl-8 text-glow">
                   Selection Info
