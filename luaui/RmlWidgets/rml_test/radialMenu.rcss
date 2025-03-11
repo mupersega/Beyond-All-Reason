@@ -1,0 +1,102 @@
+.radial-menu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200dp;
+    height: 200dp;
+    display: none;
+    pointer-events: auto;
+    border-radius: 100dp;
+    background-color: #00000073;
+    transform: rotate(45deg);
+}
+
+.radial-menu.visible {
+    display: block;
+}
+
+.tr {
+    position: absolute;
+    top: 2dp;
+    right: 2dp;
+    background-color: #ff0000;
+    border-top-right-radius: 100dp;
+}
+
+.tl {
+    position: absolute;
+    top: 2dp;
+    left: 2dp;
+    background-color: #00ff00;
+    border-top-left-radius: 100dp;
+}
+
+.br {
+    position: absolute;
+    bottom: 2dp;
+    right: 2dp;
+    background-color: #0000ff;
+    border-bottom-right-radius: 100dp;
+}
+
+.bl {
+    position: absolute;
+    bottom: 2dp;
+    left: 2dp;
+    background-color: #ffff00;
+    border-bottom-left-radius: 100dp;
+}
+
+.center {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 66dp;
+    height: 66dp;
+    background-color: #ff00ff;
+    border-radius: 100dp;
+    margin: auto auto;
+    box-shadow: 0dp 0dp 0dp 2dp #3d3d3d;
+}
+
+.segment {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: #ffffff;
+    font-weight: bold;
+    width: 97dp;
+    height: 97dp;
+}
+
+.center:hover {
+    background-color: #ff7fff;
+}
+
+.segment.tr:hover {
+    background-color: #ff7f7f;
+    transition: background-color transform 0.5s elastic-out;
+    transform: translate(2dp, -2dp);
+}
+
+.segment.tl:hover {
+    background-color: #7fff7f;
+    transition: background-color transform 0.5s elastic-out;
+
+    transform: translate(-2dp, -2dp);
+}
+
+.segment.br:hover {
+    background-color: #7f7fff;
+    transition: background-color transform 0.5s elastic-out;
+
+    transform: translate(2dp, 2dp);
+}
+
+.segment.bl:hover {
+    background-color: #ffff7f;
+    transition: background-color transform 0.5s elastic-out;
+
+    transform: translate(-2dp, 2dp);
+}

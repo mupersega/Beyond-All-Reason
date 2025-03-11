@@ -1,0 +1,67 @@
+<rml>
+    <head>
+        <title>Rml Test</title>
+        <link href="radialMenu.rcss" type="text/rcss"/>
+        <!-- <link type="text/rcss" href="../styles.rcss"/> -->
+        <style>
+            body {
+                font-family: "Exo 2";
+                font-size: 16px;
+                position: relative;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+            }
+
+            .outer {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 200dp;
+                width: 500dp;
+                margin: auto 0;
+                background-color: #195526c0;
+                pointer-events: auto;
+            }
+
+            .expandable {
+                position: absolute;
+                bottom: -100dp;
+                right: 10dp;
+                height: 100dp;
+                width: 100dp;
+                background-color: #ffeb7ddc;
+                transition: bottom 0.2s exponential-out;
+            }
+
+            .open {
+                bottom: 0;
+            }
+
+            #svgi {
+                position: absolute;
+                top: 0;
+                left: 0;
+                pointer-events: auto;
+            }
+        </style>
+    </head>
+
+    <body data-model="testModel">
+        <div class="outer">
+            <button onclick="widget:Reload(event)">Reload</button>
+            Last Key Pressed: {{lastKey}}
+            <div class="expandable" data-class-open="display == true">
+                <p>SPACE KEY PRESSED AND SO THIS IS OPEN</p>
+            </div>
+        </div>
+        <!-- <svg id="svgi" src="/LuaUi/rmlWidgets/rml_test/ansvg.svg" width="700" height="700" onclick="widget:DebugElt(element)"></svg> -->
+        <!-- <div class="radial-menu" data-class-visible="display == true">
+            <div class="segment tl">a</div>
+            <div class="segment tr">b</div>
+            <div class="segment bl">d</div>
+            <div class="segment br">d</div>
+            <div class="center">a</div>
+        </div> -->
+    </body>
+</rml>
