@@ -1,12 +1,12 @@
 #rml_info_widget {
     position: absolute;
-    bottom: 600dp;
-    left: 1000dp;
+    bottom: 0;
+    left: 0;
     width: 420dp;
     height: 180dp;
     display: flex;
     flex-direction: column;
-    clip: always;
+    /* clip: always; */
     pointer-events: auto;
     /* background-color: #2BA5EA; */
 }
@@ -17,13 +17,19 @@
     display: flex;
     align-items: center;
     position: relative;
+
 }
 
 #content {
     flex: 5;
     display: flex;
     flex-direction: column;
-    background-color: #00000088;
+    box-shadow: 2dp 2dp 3px 1dp #00000088;
+    border: 1dp #00000088;
+    decorator: linear-gradient(to top, #00000027 0%, #ffffff00 100%);
+    /* decorator: image("/luaui/images/rapt-tileable_v001_small_alpha.tga" repeat); */
+    /* background-color: #46EA2B; */
+    /* backdrop-filter: blur(50px); */
 }
 
 #portrait-wrapper {
@@ -129,7 +135,6 @@
     display: flex;
     flex-direction: row;
     font-weight:600;
-    /* width: 80dp; */
     height: 24dp;
     gap: 4dp;
     align-items: center;
@@ -142,21 +147,6 @@
 
 .iconned-text__text {
     width: 160dp;
-}
-
-#left-attrs {
-    /* display: flex;
-    flex-direction: row;
-    gap: 4dp;
-    flex: 5; */
-}
-
-#unit-info {
-}
-
-#text-info {
-    /* display: flex;
-    flex-direction: column; */
 }
 
 .parent {
@@ -179,7 +169,7 @@
   
 .bg-inner {
     position: absolute;
-    top: -45dp;
+    top: -40dp;
     left: -50dp;
     width: 190dp;
     height: 190dp;
@@ -290,6 +280,11 @@
     color: #CACACA;
 }
 
+.bar-proper {
+    box-shadow: 2dp 2dp 3px 1dp #00000088;
+    border: 1dp #00000088;
+    decorator: linear-gradient(to right, #fd2020e9, #00000000);
+}
 
 /* progress bar classes not responsive as described in the docs */
 .horizontal { 

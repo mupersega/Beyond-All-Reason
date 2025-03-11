@@ -514,18 +514,6 @@ Licensed under the terms of the GNU GPL, v2 or later.
 .sepia { filter: sepia(100%); }
 .blur { filter: blur(4px); }
 
-
-.debug {
-    border: 1px #ff5e00c5; }
-
-.debug-all * {
-    border: 1px #ff5e00c5;
-}
-
-.border-all {
-    border: 1px transparent;
-}
-
 /* Gradients */
 .gradient-1 { decorator: linear-gradient(to top, #00000027 0%, #ffffff32 100%); }
 .gradient-dual-arm { decorator: linear-gradient(to top right, #43437e6f, #5ea1ff99), linear-gradient(to bottom, #00000033 0%, #ffffff32 30%, #00000075 60%); }

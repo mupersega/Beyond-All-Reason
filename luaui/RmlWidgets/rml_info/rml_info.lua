@@ -44,7 +44,6 @@ init_model = {
     metal = "",
     energyDeficit = true,
     metalDeficit = true,
-    damage = 0,
     showing = true
 }
 
@@ -69,8 +68,8 @@ function widget:Initialize()
     end
 
     document:ReloadStyleSheet()
-    -- document:Show()
-    -- RmlUi.SetDebugContext(widget.rmlContext)
+    document:Show()
+    RmlUi.SetDebugContext(widget.rmlContext)
 end
 
 function widget:Reload()
@@ -99,7 +98,6 @@ local function updateModelStatics(unitDefID, uID)
     dm_handle.moveSpeed = uDef.speed
     dm_handle.buildPower = uDef.buildSpeed
     dm_handle.attackRange = uDef.maxWeaponRange
-    dm_handle.damage = uDef.maxWeaponDamage
 end
 
 local function resourceToString(value)

@@ -7,16 +7,15 @@
     </head>
 
     <body>
-        <button onclick="widget:Reload()" class="bg-orange p-8">RELOAD SINGLE INFO</button>
-        <button onclick="widget:ShowDebug()"  >Debug</button>
+        <button onclick="widget:Reload()" class="bg-orange p-8 absolute bottom-right">RELOAD SINGLE INFO</button>
         <div data-if="showing == true" id="rml_info_widget" data-model="rml_info_model" class="br-top-left-4 border-all">
             <div class="flex-1 parent text-translucent-white">
-                <div class="tab-text content pl-8">
+                <div class="tab-text content pl-8 text-glow">
                   Selection Info
                 </div>
-                <div class="bg-inner bg-translucent-black"></div>
+                <div class="bg-inner bg-grey"></div>
             </div>
-            <div id="content" class="flex flex-col bg-translucent-black br-top-right-4">
+            <div id="content" class="flex flex-col bg-grey br-top-right-4">
                 <div class="flex flex-row flex-3">
                     <div id="unit-portrait" class="flex-1 invisible">
                         <div id="portrait-wrapper" class="relative">
@@ -26,19 +25,19 @@
                         </div>
                     </div>
                     <div id="unit-info" class="flex flex-col flex-3">
-                        <div id="text-info" class="flex flex-col flex-1">
-                            <h2>{{unitName}}</h2>
-                            <p class="text-sm text-nowrap ov-hidden text-light-grey">{{description}}</p>
+                        <div id="text-info text-glow" class="flex flex-col flex-1">
+                            <h2 class="text-glow">{{unitName}}</h2>
+                            <p class="text-sm text-nowrap ov-hidden text-light-grey text-glow">{{description}}</p>
                         </div>
                         <div class="flex flex-row gap-8 w-3xl text-sm flex-1">
                             <div class="flex flex-col gap-4 flex-1">
                                 <div class="iconned-text flex-1">
                                     <img class="icon icon-sm" src="assets/metal_toggle_icexuick.png"/>
-                                    <span class="flex-3" data-class-text-resource-deficit="metalDeficit" data-class-text-resource-surplus="!metalDeficit">{{metal}}</span>
+                                    <span class="flex-3 text-glow" data-class-text-resource-deficit="metalDeficit" data-class-text-resource-surplus="!metalDeficit">{{metal}}</span>
                                 </div>
                                 <div class="iconned-text flex-1">
                                     <img class="icon icon-sm" src="assets/energy.png"/>
-                                    <span class="flex-3" data-class-text-resource-deficit="energyDeficit" data-class-text-resource-surplus="!energyDeficit">{{energy}}</span>
+                                    <span class="flex-3 text-glow" data-class-text-resource-deficit="energyDeficit" data-class-text-resource-surplus="!energyDeficit">{{energy}}</span>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-4 flex-1">
@@ -49,7 +48,7 @@
                                         <div class="middle-circle part"></div>
                                         <div class="bottom-circle part"></div>
                                     </span>
-                                    <span class="text-metal-grey">{{metalStorage}}</span>
+                                    <span class="text-metal-grey text-glow">{{metalStorage}}</span>
                                 </div>
                                 <div class="iconned-text flex-1">
                                     <div class="icon icon-sm custom-storage-icon energy">
@@ -58,30 +57,26 @@
                                         <div class="middle-circle part"></div>
                                         <div class="bottom-circle part"></div>
                                     </div>
-                                    <span class="flex-3 text-energy-grey">{{energyStorage}}</span>
+                                    <span class="flex-3 text-energy-grey text-glow">{{energyStorage}}</span>
                                 </div>
                             </div>
                         </div>
-                        <!-- <div id="eco-info" class="text-xs flex flexflex-1"> -->
-                            <!-- <div class="flex flex-row gap-8"> -->
-                            <!-- </div> -->
-                        <!-- </div> -->
                     </div>
                 </div>
                 <div id="health-bar" class="flex flex-row flex-1 items-center pl-8">
                     <img class="icon icon-sm" src="assets/heart_icexuick.png"/>
-                    <div class="flex flex-row bar-proper clip relative flex-1 m-8 items-center border border-green br-bottom-left-16">
+                    <div class="flex flex-row bar-proper clip relative flex-1 m-8 items-center br-bottom-left-16 br-top-left-2 gradient-1">
                         <span class="flex-1 text-center text-xs text-glow z-1">
                             {{health}}
                         </span>
-                        <div id="dynahealth" class="absolute top-left h-xs bg-bright-green"></div>
+                        <div id="dynahealth" class="absolute top-left h-sm bg-bright-green border-right-1"></div>
                     </div>
                 </div>
                 <div id="unit-attrs" class="flex flex-row flex-1 gap-16 pl-8">
                     <div id="left-attrs" class="flex flex-row flex-4 items-center">
                         <div class="iconned-text flex-1">
                             <img class="icon icon-sm" src="assets/sight_range_icexuick.png"/>
-                            <span class="text-los">
+                            <span class="text-los text-glow">
                                 {{los}}
                             </span>
                         </div>
@@ -89,19 +84,19 @@
                             <div class="custom-radar-icon">
                                 <div class="custom-radar-icon inner"></div>
                             </div>
-                            <span class="text-radar">
+                            <span class="text-radar text-glow">
                                 {{radar}}
                             </span>
                         </div>
                         <div class="iconned-text flex-1">
                             <img class="icon icon-sm" src="assets/move_speed_icexuick.png"/>
-                            <span class="text-movespeed">
+                            <span class="text-movespeed text-glow">
                                 {{moveSpeed}}
                             </span>
                         </div>
                         <div class="iconned-text flex-1">
                             <img class="icon icon-sm" src="assets/buildpower_icexuick.png"/>
-                            <span class="text-buildpower">
+                            <span class="text-buildpower text-glow">
                                 {{buildPower}}
                             </span>
                         </div>
@@ -109,13 +104,13 @@
                     <div id="right-attrs" class="flex flex-row flex-2 items-center justify-end pr-4">
                         <div class="iconned-text flex-1">
                             <img class="icon icon-sm" src="assets/attack_range_icexuick.png"/>
-                            <span class="text-range">
+                            <span class="text-range text-glow">
                                 {{attackRange}}
                             </span>
                         </div>
                         <div class="iconned-text flex-1">
                             <img class="icon icon-sm" src="assets/damage_icexuick.png"/>
-                            <span class="text-damage">
+                            <span class="text-damage text-glow">
                                 100
                             </span>
                         </div>
