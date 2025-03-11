@@ -69,9 +69,8 @@ function widget:Initialize()
     end
 
     document:ReloadStyleSheet()
-    document:Show()
-    db = RmlUi.SetDebugContext(widget.rmlContext)
-    -- This widget will not show by default and so no need to call document:Show()...yet.
+    -- document:Show()
+    -- RmlUi.SetDebugContext(widget.rmlContext)
 end
 
 function widget:Reload()
