@@ -3,6 +3,8 @@ if not RmlUi then
 end
 
 local widget = widget ---@type Widget
+local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
+local themeUtils = VFS.Include("luaui/Include/rml_utilities/theme_utils.lua")
 
 function widget:GetInfo()
     return {
@@ -12,7 +14,7 @@ function widget:GetInfo()
         date = "2025",
         license = "GNU GPL, v2 or later",
         layer = -10000,
-        enabled = false,
+        enabled = true,  -- Enable for testing
     }
 end
 
@@ -57,67 +59,98 @@ local init_model = {
     -- Debug mode toggle
     debugMode = false,
     
+    -- Theme management - will be dynamically set from current config/context
+    currentTheme = "", -- Will be populated in Initialize from actual current theme
+    availableThemes = {
+        { id = "base", name = "Base" },
+        { id = "armada", name = "Armada" },
+        { id = "cortex", name = "Cortex" },
+        { id = "legion", name = "Legion" },
+    },
+    
     -- Data binding demo variables
     playerName = "Commander",
     metalCount = 250,
-    gamePaused = false,
+
+    -- How to cleanly use functions in the data model, tab switching itself could be done directly in RML but this is an example.
+    setActiveTab = function(event, tabId)
+        local model = utils.GetCurrentModel(dm_handle)
+        if model then
+            if model.activeTab == tabId then
+                return
+            end
+            local oldTabEl = document:GetElementById(model.activeTab)
+            if oldTabEl then
+                local newTabEl = document:GetElementById(tabId)
+                if newTabEl then
+                    model.activeTab = tabId
+                end
+            end
+        end
+    end,
+
+    -- Theme switching function for the data model
+    switchTheme = function(event, themeId)
+        if themeUtils.isValid(themeId) then
+            -- Do exactly what gui_options.lua does - this should be the ONLY theme change mechanism
+            Spring.SetConfigString("rml_theme", themeId)
+            
+            -- Apply theme to all RML widgets that have the theme API
+            if WG.rml_theme_changed then
+                WG.rml_theme_changed(themeId)
+            end
+            
+            -- Update our own current theme display
+            local model = utils.GetCurrentModel(dm_handle)
+            if model then
+                model.currentTheme = themeId
+            end
+            
+            Spring.Echo("RML Theme changed to: " .. themeId)
+        else
+            Spring.Echo(WIDGET_ID .. ": Invalid theme: " .. tostring(themeId))
+        end
+    end,
 }
 
--- Widget lifecycle functions
 function widget:Initialize()
-    -- Initialize the widget
-    Spring.Echo(WIDGET_ID .. ": Initializing widget...")
+    local initParams = {
+        widgetId = WIDGET_ID,
+        modelName = MODEL_NAME,
+        rmlPath = RML_PATH,
+        initModel = init_model,
+        useCommonClassGroups = true,
+    }
     
-    -- Get the shared RML context
-    widget.rmlContext = RmlUi.GetContext("shared")
-    if not widget.rmlContext then
-        Spring.Echo(WIDGET_ID .. ": ERROR - Failed to get RML context")
+    local result = utils.initializeRmlWidget(widget, initParams)
+    if not result then
         return false
     end
-
-    -- Create and bind the data model
-    dm_handle = widget.rmlContext:OpenDataModel(MODEL_NAME, init_model)
-    if not dm_handle then
-        Spring.Echo(WIDGET_ID .. ": ERROR - Failed to create data model '" .. MODEL_NAME .. "'")
-        return false
-    end
-
-    Spring.Echo(WIDGET_ID .. ": Data model created successfully")
-
-    -- Load the RML document
-    document = widget.rmlContext:LoadDocument(RML_PATH, widget)
-    if not document then
-        Spring.Echo(WIDGET_ID .. ": ERROR - Failed to load document: " .. RML_PATH)
-        widget:Shutdown()
-        return false
-    end
-
-    -- Apply styles and show the document
-    document:ReloadStyleSheet()
-    document:Show()
     
-    Spring.Echo(WIDGET_ID .. ": Widget initialized successfully")
+    document = result.document
+    dm_handle = result.dm_handle
+    
+    -- This is rml_starter specific to style current selected theme buttons.
+    if dm_handle then
+        dm_handle.currentTheme = themeUtils.GetCurrentTheme()
+    end
+    
+    Spring.Echo(WIDGET_ID .. ": Widget initialized ")
     
     return true
 end
 
 function widget:Shutdown()
-    Spring.Echo(WIDGET_ID .. ": Shutting down widget...")
+    local shutdownParams = {
+        widgetId = WIDGET_ID,
+        modelName = MODEL_NAME
+    }
     
-    -- Clean up data model
-    if widget.rmlContext and dm_handle then
-        widget.rmlContext:RemoveDataModel(MODEL_NAME)
-        dm_handle = nil
-    end
+    utils.shutdownRmlWidget(widget, shutdownParams, document, dm_handle)
     
-    -- Close document
-    if document then
-        document:Close()
-        document = nil
-    end
-    
-    widget.rmlContext = nil
-    Spring.Echo(WIDGET_ID .. ": Shutdown complete")
+    -- Clear our references
+    document = nil
+    dm_handle = nil
 end
 
 -- Development helper function for hot reloading

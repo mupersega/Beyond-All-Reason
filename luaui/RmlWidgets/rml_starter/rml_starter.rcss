@@ -17,6 +17,16 @@
     display: flex;
 }
 
+/* Small floating debug controls */
+.debug-controls {
+    position: absolute;
+    top: -3dp;
+    right: -3dp;
+    display: flex;
+    gap: 3dp;
+    z-index: 10;
+}
+
 /* ==========================================
     WIDGET CONTAINER - Contain main widget in a wrapper, NOT the body
 =========================================== */

@@ -1,3 +1,4 @@
+
 if not RmlUi then
     return
 end
@@ -38,15 +39,55 @@ function widget:Initialize()
     if not RmlUi.GetContext("shared") then
         RmlUi.CreateContext("shared")
     end
+
     updateContextsDpRatio()
+    
+    -- Get and apply initial theme
+    local themeUtils = VFS.Include("luaui/Include/rml_utilities/theme_utils.lua")
+
+    local initialTheme = themeUtils.GetCurrentTheme()
+    Spring.Echo("RML Context Manager: Initialize - Initial theme: " .. tostring(initialTheme))
+    self:SetTheme(initialTheme)
+    
+    -- Register the global theme change handler that gui_options calls
+    WG.rml_theme_changed = function(newTheme)
+        Spring.Echo("RML Context Manager: Theme changed via WG to: " .. tostring(newTheme))
+        self:SetTheme(newTheme)
+    end
+    
+    Spring.Echo("RML Context Manager: Registered WG.rml_theme_changed")
 end
 
 function widget:ViewResize()
     updateContextsDpRatio()
 end
 
--- include also a listener for the ui_scale config variable changes
+function widget:SetTheme(value)
+    Spring.Echo("RML Context Manager: SetTheme called with theme: " .. tostring(value))
+    local contexts = RmlUi.contexts()
+    Spring.Echo("RML Context Manager: Found " .. #contexts .. " contexts")
+    
+    -- Available themes to deactivate
+    local allThemes = { "base", "armada", "cortex", "legion" }
+    
+    for i, context in ipairs(contexts) do
+        -- First deactivate all other themes
+        for _, themeName in ipairs(allThemes) do
+            if themeName ~= value then
+                Spring.Echo("RML Context Manager: Deactivating theme '" .. themeName .. "' from context " .. i)
+                context:ActivateTheme(themeName, false)
+            end
+        end
+        
+        -- Then activate the desired theme
+        Spring.Echo("RML Context Manager: Activating theme '" .. tostring(value) .. "' on context " .. i)
+        context:ActivateTheme(value, true)
+    end
+    Spring.Echo("RML Context Manager: Theme application complete")
+end
 
 function widget:Shutdown()
+    -- Clean up the global theme change handler
+    WG.rml_theme_changed = nil
     Spring.Echo("Rml Context Manager shutdown, dynamic context dp ratio updates to contexts disabled." )
 end
