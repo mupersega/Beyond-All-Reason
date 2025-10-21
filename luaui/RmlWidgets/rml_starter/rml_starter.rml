@@ -35,17 +35,16 @@
                 </div>
                 
                 <!-- Widget header with controls -->
-                <div data-attr-class="ccg.sheet.default.title + ' flex justify-between items-center'">
-                    <span>RML STARTER WIDGET</span>
+                <div data-attr-class="ccg.sheet.default.title + ' flex flex-col justify-between items-center h-20'">
+                    <span>
+                        RML STARTER WIDGET
+                    </span>
                     
                     <!-- Theme selector buttons -->
-                    <div class="flex flex-row justify-center items-center gap-2">
+                    <div class="flex flex-row justify-center items-center gap-2 text-sm text-light">
                         <span data-attr-class="ccg.text.body">Theme:</span>
                         <button data-for="theme : availableThemes"
-                                data-attr-class="ccg.themeButton.ghost + ' p-2 rounded'"
-                                data-class-bg-primary="currentTheme == theme.id"
-                                data-class-text-darkest="currentTheme == theme.id"
-                                data-class-border-primary="currentTheme == theme.id"
+                                data-attr-class="(currentTheme == theme.id ? ccg.themeButton.default : ccg.button.ghost) + ' text-sm px-3 py-1 text-outline-none'"
                                 data-event-mousedown="switchTheme(theme.id)">
                             <span>{{theme.name}}</span>
                         </button>

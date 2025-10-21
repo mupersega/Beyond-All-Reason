@@ -5,6 +5,7 @@ end
 local widget = widget ---@type Widget
 local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
 local ccg = VFS.Include("luaui/Include/rml_utilities/common_class_groups.lua")
+local themeUtils = VFS.Include("luaui/Include/rml_utilities/theme_utils.lua")
 
 -- Helper function for nested sheet structures
 local function createSheetArray(ccgTable, prefix)
@@ -108,8 +109,8 @@ local function createComponentArray(ccgTable, prefix, componentType)
             primary = { example = "2", description = "Primary themed circular indicator" },
             success = { example = "✓", description = "Success state circular indicator" },
             warning = { example = "!", description = "Warning state circular indicator" },
-            danger = { example = "✗", description = "Error state circular indicator" },
-            construction = { example = "⚠", description = "Construction/industrial themed circle with hazard pattern" },
+            danger = { example = "X", description = "Error state circular indicator" },
+            construction = { example = "C", description = "Construction/industrial themed circle with hazard pattern" },
             ghost = { example = "?", description = "Subtle ghost circle with border" },
             surface = { example = "i", description = "Surface themed circular indicator" },
         }
@@ -191,6 +192,15 @@ local init_model = {
             classInfo = ccg.definitions.themeText.caption .. " flex-1",
         },
     },
+
+    -- Theme management - will be dynamically set from current config/context
+    currentTheme = "", -- Will be populated in Initialize from actual current theme
+    availableThemes = {
+        { id = "base", name = "Base" },
+        { id = "armada", name = "Armada" },
+        { id = "cortex", name = "Cortex" },
+        { id = "legion", name = "Legion" },
+    },
     
     -- Create iterable arrays from class groups
     buttons = createIterableArray(ccg.definitions.button, ccg.prefix .. ".button"),
@@ -205,6 +215,29 @@ local init_model = {
     nav = createIterableArray(ccg.definitions.nav, ccg.prefix .. ".nav"),
     headings = createIterableArray(ccg.definitions.heading, ccg.prefix .. ".heading", true),
     panels = createIterableArray(ccg.definitions.panel, ccg.prefix .. ".panel", true),
+
+    -- Theme switching function for the data model
+    switchTheme = function(event, themeId)
+        if themeUtils.isValid(themeId) then
+            -- Do exactly what gui_options.lua does - this should be the ONLY theme change mechanism
+            Spring.SetConfigString("rml_theme", themeId)
+            
+            -- Apply theme to all RML widgets that have the theme API
+            if WG.rml_theme_changed then
+                WG.rml_theme_changed(themeId)
+            end
+            
+            -- Update our own current theme display
+            local model = utils.GetCurrentModel(dm_handle)
+            if model then
+                model.currentTheme = themeId
+            end
+            
+            Spring.Echo("RML Theme changed to: " .. themeId)
+        else
+            Spring.Echo(WIDGET_ID .. ": Invalid theme: " .. tostring(themeId))
+        end
+    end,
 }
 
 function widget:Initialize()
@@ -231,6 +264,10 @@ function widget:Initialize()
     -- Store the returned objects
     document = result.document
     dm_handle = result.dm_handle
+
+    if dm_handle then
+        dm_handle.currentTheme = themeUtils.GetCurrentTheme()
+    end
     
     Spring.Echo(WIDGET_ID .. ": Widget initialized successfully")
     return true

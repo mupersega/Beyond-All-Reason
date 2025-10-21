@@ -129,11 +129,7 @@
 .text-outline-darker-lg { font-effect: outline(2dp #282828); }
 .text-outline-darkest { font-effect: outline(1dp #1d1d1d); }
 .text-outline-darkest-lg { font-effect: outline(2dp #1d1d1d); }
-
-/* === SVG Filters === */
-.svg-default {
-    filter: brightness(.9); /* Red → Yellow on hover */
-}
+.text-outline-none { font-effect: outline(1dp #ffffff00); } /* This isn't a great pattern but the closest we can get to a none property, order of this selector matters.*/
 
 /* === Gradients === */
 .bg-gradient {

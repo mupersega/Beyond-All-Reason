@@ -87,7 +87,7 @@ commonClassGroups.definitions = {
     },
 
     button = {
-        default = "text-center text-light bg-darker bg-gradient-darkest hover-brighten cursor-pointer",
+        default = "text-center text-light bg-darkest bg-gradient-darkest hover-brighten cursor-pointer",
         success = "text-center text-success text-outline-darker-lg bg-success radial-focus-center-feint hover-brighten cursor-pointer",
         warning = "text-center text-warning text-outline-darker-lg bg-warning radial-focus-center-feint hover-brighten cursor-pointer",
         danger = "text-center text-danger text-outline-darker-lg bg-danger radial-focus-center-feint hover-brighten cursor-pointer",

@@ -60,10 +60,7 @@
     z-index: 5;
     border-top-left-radius: 10dp;
     border-top-right-radius: 10dp;
-}
-
-.handle:hover {
-    background-color: rgba(0, 0, 0, 50);
+    clip: always;
 }
 
 .handle>.greeble {
@@ -80,16 +77,37 @@
     100% { color: #00000000;  }
 }
 
+@keyframes jiggle-on-x {
+    0% { transform: translateX(0dp) rotate(45deg); }
+    25% { transform: translateX(-2dp) rotate(45deg); }
+    50% { transform: translateX(2dp) rotate(45deg); }
+    75% { transform: translateX(-2dp) rotate(45deg); }
+    100% { transform: translateX(0dp) rotate(45deg); }
+}
+
 .handle:hover>.greeble {
     animation: none;
     color: #2cf877;
 }
 
 .handle:active>.greeble {
-    animation: 0.7s cubic-in-out infinite greeble-pulse;
+    animation: 1s back-in-out infinite greeble-pulse;
 }
 
- .section {
+.handle:active>.angle-decorator {
+    animation: 0.5s back-in-out infinite jiggle-on-x;
+}
+
+.angle-decorator {
+    position: absolute;
+    top: -210dp;
+    left: -360dp;
+    width: 400dp;
+    height: 400dp;
+    transform: rotate(45deg);
+}
+
+.section {
     clip: always;
     overflow: hidden scroll;
 }
@@ -119,10 +137,12 @@
     width: 550dp;
     pointer-events: none;
 }
+
 .copy-button:hover>.tooltip {
     visibility: visible;
     opacity: 1;
 }
+
 button:active {
     transform: translate(1dp, 1dp)
 }

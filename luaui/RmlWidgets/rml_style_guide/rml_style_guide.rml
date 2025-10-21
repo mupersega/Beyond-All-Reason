@@ -21,21 +21,35 @@
             <button data-attr-class="ccg.themeButton.ghost + ' p-3 pt-2 pb-1-5'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">debug</button>
         </div>
         +
-        <h1 data-attr-class="ccg.sheet.default.title + ' min-h-12 flex items-center relative'">
+        <div data-attr-class="ccg.sheet.default.title + ' min-h-12 flex flex-col justify-between items-center relative min-h-20'">
             <span>
-                RML STYLE GUIDE
+                RMLUI STYLE GUIDE
             </span>
+
+            <div class="flex flex-row justify-center items-center gap-2 text-sm text-light z-50">
+                <span data-attr-class="ccg.text.body">Theme:</span>
+                <button data-for="theme : availableThemes"
+                        data-attr-class="(currentTheme == theme.id ? ccg.themeButton.default : ccg.button.ghost) + ' text-sm px-3 py-1 text-outline-none rounded transition-bg'"
+                        data-event-mousedown="switchTheme(theme.id)">
+                    <span>{{theme.name}}</span>
+                </button>
+            </div>
+
             <handle move_target="rml_style_guide-widget" class="handle cursor-move">
-                <span class="greeble">
+                <span class="greeble z-10">
                     .
                 </span>
+                <div class="angle-decorator bg-dark-alpha"></div>
             </handle>
-        </h1>
+        </div>
 
         <!-- Navigation -->
         <nav data-attr-class="ccg.nav.container + ' bg-dark-alpha'" style="gap: 1px;">
+            <!-- umm yeh, so this 1px div is here to stop a hover bug in rmlui, will remove later if it gets fixed,
+             remove and you'll see it when you hover the first button -->
+            <div data-attr-class="ccg.themeButton.default" style="width: 1px;"></div>
             <button data-for="tab : tabs" class="transition"
-                data-attr-class="(activeTab == tab.id ? ccg.themeButton.default + ' bg-primary_hover': ccg.button.default) + ' transition-bg p-3 font-bold'"
+                data-attr-class="(activeTab == tab.id ? ccg.themeButton.default + ' bg-primary_hover': ccg.button.default) + ' transition-bg p-3 font-bold text-outline'"
                 data-event-mousedown="activeTab = tab.id">
                 {{ tab.label }}
             </button>
@@ -54,9 +68,9 @@
                     <div class="flex-2">
                         <h3 data-attr-class="ccg.heading.h4">What are Common Class Groups?</h3>
                         <div class="flex flex-col gap-4">
-                            <p data-attr-class="ccg.text.body">RMLUI lacks CSS custom properties, so this system uses <strong>utility classes</strong> (like Tailwind) as design tokens while maintaining consistent components across widgets.</p>
+                            <p data-attr-class="ccg.text.body">RMLUI lacks CSS custom properties, so this system uses <strong>utility classes</strong> (similar to Tailwind) as design tokens so to maintain consistent styles across widgets.</p>
                             
-                            <p data-attr-class="ccg.text.body"><strong>Common Class Groups</strong> bundle utilities into reusable components shared by all developers. Every "primary button" looks identical everywhere.</p>
+                            <p data-attr-class="ccg.text.body"><strong>Common Class Groups</strong> bundle utilities into reusable components shared by all developers. Every "primary button" looks identical everywhere before being extended.</p>
                             
                             <div class="relative">
                                 <div class="absolute -left-3 top-3 w-1 h-16 bg-primary rounded-full"></div>
@@ -96,7 +110,7 @@
                 </div>
 
                 <!-- How to use them -->
-                <div class="h-80 flex flex-row gap-6 p-4 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+                <div class="h-84 flex flex-row gap-6 p-4 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
                     <div class="flex-2">
                         <h3 data-attr-class="ccg.heading.h4">How to Use Them</h3>
                         <div class="flex flex-col gap-6 mt-4">
@@ -136,13 +150,14 @@
                             <div data-attr-class="ccg.themeText.pill">headings (h1-h6)</div>
                             <div data-attr-class="ccg.themeText.pill">cards (various styles)</div>
                             <div data-attr-class="ccg.themeText.pill">sheets (layouts)</div>
+                            <div data-attr-class="ccg.themeText.pill">tags (pills and badges)</div>
                             <div data-attr-class="ccg.themeText.pill">nav & panels</div>
                         </div>
                         
                         <div class="mt-6">
                             <div class="divider-horizontal-primary"></div>
                             <p data-attr-class="ccg.themeText.caption + ' text-center mt-3'">Explore other tabs to see all components</p>
-                            <p data-attr-class="ccg.themeText.caption + ' text-center mt-2'">Click any <button data-attr-class="ccg.button.ghost">COPY</button> button to paste code directly into your IDE</p>
+                            <p data-attr-class="ccg.themeText.caption + ' text-center mt-2'">Click any <button data-attr-class="ccg.button.ghost + ' px-2 text-sm'">COPY</button> button to paste code directly into your IDE</p>
                         </div>
                     </div>
                 </div>
@@ -380,6 +395,7 @@
                         </div>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;span data-attr-class=&quot;{{ themeTextStyle.class }}&quot;&gt;{{ themeTextStyle.example }}&lt;/span&gt;</div>
                     </button>
@@ -396,12 +412,12 @@
             </div>
             <div class="flex flex-col p-2 gap-4">
                 <div data-for="badge : badges" class="min-h-24 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
-                    <div class="flex-1 p-3">
+                    <div class="flex-1 p-3 items-center justify-center flex">
                         <span data-attr-class="badge.styles">{{ badge.example }}</span>
                     </div>
                     <div data-attr-class="my.groupCard.container + ' flex-4'">
                         <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ badge.class }}</h3>
-                        <div class="flex flex-col gap-1 flex-2">
+                        <div class="flex flex-col flex-2">
                             <span data-attr-class="my.groupCard.description + ' flex-1'">{{ badge.description }}</span>
                             <span data-attr-class="my.groupCard.classInfo + ' flex-1'">{{ badge.styles }}</span>
                         </div>
@@ -421,12 +437,12 @@
             </div>
             <div class="flex flex-col p-2 gap-4">
                 <div data-for="pill : pills" class="min-h-24 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
-                    <div class="flex-1 p-3">
+                    <div class="flex-1 p-3 items-center justify-center flex">
                         <span data-attr-class="pill.styles">{{ pill.example }}</span>
                     </div>
                     <div data-attr-class="my.groupCard.container + ' flex-4'">
                         <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ pill.class }}</h3>
-                        <div class="flex flex-col gap-1 flex-2">
+                        <div class="flex flex-col flex-2">
                             <span data-attr-class="my.groupCard.description + ' flex-1'">{{ pill.description }}</span>
                             <span data-attr-class="my.groupCard.classInfo + ' flex-1'">{{ pill.styles }}</span>
                         </div>
@@ -445,13 +461,15 @@
                 <p data-attr-class="ccg.text.body">Perfect circular indicators with fixed dimensions, ideal for counters, status dots, and icon containers.</p>
             </div>
             <div class="flex flex-col p-2 gap-4">
-                <div data-for="circle : circles" class="min-h-20 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
-                    <div class="flex-1 p-3">
-                        <span data-attr-class="circle.styles">{{ circle.example }}</span>
+                <div data-for="circle, i : circles" class="min-h-20 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+                    <div class="flex-1 p-3 items-center justify-center flex">
+                        <span data-attr-class="circle.styles + ' text-sm text-dark'">
+                            {{ circle.example }}
+                        </span>
                     </div>
-                    <div data-attr-class="my.groupCard.container">
+                    <div data-attr-class="my.groupCard.container + ' flex-4'">
                         <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ circle.class }}</h3>
-                        <div class="flex flex-col gap-1 flex-2">
+                        <div class="flex flex-col flex-2">
                             <span data-attr-class="my.groupCard.description + ' flex-1'">{{ circle.description }}</span>
                             <span data-attr-class="my.groupCard.classInfo + ' flex-1'">{{ circle.styles }}</span>
                         </div>
@@ -569,6 +587,7 @@
                         <span class="text-sm text-muted text-shadow flex-1">{{ card.styles }}</span>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;div data-attr-class=&quot;{{ card.class }}&quot;&gt;content&lt;/div&gt;</div>
                     </button>
@@ -594,6 +613,7 @@
                         <span class="text-sm text-muted text-shadow flex-1">{{ navItem.styles }}</span>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;nav data-attr-class=&quot;{{ navItem.class }}&quot;&gt;content&lt;/nav&gt;</div>
                     </button>
