@@ -1,15 +1,15 @@
 <rml>
 <head>
     <title>rml_style_guide Widget</title>
-    
-    <!-- External stylesheets -->
+
+    <!-- External stylesheets - order matters for cascading -->
     <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
-    <link rel="stylesheet" href="../palettes/palette-base.rcss" type="text/rcss" />
-    <link rel="stylesheet" href="../palettes/palette-cortex.rcss" type="text/rcss" />
-    <link rel="stylesheet" href="../palettes/palette-armada.rcss" type="text/rcss" />
-    <link rel="stylesheet" href="../palettes/palette-legion.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
 
     <link rel="stylesheet" href="rml_style_guide.rcss" type="text/rcss" />
 </head>
@@ -46,10 +46,10 @@
         <!-- Navigation -->
         <nav data-attr-class="ccg.nav.container + ' bg-dark-alpha'" style="gap: 1px;">
             <!-- umm yeh, so this 1px div is here to stop a hover bug in rmlui, will remove later if it gets fixed,
-             remove and you'll see it when you hover the first button -->
+                remove and you'll see it when you hover the first button -->
             <div data-attr-class="ccg.themeButton.default" style="width: 1px;"></div>
             <button data-for="tab : tabs" class="transition"
-                data-attr-class="(activeTab == tab.id ? ccg.themeButton.default + ' bg-primary_hover': ccg.button.default) + ' transition-bg p-3 font-bold text-outline'"
+                data-attr-class="(activeTab == tab.id ? ccg.themeButton.default + ' bg-primary_hover': ccg.button.default) + ' transition-bg p-3-5 font-bold text-outline'"
                 data-event-mousedown="activeTab = tab.id">
                 {{ tab.label }}
             </button>
@@ -64,7 +64,7 @@
             
             <div class="flex flex-col p-2 gap-4">
                 <!-- Main concept explanation -->
-                <div class="h-80 flex flex-row gap-6 p-4 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+                <div data-attr-class="ccg.panel.general + ' h-80'">
                     <div class="flex-2">
                         <h3 data-attr-class="ccg.heading.h4">What are Common Class Groups?</h3>
                         <div class="flex flex-col gap-4">
@@ -110,7 +110,7 @@
                 </div>
 
                 <!-- How to use them -->
-                <div class="h-84 flex flex-row gap-6 p-4 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+                <div data-attr-class="ccg.panel.general + ' h-84'">
                     <div class="flex-2">
                         <h3 data-attr-class="ccg.heading.h4">How to Use Them</h3>
                         <div class="flex flex-col gap-6 mt-4">
@@ -147,23 +147,26 @@
                         <div class="flex flex-col gap-2 mt-4">
                             <div data-attr-class="ccg.themeText.pill">buttons & themeButtons</div>
                             <div data-attr-class="ccg.themeText.pill">text & themeText</div>
-                            <div data-attr-class="ccg.themeText.pill">headings (h1-h6)</div>
-                            <div data-attr-class="ccg.themeText.pill">cards (various styles)</div>
-                            <div data-attr-class="ccg.themeText.pill">sheets (layouts)</div>
                             <div data-attr-class="ccg.themeText.pill">tags (pills and badges)</div>
+                            <div data-attr-class="ccg.themeText.pill">sheets (layouts)</div>
+                            <div data-attr-class="ccg.themeText.pill">cards (various styles)</div>
+                            <div data-attr-class="ccg.themeText.pill">headings (h1-h6)</div>
                             <div data-attr-class="ccg.themeText.pill">nav & panels</div>
                         </div>
                         
                         <div class="mt-6">
                             <div class="divider-horizontal-primary"></div>
                             <p data-attr-class="ccg.themeText.caption + ' text-center mt-3'">Explore other tabs to see all components</p>
-                            <p data-attr-class="ccg.themeText.caption + ' text-center mt-2'">Click any <button data-attr-class="ccg.button.ghost + ' px-2 text-sm'">COPY</button> button to paste code directly into your IDE</p>
+                            <p data-attr-class="ccg.themeText.caption + ' text-center mt-2'">Click any <button data-attr-class="ccg.button.ghost + ' px-1 text-sm'">
+                                <svg src="../svg/copy_icon.svg" class="h-2-5 w-2-5 mx-dp"></svg>
+                                COPY</button> button to copy elements to clipboard</p>
+                                <p data-attr-class="ccg.themeText.caption + ' text-center mt-2'">Paste directly into your IDE</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Extending components - critical concept -->
-                <div class="h-84 flex flex-row gap-6 p-4 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+                <div data-attr-class="ccg.panel.general + ' h-84'">
                     <!-- Left side - Extension concept -->
                     <div class="flex-2">
                         <h3 data-attr-class="ccg.heading.h4">Extending Components</h3>
@@ -216,7 +219,7 @@
                 </div>
 
                 <!-- Technical implementation -->
-                <div class="h-64 flex flex-row gap-6 p-4 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+                <div data-attr-class="ccg.panel.general + ' h-64'">
                     <div class="flex-2">
                         <h3 data-attr-class="ccg.heading.h4">Widget Integration</h3>
                         <div class="flex flex-col gap-4 mt-4">
@@ -259,7 +262,7 @@
                 </div>
 
                 <!-- Custom class groups -->
-                <div class="h-72 flex flex-row gap-6 p-4 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+                <div data-attr-class="ccg.panel.general + ' h-72'">
                     <div class="flex-2">
                         <h3 data-attr-class="ccg.heading.h4">Creating Your Own Class Groups</h3>
                         <div class="flex flex-col gap-4 mt-4">
@@ -324,7 +327,7 @@
                         <span data-attr-class="my.groupCard.classInfo + ' flex-2'">{{ button.styles }}</span>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
-                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
+                        <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;button data-attr-class=&quot;{{ button.class }}&quot;&gt;{{ button.name }}&lt;/button&gt;</div>
                     </button>
@@ -342,7 +345,7 @@
                         <span data-attr-class="my.groupCard.classInfo + ' flex-2'">{{ button.styles }}</span>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
-                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
+                        <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;button data-attr-class=&quot;{{ button.class }}&quot;&gt;{{ button.name }}&lt;/button&gt;</div>
                     </button>
@@ -370,7 +373,7 @@
                         </div>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
-                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
+                        <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;span data-attr-class=&quot;{{ textStyle.class }}&quot;&gt;{{ textStyle.example }}&lt;/span&gt;</div>
                     </button>
@@ -395,7 +398,7 @@
                         </div>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
-                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
+                        <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;span data-attr-class=&quot;{{ themeTextStyle.class }}&quot;&gt;{{ themeTextStyle.example }}&lt;/span&gt;</div>
                     </button>
@@ -403,15 +406,15 @@
             </div>
         </div>
 
-        <!-- Components Section -->
-        <div id="components-section" class="section" data-if="activeTab == 'components'">
+        <!-- Tags Section -->
+        <div id="tags-section" class="section" data-if="activeTab == 'tags'">
             <!-- Badges -->
             <div class="pl-2">
                 <h3 data-attr-class="ccg.heading.h4">Badges</h3>
                 <p data-attr-class="ccg.text.body">Rectangular status indicators and counters with multiple style variants.</p>
             </div>
             <div class="flex flex-col p-2 gap-4">
-                <div data-for="badge : badges" class="min-h-24 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+                <div data-for="badge : badges" class="min-h-20 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
                     <div class="flex-1 p-3 items-center justify-center flex">
                         <span data-attr-class="badge.styles">{{ badge.example }}</span>
                     </div>
@@ -423,7 +426,7 @@
                         </div>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
-                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
+                        <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;span data-attr-class=&quot;{{ badge.class }}&quot;&gt;{{ badge.example }}&lt;/span&gt;</div>
                     </button>
@@ -448,7 +451,7 @@
                         </div>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
-                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
+                        <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;span data-attr-class=&quot;{{ pill.class }}&quot;&gt;{{ pill.example }}&lt;/span&gt;</div>
                     </button>
@@ -475,7 +478,7 @@
                         </div>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
-                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
+                        <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;span data-attr-class=&quot;{{ circle.class }}&quot;&gt;{{ circle.example }}&lt;/span&gt;</div>
                     </button>
@@ -557,7 +560,7 @@
                             <div class="divider-horizontal-primary"></div>
                             <div class="flex justify-center">
                                 <button data-attr-class="' copy-button text-center font-bold p-1 flex gap-2 items-center'" onclick="widget:CopyToClipboard(element)">
-                                    <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
+                                    <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                                     <span>COPY FULL STRUCTURE</span>
                                     <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;div data-attr-class=&quot;{{ sheet.class }}.container&quot;&gt;&#10;  &lt;div data-attr-class=&quot;{{ sheet.class }}.title&quot;&gt;Title&lt;/div&gt;&#10;  &lt;div data-attr-class=&quot;{{ sheet.class }}.content&quot;&gt;Content&lt;/div&gt;&#10;  &lt;div data-attr-class=&quot;{{ sheet.class }}.footer&quot;&gt;Footer&lt;/div&gt;&#10;&lt;/div&gt;</div>
                                 </button>
@@ -587,7 +590,7 @@
                         <span class="text-sm text-muted text-shadow flex-1">{{ card.styles }}</span>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
-                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
+                        <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;div data-attr-class=&quot;{{ card.class }}&quot;&gt;content&lt;/div&gt;</div>
                     </button>
@@ -613,7 +616,7 @@
                         <span class="text-sm text-muted text-shadow flex-1">{{ navItem.styles }}</span>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
-                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
+                        <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;nav data-attr-class=&quot;{{ navItem.class }}&quot;&gt;content&lt;/nav&gt;</div>
                     </button>
@@ -663,7 +666,7 @@
                         <span data-attr-class="my.groupCard.classInfo + ' flex-2'">{{ panel.styles }}</span>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
-                        <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
+                        <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;div data-attr-class=&quot;{{ panel.class }}&quot;&gt;content&lt;/div&gt;</div>
                     </button>

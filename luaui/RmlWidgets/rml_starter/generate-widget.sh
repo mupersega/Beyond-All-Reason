@@ -319,10 +319,10 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << 'EOF'
     <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
-    <link rel="stylesheet" href="../palette-base.rcss" type="text/rcss" />
-    <link rel="stylesheet" href="../palette-cortex.rcss" type="text/rcss" />
-    <link rel="stylesheet" href="../palette-armada.rcss" type="text/rcss" />
-    <link rel="stylesheet" href="../palette-legion.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
 
     <link rel="stylesheet" href="WIDGET_NAME_PLACEHOLDER.rcss" type="text/rcss" />
 </head>

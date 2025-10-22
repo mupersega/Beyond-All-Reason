@@ -67,6 +67,10 @@ local init_model = {
         { id = "cortex", name = "Cortex" },
         { id = "legion", name = "Legion" },
     },
+
+    my = {
+        codeBlock = "flex flex-col p-3 bg-darker rounded border border-dark-alpha code-green text-sm"
+    },
     
     -- Data binding demo variables
     playerName = "Commander",

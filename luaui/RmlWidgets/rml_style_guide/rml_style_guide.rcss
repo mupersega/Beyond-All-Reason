@@ -146,13 +146,3 @@
 button:active {
     transform: translate(1dp, 1dp)
 }
-/* .hazards-135:hover {
-    decorator: 
-        repeating-linear-gradient(135deg, #c0b05512 0 8dp, #ffffff12 9px 16dp),
-        repeating-linear-gradient(45deg, #4242420a 0 2dp, #ffffff08 3dp 4dp),
-        radial-gradient(circle farthest-side at center, #ffffff25, #6d6d6d30, #00000060),
-        linear-gradient(180deg, #00000035, #00000080);
-    box-shadow: 
-        #000000a0 0dp 0dp 35dp 12dp inset,
-        #00000070 0dp 0dp 10dp 0dp inset;
-} */

@@ -20,6 +20,7 @@
 .relative { position: relative; }
 .absolute { position: absolute; }
 .fixed { position: fixed; }
+.sticky { position: sticky; }
 
 /* === Positioning === */
 .top { top: 0; }
@@ -143,6 +144,42 @@
 .mr-8 { margin-right: 32dp; }
 .mr-10 { margin-right: 40dp; }
 .mr-12 { margin-right: 48dp; }
+
+.mx-0 { margin-left: 0dp; margin-right: 0dp; }
+.mx-px { margin-left: 1px; margin-right: 1px; }
+.mx-dp { margin-left: 1dp; margin-right: 1dp; }
+.mx-0-5 { margin-left: 2dp; margin-right: 2dp; }
+.mx-1 { margin-left: 4dp; margin-right: 4dp; }
+.mx-1-5 { margin-left: 6dp; margin-right: 6dp; }
+.mx-2 { margin-left: 8dp; margin-right: 8dp; }
+.mx-2-5 { margin-left: 10dp; margin-right: 10dp; }
+.mx-3 { margin-left: 12dp; margin-right: 12dp; }
+.mx-3-5 { margin-left: 14dp; margin-right: 14dp; }
+.mx-4 { margin-left: 16dp; margin-right: 16dp; }
+.mx-5 { margin-left: 20dp; margin-right: 20dp; }
+.mx-6 { margin-left: 24dp; margin-right: 24dp; }
+.mx-7 { margin-left: 28dp; margin-right: 28dp; }
+.mx-8 { margin-left: 32dp; margin-right: 32dp; }
+.mx-10 { margin-left: 40dp; margin-right: 40dp; }
+.mx-12 { margin-left: 48dp; margin-right: 48dp; }
+
+.my-0 { margin-top: 0dp; margin-bottom: 0dp; }
+.my-px { margin-top: 1px; margin-bottom: 1px; }
+.my-dp { margin-top: 1dp; margin-bottom: 1dp; }
+.my-0-5 { margin-top: 2dp; margin-bottom: 2dp; }
+.my-1 { margin-top: 4dp; margin-bottom: 4dp; }
+.my-1-5 { margin-top: 6dp; margin-bottom: 6dp; }
+.my-2 { margin-top: 8dp; margin-bottom: 8dp; }
+.my-2-5 { margin-top: 10dp; margin-bottom: 10dp; }
+.my-3 { margin-top: 12dp; margin-bottom: 12dp; }
+.my-3-5 { margin-top: 14dp; margin-bottom: 14dp; }
+.my-4 { margin-top: 16dp; margin-bottom: 16dp; }
+.my-5 { margin-top: 20dp; margin-bottom: 20dp; }
+.my-6 { margin-top: 24dp; margin-bottom: 24dp; }
+.my-7 { margin-top: 28dp; margin-bottom: 28dp; }
+.my-8 { margin-top: 32dp; margin-bottom: 32dp; }
+.my-10 { margin-top: 40dp; margin-bottom: 40dp; }
+.my-12 { margin-top: 48dp; margin-bottom: 48dp; }
 
 /* === Padding === */
 .p-0 { padding: 0dp; }
@@ -418,7 +455,7 @@
 .text-right { text-align: right; }
 
 /* === Border === */
-/* note that border and border color is not included, it is set instead in the palette files */
+/* note that border and border color is not included, it is set instead in the theme files */
 .border { border: 1dp; }
 .border-0 { border: 1dp transparent; }
 
@@ -438,7 +475,11 @@
 
 /* === Overflow === */
 .clip { clip: always; }
+.overflow-visible { overflow: visible; }
+.overflow-hidden { overflow: hidden; }
+.overflow-scroll { overflow: scroll; }
 
+/* === Transition === */
 .transition { transition: all 0.2s; }
 .transition-bg { transition: background-color 0.2s, color 0.2s; }
 .transition-border { transition: border-color 0.2s; }

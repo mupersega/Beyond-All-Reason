@@ -93,9 +93,10 @@ local function createComponentArray(ccgTable, prefix, componentType)
         success = { example = "ONLINE", description = "Success state indicator" },
         warning = { example = "ALERT", description = "Warning state indicator" },
         danger = { example = "ERROR", description = "Error state indicator" },
+        info = { example = "INFO", description = "Information state indicator" },
         construction = { example = "BUILD", description = "Construction/industrial themed badge with hazard pattern" },
         ghost = { example = "DRAFT", description = "Subtle ghost badge with border" },
-        surface = { example = "INFO", description = "Surface themed badge" },
+        surface = { example = "THEME", description = "Surface themed badge" },
         
         -- Legacy themeText badge/pill (keep for backwards compatibility)
         badge = { example = "NEW", description = "Legacy themed badge from themeText group" },
@@ -110,9 +111,10 @@ local function createComponentArray(ccgTable, prefix, componentType)
             success = { example = "✓", description = "Success state circular indicator" },
             warning = { example = "!", description = "Warning state circular indicator" },
             danger = { example = "X", description = "Error state circular indicator" },
+            info = { example = "i", description = "Information state circular indicator" },
             construction = { example = "C", description = "Construction/industrial themed circle with hazard pattern" },
             ghost = { example = "?", description = "Subtle ghost circle with border" },
-            surface = { example = "i", description = "Surface themed circular indicator" },
+            surface = { example = "T", description = "Surface themed circular indicator" },
         }
     end
     
@@ -166,7 +168,7 @@ local init_model = {
         { id = "about", label = "About" },
         { id = "buttons", label = "Buttons" },
         { id = "text", label = "Text" },
-        { id = "components", label = "Tags" },
+        { id = "tags", label = "Tags" },
         { id = "sheets", label = "Sheets" },
         { id = "cards", label = "Cards" },
         { id = "nav", label = "Nav" },
@@ -191,6 +193,7 @@ local init_model = {
             copybutton = "p-1 flex gap-2 items-center w-5 h-5 justify-center",
             classInfo = ccg.definitions.themeText.caption .. " flex-1",
         },
+        copySvgStyles = "h-3 w-3 mx-0-5",
     },
 
     -- Theme management - will be dynamically set from current config/context

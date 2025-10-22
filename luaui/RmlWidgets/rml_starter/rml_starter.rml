@@ -7,155 +7,179 @@
         <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
         <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
         <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
-        <link rel="stylesheet" href="../palettes/palette-base.rcss" type="text/rcss" />
-        <link rel="stylesheet" href="../palettes/palette-cortex.rcss" type="text/rcss" />
-        <link rel="stylesheet" href="../palettes/palette-armada.rcss" type="text/rcss" />
-        <link rel="stylesheet" href="../palettes/palette-legion.rcss" type="text/rcss" />
+        <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+        <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+        <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+        <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+        
         <link rel="stylesheet" href="rml_starter.rcss" type="text/rcss" />
     </head>
 
     <body id="rml-starter-widget" class="widget-shadow rounded-lg">
         <div id="widget-container" data-model="rml_starter_model">
-            <div id="tabs-navigation">
-                <button data-for="tab : tabs" data-attr-class="ccg.themeButton.ghost + ' tab-button'"
-                    data-class-active="activeTab == tab.id" data-class-bg-primary="activeTab == tab.id"
-                    data-class-border-primary="activeTab == tab.id" data-class-text-darkest="activeTab == tab.id"
-                    data-tab="{{tab.id}}"
-                    data-event-mousedown="setActiveTab(tab.id)">
-                    <span class="text-glow-light">{{tab.label}}</span>
-                </button>
-            </div>
             
+            <!-- Small floating debug buttons -->
+            <div class="debug-controls left">
+                <button data-attr-class="ccg.themeButton.ghost + ' p-3 pt-2 pb-1-5'" onclick="widget:Reload()" title="Reload Widget">reload</button>
+                <button data-attr-class="ccg.themeButton.ghost + ' p-3 pt-2 pb-1-5'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">debug</button>
+            </div>
+
+            <!-- Widget header with controls -->
+            <div data-attr-class="ccg.sheet.default.title + ' min-h-12 flex flex-col items-center relative min-h-20'">
+                <!-- <span>
+                    RML STARTER WIDGET
+                </span>
+                 -->
+                <!-- Theme selector buttons -->
+                <!-- <div class="flex flex-row justify-center items-center gap-2 text-sm text-light">
+                    <span data-attr-class="ccg.text.body">Theme:</span>
+                    <button data-for="theme : availableThemes"
+                            data-attr-class="(currentTheme == theme.id ? ccg.themeButton.default : ccg.button.ghost) + ' text-sm px-3 py-1 text-outline-none'"
+                            data-event-mousedown="switchTheme(theme.id)">
+                        <span>{{theme.name}}</span>
+                    </button>
+                </div> -->
+                <div id="tabs-navigation" class="flex-1 flex flex-col justify-center">
+                    <button data-for="tab : tabs"
+                        data-attr-class="(activeTab == tab.id ?  ccg.themeButton.default + ' active' :  ccg.themeButton.ghost) + ' tab-button tab-button-hover transition-bg p-3 font-bold text-outline'"
+                        data-event-mousedown="setActiveTab(tab.id)">
+                        <span class="text-glow-light text-base text-light">{{tab.label}}</span>
+                    </button>
+                </div>
+            </div>
             <!-- Main content area with tab panels -->
-            <div id="main-content" data-attr-class="ccg.sheet.default.container">
-                <!-- Small floating debug buttons -->
-                <div class="debug-controls">
-                    <button data-attr-class="ccg.themeButton.ghost + ' p-3 pt-2 pb-1-5'" onclick="widget:Reload()" title="Reload Widget">reload</button>
-                    <button data-attr-class="ccg.themeButton.ghost + ' p-3 pt-2 pb-1-5'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">{{debugMode ? 'hide' : 'debug'}}</button>
-                </div>
-                
-                <!-- Widget header with controls -->
-                <div data-attr-class="ccg.sheet.default.title + ' flex flex-col justify-between items-center h-20'">
-                    <span>
-                        RML STARTER WIDGET
-                    </span>
-                    
-                    <!-- Theme selector buttons -->
-                    <div class="flex flex-row justify-center items-center gap-2 text-sm text-light">
-                        <span data-attr-class="ccg.text.body">Theme:</span>
-                        <button data-for="theme : availableThemes"
-                                data-attr-class="(currentTheme == theme.id ? ccg.themeButton.default : ccg.button.ghost) + ' text-sm px-3 py-1 text-outline-none'"
-                                data-event-mousedown="switchTheme(theme.id)">
-                            <span>{{theme.name}}</span>
-                        </button>
-                    </div>
-                </div>
+            <div data-attr-class="ccg.sheet.default.container + ' flex'">
 
                 <!-- Main content area -->
-                <div data-attr-class="ccg.sheet.default.content">
-
-                <div id="landing" data-if="activeTab == ''" class="slide-in-from-bottom">
-                    <div class="flex flex-col sp-10">
-                        <h1 data-attr-class="ccg.heading.h1 + ' text-darkest text-glow-primary'">RML Starter Widget</h1>
-                        <h2 data-attr-class="ccg.heading.h2">What is it?</h2>
-                        <p data-attr-class="ccg.text.body">This widget is one part documentation and one part connected example. It demonstrates key concepts and emerging best practices for creating, and working with RMLUI widgets within Beyond All Reason.</p>
-                        <p data-attr-class="ccg.text.body">Navigate using the tabs, and keep in mind that this widget is itself an RmlUi implementation. If you see something you'd like to understand better, explore the code, edit values, and see how it works for yourself. Avoid committing changes to this widget, as it is meant to be a starting point for your own work.</p>
-                        <h2 data-attr-class="ccg.heading.h2">Widget Actions</h2>
-                        <p data-attr-class="ccg.text.body">RML Widgets do not currently have hot reload functionality, as such, a reload is required to see changes made to <span data-attr-class="ccg.badge.primary">.rml</span> and <span data-attr-class="ccg.badge.primary">.rcss</span> files. The <span class="font-bold text-primary border-sm rounded border-primary">Reload Widget</span> button above will refresh the widget and apply any changes you might have made in your IDE to the <span data-attr-class="ccg.badge.primary">.rml</span> and <span data-attr-class="ccg.badge.primary">.rcss</span> files.</p>
-                        <p data-attr-class="ccg.text.body">Use the <span class="font-bold text-primary border-sm rounded border-primary">Show Debug</span> button to show or hide the RmlUi debugger. The debugger provides invaluable real-time insights into the context's documents, data models, event handling, styling, and importantly, the state of the DOM.</p>
-                        <h2 data-attr-class="ccg.heading.h2">Skip to the Good Stuff</h2>
-                        <p data-attr-class="ccg.text.body">If you want to get started quickly, head to the Tools tab and follow instruction to run a generator script. The generated widget hopefully embodies best practices and common patterns for RML development regarding file structure, naming conventions, and initial component organization.</p>
-                        <p data-attr-class="ccg.text.body">Make use of the RmlUi documentation, and don't hesitate to reach out for help in the <span class="font-bold">#rmlui</span> channel in Discord.</p>
-                        <p class="text-primary font-bold mt-5">Good luck.</p>
+                <div id="landing" data-if="activeTab == ''">
+                    <div class="flex flex-col items-center justify-center p-6 h-full gap-3 text-center">
+                        <h1 data-attr-class="ccg.heading.h1">RML Starter Widget</h1>
+                        <div class="flex flex-col items-center gap-3">
+                            <h2 data-attr-class="ccg.heading.h3">What is it?</h2>
+                            <p data-attr-class="ccg.text.body">This widget demonstrates key concepts and best practices for creating RmlUi widgets within Beyond All Reason.</p>
+                            <p data-attr-class="ccg.text.body">Navigate using the tabs to explore examples. This widget is itself an RmlUi implementation - feel free to explore the code and see how it works.</p>
+                        </div>
+                        <span id="afwef" class="divider-horizontal-primary w-40"></span>
+                        <div class="flex flex-col items-center gap-3">
+                            <h2 data-attr-class="ccg.heading.h3">Widget Actions</h2>
+                            <p data-attr-class="ccg.text.body">RML widgets require reloading to see changes to <span data-attr-class="ccg.badge.primary">.rml</span> and <span data-attr-class="ccg.badge.primary">.rcss</span> files. Use the <button data-attr-class="ccg.themeButton.ghost + ' px-1-5'">reload</button> button above to refresh.</p>
+                            <p data-attr-class="ccg.text.body">The <button data-attr-class="ccg.themeButton.ghost + ' px-1-5'">debug</button> button toggles the RmlUi debugger for real-time insights into documents, data models, and DOM state.</p>
+                        </div>
+                        <span id="sdf3a" class="divider-horizontal-primary w-40"></span>
+                        <div class="flex flex-col items-center gap-3">
+                            <h2 data-attr-class="ccg.heading.h3">Quick Start</h2>
+                            <p data-attr-class="ccg.text.body">Head to the Tools tab for the generator script that creates new widgets with best practices and common patterns built-in.</p>
+                            <p data-attr-class="ccg.text.body">Check the RmlUi documentation and ask for help in the <span data-attr-class="ccg.themeText.highlight">#rmlui</span> Discord channel.</p>
+                            <p data-attr-class="ccg.themeText.value">Good luck!</p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Getting Started Tab Panel -->
-                <div id="getting-started" class="tab-panel slide-in-from-bottom" data-panel="getting-started" data-if="activeTab == 'getting-started'">
-                    <div data-attr-class="ccg.sheet.default.container">
-                        <div data-attr-class="ccg.sheet.default.title">
-                            <h1 data-attr-class="ccg.heading.h1 + ' text-darkest text-glow-primary'">Getting Started</h1>
-                            <p data-attr-class="ccg.text.body">Essential information before creating your first RmlUi widget, for the sake of the following example lets call it <span class="font-bold">my_widget.</span></p>
-                        </div>
-                        
-                        <div data-attr-class="ccg.sheet.default.content">
-                            <div data-attr-class="ccg.card.default + ' content-section p-4'">
-                                <h2 data-attr-class="ccg.heading.h2 + ' text-secondary'">File Structure</h2>
-                                <p data-attr-class="ccg.text.body">Every RmlUi widget needs three files of different types, the <span class="font-bold">.lua</span>, <span class="font-bold">.rml</span>, and <span class="font-bold">.rcss</span> files. These files should be named as follows:</p>
-                                <div class="flex flex-row gap-4 mt-2">
-                                    <div class="file bg-primary-alpha rounded-md border-sm border-muted-alpha">
-                                        <span class="font-bold bg-primary text-darker p-1">my_widget.lua</span>
-                                        <p class="p-2">Backend logic and data model</p>
-                                        <p class="p-2 text-muted"><em>controller + model</em></p>
-                                    </div>
-                                    <div class="file bg-primary-alpha rounded-md border-sm border-muted-alpha">
-                                        <span class="font-bold bg-primary text-darker p-1">my_widget.rml</span>
-                                        <p class="p-2">Frontend UI layout and markup</p>
-                                        <p class="p-2 text-muted"><em>view</em></p>
-                                    </div>
-                                    <div class="file bg-primary-alpha rounded-md border-sm border-muted-alpha">
-                                        <span class="font-bold bg-primary text-darker p-1">my_widget.rcss</span>
-                                        <p class="p-2">Styling and visual appearance</p>
-                                        <p class="p-2 text-muted"><em>view styles</em></p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div data-attr-class="ccg.card.default + ' content-section p-4'">
-                                <h2 data-attr-class="ccg.heading.h2 + ' text-secondary'">File Location</h2>
-                                <p class="text-light m-1">
-                                    RmlUi widgets are those which have some sort of GUI powered by RmlUi and should be placed in the following directory:</p>
-                                <div class="text-darker m-2 bg-medium-alpha rounded-lg p-4 text-sm">luaui/RmlWidgets/
-                                </div>
-                                <p class="text-light m-1">It is recommended to name your folder the same as your widget, the resultant directory structure would be something like:</p>
-                                <div class="flex flex-col text-darker m-2 bg-medium-alpha rounded-lg p-4 text-sm">
-                                    <div>luaui/</div>
-                                    <div class="pl-2">RmlWidgets/</div>
-                                    <div class="pl-4">my_widget/</div>
-                                    <div class="pl-6">my_widget.lua</div>
-                                    <div class="pl-6">my_widget.rml</div>
-                                    <div class="pl-6">my_widget.rcss</div>
-                                </div>
-                                <p class="text-light m-1">This structure helps keep your widget organized and easily identifiable within the RmlUi ecosystem.
-                                </p>
-                                <p class="text-light m-1">
-                                    Additionally, there are global styles, utility classes, and palettes which can be imported to maintain consistency across UI, and some of which your widget will require to function correctly. For example:</p>
-                                <div class="flex flex-col text-darker m-2 bg-medium-alpha rounded-lg p-4 text-sm">
-                                    <div>luaui/</div>
-                                    <div class="pl-2">RmlWidgets/</div>
-                                    <div class="pl-4 text-dark">my_widget/</div>
-                                    <div class="pl-6 text-dark">my_widget.lua</div>
-                                    <div class="pl-6 text-dark">my_widget.rml</div>
-                                    <div class="pl-6 text-dark">my_widget.rcss</div>
-                                    <div class="pl-4">styles.rcss <span class="text-success font-bold">&lt;&lt;</span></div>
-                                    <div class="pl-4">rml-utility-classes.rcss <span class="text-success font-bold">&lt;&lt;</span></div>
-                                    <div class="pl-4">palette-standard-global.rcss <span class="text-success font-bold">&lt;&lt;</span></div>
-                                    <div class="pl-4">palette-base.rcss <span class="text-success font-bold">&lt;&lt;</span></div>
-                                </div>
-                            </div>
-
-                    <div data-attr-class="ccg.card.default + ' content-section p-4'">
-                        <h2 data-attr-class="ccg.heading.h2 + ' text-secondary'">Core Functionality</h2>
-                        <p class="text-light m-1">A basic RmlUi widget should provide:</p>
-                        <ul class="text-light m-1 flex flex-col gap-2">
-                            <li><strong class="text-secondary">Lifecycle</strong>: <strong>GetInfo</strong>, <strong>Initialize</strong>, <strong>Update</strong>, and <strong>Shutdown</strong> hooks no different to standard widgets in the <span class="file-text bg-primary text-darkest">/luai/widgets</span> folder.</li>
-                            <li><strong class="text-secondary">Data Model</strong>: Variables that drive the UI state set in the logic layer and applied with data-binding in the ui layer.</li>
-                            <li><strong class="text-secondary">UI Layout</strong>: Rml markup defining the visual arrangement of the widget much like HTML.</li>
-                            <li><strong class="text-secondary">Styling</strong>: Rcss selectors used to style the elements in the Rml as with CSS.</li>
-                        </ul>
-                        <p class="text-light m-1">Take a moment to look through the entry point for this widget at <span class="file-text bg-primary text-darkest">rml_starter.lua</span> to see how these concepts are implemented.</p>
+                <div id="getting-started" data-attr-class="ccg.sheet.default.container + ' clip overflow-scroll relative'" data-if="activeTab == 'getting-started'">
+                    <div data-attr-class="ccg.sheet.construction.title + ' flex flex-col items-center fixed top-0 z-1 w-full'">
+                        <h1 data-attr-class="ccg.heading.h1">Getting Started</h1>
                     </div>
+                    <div class="fixed-header-spacer h-24">you can't see me</div>
+                    <p data-attr-class="ccg.text.body + ' p-3'">Essential information before creating your first RmlUi widget, for the sake of the following example lets call it <span class="font-bold">my_widget.</span></p>
+                    
+                    <div data-attr-class="ccg.sheet.default.content + ' flex flex-col gap-3'">
+                        <div data-attr-class="ccg.panel.general + ' flex-col'">
+                            <h2 data-attr-class="ccg.heading.h4">File Structure</h2>
+                            <p data-attr-class="ccg.text.body">Every RmlUi widget needs three files of different types, the <span class="font-bold">.lua</span>, <span class="font-bold">.rml</span>, and <span class="font-bold">.rcss</span> files. These files should be named as follows:</p>
+                            <div class="flex flex-col gap-3 mt-2">
+                                <div class="flex items-center gap-3">
+                                    <span data-attr-class="ccg.badge.info">my_widget.lua</span>
+                                    <span data-attr-class="ccg.text.body">Backend logic and data model</span>
+                                    <span data-attr-class="ccg.text.caption">(controller + model)</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span data-attr-class="ccg.badge.success">my_widget.rml</span>
+                                    <span data-attr-class="ccg.text.body">Frontend UI layout and markup</span>
+                                    <span data-attr-class="ccg.text.caption">(view)</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span data-attr-class="ccg.badge.warning">my_widget.rcss</span>
+                                    <span data-attr-class="ccg.text.body">Styling and visual appearance</span>
+                                    <span data-attr-class="ccg.text.caption">(view styles)</span>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div data-attr-class="ccg.card.default + ' content-section p-4'">
-                        <h2 data-attr-class="ccg.heading.h2 + ' text-secondary'">Quick Start Steps</h2>
-                        <p class="text-light m-1">To create your first widget use the generation script provided in the folder for this, the <span class="font-bold">rml_starter</span> widget at <span class="file-text bg-primary text-darkest">/luaui/RmlWidgets/rml_starter/generate-widget.sh</span></p>
-                        <p class="text-light m-1">Run the script in your terminal, providing the name of your widget as an argument. This will create a new folder with all necessary files and structures, in a new folder. The generated base widget will provides all of the aforementioned core functionality and some simple implementation examples.</p>
-                        <div class="text-darker m-2 bg-medium-alpha rounded-lg p-4"><span>./generate-widget.sh my_widget</span></div>
+                        <div data-attr-class="ccg.panel.general + ' flex-col'">
+                            <h2 data-attr-class="ccg.heading.h4">File Location</h2>
+                            <p class="text-light m-1">
+                                RmlUi widgets are those which have some sort of GUI powered by RmlUi and should be placed in the following directory:</p>
+                            <div data-attr-class="my.codeBlock">luaui/RmlWidgets/
+                            </div>
+                            <p class="text-light m-1">It is recommended to name your folder the same as your widget, the resultant directory structure would be something like:</p>
+                            <div data-attr-class="my.codeBlock">
+                                <div>luaui/</div>
+                                <div class="pl-2">RmlWidgets/</div>
+                                <div class="pl-4">my_widget/</div>
+                                <div class="pl-6">my_widget.lua</div>
+                                <div class="pl-6">my_widget.rml</div>
+                                <div class="pl-6">my_widget.rcss</div>
+                            </div>
+                            <p class="text-light m-1">This structure helps keep your widget organized and easily identifiable within the RmlUi ecosystem.
+                            </p>
+                            <p class="text-light m-1">
+                                Additionally, there are global styles, utility classes, and themes which can be imported to maintain consistency across UI, some of which your widget will require to function correctly. For example:</p>
+                            <div data-attr-class="my.codeBlock">
+                                <div>luaui/</div>
+                                <div class="pl-2">RmlWidgets/</div>
+                                <div class="pl-4 text-dark">my_widget/</div>
+                                <div class="pl-6 text-dark">my_widget.lua</div>
+                                <div class="pl-6 text-dark">my_widget.rml</div>
+                                <div class="pl-6 text-dark">my_widget.rcss</div>
+                                <div class="pl-4">styles.rcss <span class="text-success font-bold">&lt;&lt;</span></div>
+                                <div class="pl-4">rml-utility-classes.rcss <span class="text-success font-bold">&lt;&lt;</span></div>
+                                <div class="pl-4">palette-standard-global.rcss <span class="text-success font-bold">&lt;&lt;</span></div>
+                                <div class="pl-4">themes/ <span class="text-success font-bold">&lt;&lt;</span></div>
+                                <div class="pl-6">theme-base.rcss <span class="text-success font-bold">&lt;&lt;</span></div>
+                                <div class="pl-6">theme-cortex.rcss <span class="text-success font-bold">&lt;&lt;</span></div>
+                                <div class="pl-6">theme-armada.rcss <span class="text-success font-bold">&lt;&lt;</span></div>
+                                <div class="pl-6">theme-legion.rcss <span class="text-success font-bold">&lt;&lt;</span></div>
+                            </div>
+                        </div>
+
+                        <div data-attr-class="ccg.panel.general + ' flex-col'">
+                            <h2 data-attr-class="ccg.heading.h4">Core Functionality</h2>
+                            <p class="text-light m-1">A basic RmlUi widget should provide:</p>
+                            <ul class="text-light m-1 flex flex-col gap-2">
+                                <li class="flex items-start gap-2">
+                                    <div class="w-1-5 h-1-5 bg-primary rounded-full mt-2"></div>
+                                    <div><strong class="text-secondary">Lifecycle</strong>: <strong>GetInfo</strong>, <strong>Initialize</strong>, <strong>Update</strong>, and <strong>Shutdown</strong> hooks no different to standard widgets in the <span class="code-green px-1">/luai/widgets</span> folder.</div>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <div class="w-1-5 h-1-5 bg-primary rounded-full mt-2"></div>
+                                    <div><strong class="text-secondary">Data Model</strong>: Variables that drive the UI state set in the logic layer and applied with data-binding in the ui layer.</div>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <div class="w-1-5 h-1-5 bg-primary rounded-full mt-2"></div>
+                                    <div><strong class="text-secondary">UI Layout</strong>: Rml markup defining the visual arrangement of the widget much like HTML.</div>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <div class="w-1-5 h-1-5 bg-primary rounded-full mt-2"></div>
+                                    <div><strong class="text-secondary">Styling</strong>: Rcss selectors used to style the elements in the Rml as with CSS.</div>
+                                </li>
+                            </ul>
+                            <p class="text-light m-1">Take a moment to look through the entry point for this widget at <span class="code-green px-1">rml_starter.lua</span> to see how these concepts are implemented.</p>
+                        </div>
+
+                        <div data-attr-class="ccg.panel.general + ' flex-col'">
+                            <h2 data-attr-class="ccg.heading.h2">Quick Start Steps</h2>
+                            <p class="text-light m-1">To create your first widget use the generation script provided in the folder for this, the <span class="font-bold">rml_starter</span> widget at <span class="code-green px-1">/luaui/RmlWidgets/rml_starter/generate-widget.sh</span></p>
+                            <p class="text-light m-1">Run the script in your terminal, providing the name of your widget as an argument. This will create a new folder with all necessary files and structures, in a new folder. The generated base widget will provides all of the aforementioned core functionality and some simple implementation examples.</p>
+                            <div data-attr-class="my.codeBlock">
+                                <span class="code-green">./generate-widget.sh my_widget</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Base Widget Conventions Tab Panel -->
-                <div id="base-widget-conventions" class="tab-panel" data-panel="base-widget-structure" data-if="activeTab == 'base-widget-conventions'">
+                <!-- <div id="base-widget-conventions" class="tab-panel" data-panel="base-widget-structure" data-if="activeTab == 'base-widget-conventions'">
                     <div data-attr-class="ccg.sheet.default.container">
                         <div data-attr-class="ccg.sheet.default.title">
                             <h1 data-attr-class="ccg.heading.h1 + ' text-darkest text-glow-primary'">Base Widget Conventions</h1>
@@ -217,7 +241,7 @@
                                 <li>../styles.rcss <span class="text-success font-bold">&lt; mandatory</span></li>
                                 <li>../rml-utility-classes.rcss <span class="text-success font-bold">&lt; mandatory</span></li>
                                 <li>../palette-standard-global.rcss <span class="text-success font-bold">&lt; mandatory</span></li>
-                                <li>../palette-base.rcss <span class="text-success font-bold">&lt; mandatory</span></li>
+                                <li>../themes/theme-base.rcss <span class="text-success font-bold">&lt; mandatory</span></li>
                                 <li>my_widget.rcss <span class="text-info font-bold">&lt; optional (or use &lt;style&gt; element)</span></li>
                             </ul>
                             <p class="p-2 text-sm text-light-alpha"><em>You can add widget-specific styles either by linking to a .rcss file or by including them directly in a &lt;style&gt; element within the &lt;head&gt;. The &lt;style&gt; approach keeps everything in one file but can become unwieldy for complex styling.</em></p>
@@ -321,10 +345,10 @@
                             </li>
                         </ul>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Widget Positioning -->
-                <div id="widget-positioning" class="tab-panel" data-panel="widget-positioning" data-if="activeTab == 'widget-positioning'">
+                <!-- <div id="widget-positioning" class="tab-panel" data-panel="widget-positioning" data-if="activeTab == 'widget-positioning'">
                     <div class="content-section">
                         <h1 data-attr-class="ccg.heading.h1 + ' text-darkest text-glow-primary'">Widget Positioning</h1>
                         <p class="text-light">Understanding how widgets are positioned within the RmlUi 'shared' context is essential for proper widget placement and sizing.</p>
@@ -335,33 +359,33 @@
                         <p class="text-light m-1">Widget positioning uses standard CSS rules. If you're new to CSS, these concepts apply universally - research "CSS positioning" for more detailed information.</p>
                         
                         <div class="bg-darker-alpha border-sm border-light p-4 mt-2" style="position: relative; height: 200dp;">
-                            <p class="text-light text-xs mb-2" style="position: absolute; bottom: 0; right: 5dp;">Container acts here like the RmlUi 'shared' context</p>
+                            <p class="text-light text-xs mb-2" style="position: absolute; bottom: 0; right: 5dp;">Container acts here like the RmlUi 'shared' context</p> -->
                             
                             <!-- Top-left positioned box -->
-                            <div style="position: absolute; top: 10dp; left: 10dp; width: 80dp; height: 40dp;" class="bg-primary text-darkest p-1 text-xs">
+                            <!-- <div style="position: absolute; top: 10dp; left: 10dp; width: 80dp; height: 40dp;" class="bg-primary text-darkest p-1 text-xs">
                                 <div>top: 10dp</div>
                                 <div>left: 10dp</div>
-                            </div>
+                            </div> -->
                             
                             <!-- Top-right positioned box -->
-                            <div style="position: absolute; top: 10dp; right: 10dp; width: 80dp; height: 40dp;" class="bg-success text-darkest p-1 text-xs">
+                            <!-- <div style="position: absolute; top: 10dp; right: 10dp; width: 80dp; height: 40dp;" class="bg-success text-darkest p-1 text-xs">
                                 <div>top: 10dp</div>
                                 <div>right: 10dp</div>
-                            </div>
+                            </div> -->
                             
                             <!-- Bottom-left positioned box -->
-                            <div style="position: absolute; bottom: 10dp; left: 10dp; width: 80dp; height: 40dp;" class="bg-warning text-darkest p-1 text-xs">
+                            <!-- <div style="position: absolute; bottom: 10dp; left: 10dp; width: 80dp; height: 40dp;" class="bg-warning text-darkest p-1 text-xs">
                                 <div>bottom: 10dp</div>
                                 <div>left: 10dp</div>
-                            </div>
+                            </div> -->
                             
                             <!-- Center positioned box -->
-                            <div style="position: absolute; top: 50%; left: 50%; width: 100dp; height: 50dp; transform: translate(-50dp, -25dp);" class="bg-info text-darkest p-1 text-xs">
+                            <!-- <div style="position: absolute; top: 50%; left: 50%; width: 100dp; height: 50dp; transform: translate(-50dp, -25dp);" class="bg-info text-darkest p-1 text-xs">
                                 <div>top: 50%</div>
                                 <div>left: 50%</div>
                                 <div>centered</div>
-                            </div>
-                        </div>
+                            </div> -->
+                        <!-- </div>
                         
                         <p class="text-light text-xs mt-2"><em>Each colored box shows its positioning properties. The container represents the RmlUi context that widgets are positioned within.</em></p>
                     </div>
@@ -372,59 +396,59 @@
                         
                         <div class="mt-2">
                             <p class="text-secondary text-sm mb-2"><strong>Example BAR UI Layout</strong></p>
-                            <div class="bg-darker-alpha border-sm border-light p-2 text-xs" style="position: relative; height: 260dp;">
+                            <div class="bg-darker-alpha border-sm border-light p-2 text-xs" style="position: relative; height: 260dp;"> -->
                                 <!-- Top-left: Square minimap -->
-                                <div style="position: absolute; top: 0; left: 0; width: 70dp; height: 70dp;" class="bg-primary-alpha text-xxs border border-primary">
+                                <!-- <div style="position: absolute; top: 0; left: 0; width: 70dp; height: 70dp;" class="bg-primary-alpha text-xxs border border-primary">
                                     <div><strong>Minimap</strong></div>
                                     <div>top: 0</div>
                                     <div>left: 0</div>
                                     <div>60dp × 60dp</div>
-                                </div>
+                                </div> -->
                                 
                                 <!-- Top-center: Resource bar -->
-                                <div style="position: absolute; top: 0; left: 50%; width: 200dp; height: 25dp; transform: translateX(-90dp);" class="bg-success-alpha text-xxs border border-success">
+                                <!-- <div style="position: absolute; top: 0; left: 50%; width: 200dp; height: 25dp; transform: translateX(-90dp);" class="bg-success-alpha text-xxs border border-success">
                                     <div><strong>Resource Bar</strong></div>
                                     <div>top: 0, centered (left: 50%, translateX(-90dp))</div>
-                                </div>
+                                </div> -->
                                 
                                 <!-- Top-right: Thin settings menu -->
-                                <div style="position: absolute; top: 0; right: 0; width: 80dp; height: 20dp;" class="bg-warning-alpha text-xxs border border-warning">
+                                <!-- <div style="position: absolute; top: 0; right: 0; width: 80dp; height: 20dp;" class="bg-warning-alpha text-xxs border border-warning">
                                     <div><strong>Settings</strong></div>
                                     <div>top: 0;</div>
                                     <div>right: 0;</div>
                                 </div>
-                                
+                                 -->
                                 <!-- Bottom-left: Build grid (above unit info) -->
-                                <div style="position: absolute; bottom: 52dp; left: 0; width: 100dp; height: 80dp;" class="bg-info-alpha text-xxs border border-info">
+                                <!-- <div style="position: absolute; bottom: 52dp; left: 0; width: 100dp; height: 80dp;" class="bg-info-alpha text-xxs border border-info">
                                     <div><strong>Build Grid</strong></div>
                                     <div>bottom: 52dp</div>
                                     <div>left: 0</div>
                                     <div>above unit info</div>
-                                </div>
+                                </div> -->
                                 
                                 <!-- Bottom-left: Unit info widget -->
-                                <div style="position: absolute; bottom: 0; left: 0; width: 100dp; height: 50dp;" class="bg-confirm-alpha text-xxs border border-confirm">
+                                <!-- <div style="position: absolute; bottom: 0; left: 0; width: 100dp; height: 50dp;" class="bg-confirm-alpha text-xxs border border-confirm">
                                     <div><strong>Unit Info</strong></div>
                                     <div>bottom: 0</div>
                                     <div>left: 0</div>
-                                </div>
+                                </div> -->
                                 
                                 <!-- Bottom-center: Commands widget (right of unit info) -->
-                                <div style="position: absolute; bottom: 0; left: 102dp; width: 150dp; height: 50dp;" class="bg-error-alpha text-xxs border border-error">
+                                <!-- <div style="position: absolute; bottom: 0; left: 102dp; width: 150dp; height: 50dp;" class="bg-error-alpha text-xxs border border-error">
                                     <div><strong>Commands</strong></div>
                                     <div>bottom: 0</div>
                                     <div>left: 102dp</div>
                                     <div>right of unit info</div>
-                                </div>
+                                </div> -->
                                 
                                 <!-- Bottom-right: Advanced player list -->
-                                <div style="position: absolute; bottom: 0; right: 0; width: 100dp; height: 80dp;" class="bg-accent-alpha text-xxs border border-accent">
+                                <!-- <div style="position: absolute; bottom: 0; right: 0; width: 100dp; height: 80dp;" class="bg-accent-alpha text-xxs border border-accent">
                                     <div><strong>Player List</strong></div>
                                     <div>bottom: 0</div>
                                     <div>right: 0</div>
                                     <div>100dp × 80dp</div>
-                                </div>
-                            </div>
+                                </div> -->
+                            <!-- </div>
                             <div class="flex flex-col gap-1 mt-2 text-xs text-light-alpha">
                                 <p><strong>Centering calculation:</strong> Resource Bar uses left: 50% with transform: translateX(-90dp) where 90dp = half the widget width (180dp ÷ 2)</p>
                                 <p><strong>Horizontal positioning:</strong> Commands widget left: 100dp = Unit Info left (0) + Unit Info width (100dp), positioned directly adjacent</p>
@@ -489,10 +513,10 @@
                         <p class="text-warning text-sm mt-2"><strong>Important:</strong> Avoid using percentages for dimensions as they can cause inconsistent sizing across different screen resolutions.</p>
                         <p class="text-info text-sm mt-1"><strong>Learn More:</strong> These are standard CSS positioning concepts. Search for "CSS absolute positioning" and "CSS box model" for comprehensive tutorials.</p>
                     </div>
-                </div>
-
+                </div> -->
+                
                 <!-- Data Binding Tab Panel -->
-                <div id="data-binding" class="tab-panel" data-panel="data-binding" data-if="activeTab == 'data-binding'">
+                <!-- <div id="data-binding" class="tab-panel" data-panel="data-binding" data-if="activeTab == 'data-binding'">
                     <div class="content-section">
                         <h1 data-attr-class="ccg.heading.h1 + ' text-darkest text-glow-primary'">Data Binding</h1>
                         <p data-attr-class="ccg.text.body">The data model provides dynamism and reactivity to RML templates. Changes to model variables automatically update the UI without manual DOM manipulation.</p>
@@ -554,10 +578,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Convention Tab Panel -->
-                <div class="tab-panel" data-panel="convention" data-if="activeTab == 'convention'">
+                <!-- <div class="tab-panel" data-panel="convention" data-if="activeTab == 'convention'">
                     <div class="content-section">
                         <h1 data-attr-class="ccg.heading.h1 + ' text-white'">Convention <span class="text-warning">[WIP]</span></h1>
                         <p class="text-dark">There are several important conventions to follow when developing RMLUI widgets</p>
@@ -569,20 +593,20 @@
                             </ul>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Performance Tab Panel -->
-                <div class="tab-panel" data-panel="performance" data-if="activeTab == 'performance'">
+                <!-- <div class="tab-panel" data-panel="performance" data-if="activeTab == 'performance'">
                     <div class="content-section">
                         <h1 data-attr-class="ccg.heading.h1 + ' text-white'">Performance <span class="text-warning">[WIP]</span></h1>
                         <p class="text-dark">This section is currently under development</p>
                         <p class="text-dark m-1">Coming soon: Optimization techniques, memory management,
                             rendering performance, and profiling tips</p>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Tools Tab Panel -->
-                <div id="tools" class="tab-panel" data-panel="tools" data-if="activeTab == 'tools'">
+                <!-- <div id="tools" class="tab-panel" data-panel="tools" data-if="activeTab == 'tools'">
                     <div class="content-section">
                         <h1 data-attr-class="ccg.heading.h1 + ' text-white'">Tools</h1>
                         <p class="text-neutral-dark">Development tools and utilities for RML widget creation</p>
@@ -620,16 +644,18 @@
                             <li>• Use the <span class="code-highlight text-white bg-primary rounded">rml-utility-classes.rcss</span> file for a tailwind-like approach to styling</li>
                         </ul>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Examples Tab Panel -->
-                <div class="tab-panel" data-panel="examples" data-if="activeTab == 'examples'">
+                <!-- <div class="tab-panel" data-panel="examples" data-if="activeTab == 'examples'">
                     <div class="content-section">
                         <h1 data-attr-class="ccg.heading.h1 + ' text-white'">Examples <span class="text-warning">[WIP]</span></h1>
                         <p class="text-neutral-dark">This section is currently under development</p>
                         <p class="text-neutral-dark-light m-1">Coming soon: Real-world implementation patterns, code samples, and practical use cases</p>
                     </div>
-                </div>
+                </div> -->
+        <!-- </div> -->
+            </div>
         </div>
     </body>
 </rml>

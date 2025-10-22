@@ -40,6 +40,7 @@ commonClassGroups.definitions = {
         success = "text-sm font-bold text-success pl-2 pr-2 pt-0-5 pb-0-5 rounded bg-success text-outline-darker-lg",
         warning = "text-sm font-bold text-warning pl-2 pr-2 pt-0-5 pb-0-5 rounded bg-warning text-outline-darker-lg",
         danger = "text-sm font-bold text-danger pl-2 pr-2 pt-0-5 pb-0-5 rounded bg-danger text-outline-darker-lg",
+        info = "text-sm font-bold text-info pl-2 pr-2 pt-0-5 pb-0-5 rounded bg-info text-outline-darker-lg",
         construction = "text-sm font-bold text-warning pl-2 pr-2 pt-0-5 pb-0-5 rounded bg-warning hazards-construction text-outline-darkest-lg border border-warning clip",
         ghost = "text-sm font-bold text-light pl-2 pr-2 pt-0-5 pb-0-5 rounded border border-light-alpha bg-darkest-alpha",
         surface = "text-sm font-bold text-surface-anti pl-2 pr-2 pt-0-5 pb-0-5 rounded bg-surface",
@@ -51,6 +52,7 @@ commonClassGroups.definitions = {
         success = "text-sm font-bold text-success pl-2 pr-2 pt-0-5 pb-0-5 rounded-full bg-success text-outline-darker-lg",
         warning = "text-sm font-bold text-warning pl-2 pr-2 pt-0-5 pb-0-5 rounded-full bg-warning text-outline-darker-lg",
         danger = "text-sm font-bold text-danger pl-2 pr-2 pt-0-5 pb-0-5 rounded-full bg-danger text-outline-darker-lg",
+        info = "text-sm font-bold text-info pl-2 pr-2 pt-0-5 pb-0-5 rounded-full bg-info text-outline-darker-lg",
         construction = "text-sm font-bold text-warning pl-2 pr-2 pt-0-5 pb-0-5 rounded-full bg-warning hazards-construction text-outline-darkest-lg border border-warning clip",
         ghost = "text-sm font-bold text-light pl-2 pr-2 pt-0-5 pb-0-5 rounded-full border border-light-alpha bg-darkest-alpha",
         surface = "text-sm font-bold text-surface-anti pl-2 pr-2 pt-0-5 pb-0-5 rounded-full bg-surface",
@@ -62,6 +64,7 @@ commonClassGroups.definitions = {
         success = "text-xs font-bold text-success w-6 h-6 rounded-full bg-success text-outline-darker-lg flex items-center justify-center",
         warning = "text-xs font-bold text-warning w-6 h-6 rounded-full bg-warning text-outline-darker-lg flex items-center justify-center",
         danger = "text-xs font-bold text-danger w-6 h-6 rounded-full bg-danger text-outline-darker-lg flex items-center justify-center",
+        info = "text-xs font-bold text-info w-6 h-6 rounded-full bg-info text-outline-darker-lg flex items-center justify-center",
         ghost = "text-xs font-bold text-light w-6 h-6 rounded-full bg-darkest-alpha flex items-center justify-center",
         surface = "text-xs font-bold text-surface-anti w-6 h-6 rounded-full bg-surface flex items-center justify-center",
     },
@@ -109,6 +112,7 @@ commonClassGroups.definitions = {
         primary = "bg-primary-alpha shadow-md rounded-sm border-primary border hazards-135 text-shadow",
         construction = "bg-warning shadow-lg rounded-sm border-warning border-2 hazards-construction-textured text-outline-darkest-lg border border-warning-alpha",
         danger = "bg-danger-alpha shadow-md rounded-sm border-danger border hazards-225 text-shadow",
+        general = "flex flex-row gap-6 p-4 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint"
     },
 
     sheet = {

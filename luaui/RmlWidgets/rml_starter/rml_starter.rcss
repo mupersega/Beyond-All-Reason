@@ -24,7 +24,28 @@
     right: -3dp;
     display: flex;
     gap: 3dp;
-    z-index: 10;
+    z-index: 50;
+}
+
+.debug-btn {
+    height: 20dp;
+    padding: 0 4dp;
+    cursor: pointer;
+    text-align: center;
+    line-height: 18dp;
+    transition: all 0.1s;
+}
+
+.debug-btn:hover {
+    transform: scale(1.1);
+}
+
+.debug-btn:active {
+    transform: scale(0.95);
+}
+
+.code-green {
+    color: #2cfd79;
 }
 
 /* ==========================================
@@ -47,16 +68,9 @@
     padding-left: 5dp;
 }
 
-.actions {
-    min-height: 42dp;
-    padding: 5dp;
-}
-
 #tabs-navigation {
     display: flex;
     flex-direction: column;
-    width: 120dp;
-    margin-right: 1dp;
     z-index: 10;
     position: relative;
 }
@@ -99,18 +113,6 @@
     box-shadow: rgba(0, 0, 0, 100) 3dp 3dp 3dp;
 }
 
-.card
-{
-    border-radius: 2dp;
-    padding: 10dp;
-    margin-bottom: 10dp;
-}
-
-.file-text {
-    padding: 0dp 6dp;
-    border-radius: 2dp;
-}
-
 /* ===========================================
     CONTENT SECTIONS
 =========================================== */
@@ -142,8 +144,6 @@
     border-bottom-right-radius: 0dp;
 }
 
-/* Button styling for game overlay */
-button {
-    border-radius: 2dp;
-    transition: background-color 0.2s;
+button:active {
+    transform: translate(1dp, 1dp)
 }
