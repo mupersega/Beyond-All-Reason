@@ -195,12 +195,6 @@
         repeating-linear-gradient(135deg, #fad400ba 0 8dp, #141414ba 9dp 17dp);
 }
 
-
-.brushed-metal {
-    decorator: 
-        image("rml_style_guide/brushed.dds" cover),
-        linear-gradient(180deg, #ffffff10, #00000020);
-}
 /* === Dividers === */
 .divider-horizontal-light {
     height: 1dp;
@@ -271,3 +265,6 @@
     margin-left: 8dp;
     margin-right: 8dp;
 }
+
+/* The concept of overrides are the closest we get to an !important and should be used sparingly and created only for main variables - achieved cos cascades */
+.text-light-override { color: #e5e7eb; }

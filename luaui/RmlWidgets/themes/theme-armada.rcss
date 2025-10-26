@@ -116,4 +116,14 @@
         margin-left: 8dp;
         margin-right: 8dp;
     }
+
+    .faction-texture {
+        decorator:
+            image("../rml_style_guide/armada-tileable-v01-mono.png" cover);
+    }
+
+    .faction-texture-tiled {
+        decorator: 
+            image("../rml_style_guide/armada-tileable-v01-alpha-128.png" repeat);
+    }
 }

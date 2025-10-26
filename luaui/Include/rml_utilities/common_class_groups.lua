@@ -21,6 +21,8 @@ commonClassGroups.definitions = {
         tooltip = "text-sm font-normal text-light p-2 rounded border bg-darker border-light-alpha",
         body = "text-sm font-normal text-light",
         info = "text-sm font-bold text-info",
+        caption = "text-sm font-normal text-medium",
+        emphasis = "text-sm font-semibold text-light text-outline-darker-lg",
     },
 
     themeText = {
@@ -112,7 +114,8 @@ commonClassGroups.definitions = {
         primary = "bg-primary-alpha shadow-md rounded-sm border-primary border hazards-135 text-shadow",
         construction = "bg-warning shadow-lg rounded-sm border-warning border-2 hazards-construction-textured text-outline-darkest-lg border border-warning-alpha",
         danger = "bg-danger-alpha shadow-md rounded-sm border-danger border hazards-225 text-shadow",
-        general = "flex flex-row gap-6 p-4 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint"
+        general = "gap-6 p-4 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint",
+        faction = "faction-texture-tiled p-4 rounded border-sm border-darker-alpha bg-primary"
     },
 
     sheet = {

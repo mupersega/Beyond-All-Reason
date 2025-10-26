@@ -14,7 +14,7 @@ function widget:GetInfo()
         date = "2025",
         license = "GNU GPL, v2 or later",
         layer = -10000,
-        enabled = true,  -- Enable for testing
+        enabled = true,
     }
 end
 
@@ -49,7 +49,6 @@ local init_model = {
         { id = "base-widget-conventions", label = "Base Widget Conventions" },
         { id = "widget-positioning", label = "Widget Positioning" },
         { id = "data-binding", label = "Data Binding" },
-        { id = "styling", label = "Styling" },
         { id = "tools", label = "Tools" },
     },
 
@@ -74,11 +73,31 @@ local init_model = {
     
     -- Data binding demo variables
     playerName = "Commander",
-    metalCount = 250,
+
+    -- Comprehensive data binding examples table
+    dataBindingExamples = {
+        
+        -- Array examples for iteration
+        playerList = {
+            { name = "Player1", team = "Armada", score = 1250 },
+            { name = "Player2", team = "Cortex", score = 980 },
+            { name = "Player3", team = "Legion", score = 1100 },
+        },
+        
+        unitQueue = {
+            { name = "Construction Kbot", cost = 100, time = "15s" },
+            { name = "Light Laser Tower", cost = 250, time = "30s" },
+            { name = "Solar Collector", cost = 150, time = "20s" },
+        },
+        
+        -- Time-based examples
+        gameTime = "12:34",
+        lastUpdate = os.date("%H:%M:%S"),
+    },
 
     -- How to cleanly use functions in the data model, tab switching itself could be done directly in RML but this is an example.
     setActiveTab = function(event, tabId)
-        local model = utils.GetCurrentModel(dm_handle)
+        local model = utils.GetCurrentModel(dm_handle) -- Reference the current model via the utility function if from inside the init model
         if model then
             if model.activeTab == tabId then
                 return
@@ -90,29 +109,6 @@ local init_model = {
                     model.activeTab = tabId
                 end
             end
-        end
-    end,
-
-    -- Theme switching function for the data model
-    switchTheme = function(event, themeId)
-        if themeUtils.isValid(themeId) then
-            -- Do exactly what gui_options.lua does - this should be the ONLY theme change mechanism
-            Spring.SetConfigString("rml_theme", themeId)
-            
-            -- Apply theme to all RML widgets that have the theme API
-            if WG.rml_theme_changed then
-                WG.rml_theme_changed(themeId)
-            end
-            
-            -- Update our own current theme display
-            local model = utils.GetCurrentModel(dm_handle)
-            if model then
-                model.currentTheme = themeId
-            end
-            
-            Spring.Echo("RML Theme changed to: " .. themeId)
-        else
-            Spring.Echo(WIDGET_ID .. ": Invalid theme: " .. tostring(themeId))
         end
     end,
 }
@@ -180,14 +176,6 @@ function widget:UpdateMessage(newMessage)
     end
 end
 
--- Example of adding items to the array
-function widget:AddTestItem(name, value)
-    if dm_handle and dm_handle.testArray then
-        table.insert(dm_handle.testArray, { name = name, value = value })
-        Spring.Echo(WIDGET_ID .. ": Added item: " .. name)
-    end
-end
-
 -- Toggle RmlUi debugger - simple toggle function
 function widget:ToggleDebugger()
     if dm_handle then
@@ -200,27 +188,5 @@ function widget:ToggleDebugger()
             RmlUi.SetDebugContext(nil)
             Spring.Echo(WIDGET_ID .. ": RmlUi debugger disabled")
         end
-    end
-end
-
--- Data binding demo functions
-function widget:AddMetal()
-    if dm_handle then
-        dm_handle.metalCount = dm_handle.metalCount + 100
-        Spring.Echo(WIDGET_ID .. ": Added 100 metal, total: " .. dm_handle.metalCount)
-    end
-end
-
-function widget:SubtractMetal()
-    if dm_handle then
-        dm_handle.metalCount = math.max(0, dm_handle.metalCount - 50)
-        Spring.Echo(WIDGET_ID .. ": Subtracted 50 metal, total: " .. dm_handle.metalCount)
-    end
-end
-
-function widget:ClearMetal()
-    if dm_handle then
-        dm_handle.metalCount = 0
-        Spring.Echo(WIDGET_ID .. ": Cleared metal, total: " .. dm_handle.metalCount)
     end
 end

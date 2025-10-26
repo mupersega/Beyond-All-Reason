@@ -2,9 +2,9 @@
 .block { display: block; }
 .inline-block { display: inline-block; }
 .inline { display: inline; }
-.flex { display: flex; }
 .inline-flex { display: inline-flex; }
 .hidden { display: none; }
+/* .flex is defined further below */
 
 /* gap */
 .gap-0 { gap: 0dp; }
@@ -20,7 +20,6 @@
 .relative { position: relative; }
 .absolute { position: absolute; }
 .fixed { position: fixed; }
-.sticky { position: sticky; }
 
 /* === Positioning === */
 .top { top: 0; }
@@ -29,18 +28,33 @@
 .bottom { bottom: 0; }
 
 /* === Flex === */
+/*
+
+Flex used incorrectly in RMLUI can cause significant performance issues.
+
+Can it be done without flexbox for the same effect? If so, prefer other layout methods for better performance.
+
+Otherwise, always assign specific dimensions to parents and flex parts to child elements to minimize layout recalculations.
+
+Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
+*/
+.flex { display: flex; }
 .flex-row { flex-direction: row; }
 .flex-col { flex-direction: column; }
 .flex-row-reverse { flex-direction: row-reverse; }
 .flex-col-reverse { flex-direction: column-reverse; }
+
 .items-start { align-items: flex-start; }
 .items-center { align-items: center; }
 .items-end { align-items: flex-end; }
+
 .justify-start { justify-content: flex-start; }
 .justify-center { justify-content: center; }
 .justify-end { justify-content: flex-end; }
 .justify-between { justify-content: space-between; }
 .justify-around { justify-content: space-around; }
+.justify-evenly { justify-content: space-evenly; }
+
 .flex-1 { flex: 1; }
 .flex-2 { flex: 2; }
 .flex-3 { flex: 3; }
@@ -50,7 +64,6 @@
 .flex-grow { flex-grow: 1; }
 .flex-shrink { flex-shrink: 1; }
 
-/* avoid using this flex-auto as it is a layout drain when abused */
 .flex-auto { flex: auto; }
 
 /* === Margin === */
@@ -448,6 +461,8 @@
 .font-normal { font-weight: 400; }
 .font-bold { font-weight: 700; }
 .font-extrabold { font-weight: 900; }
+
+.font-italic { font-style: italic; }
 
 /* === Text Align === */
 .text-left { text-align: left; }
