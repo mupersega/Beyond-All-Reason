@@ -18,11 +18,11 @@ function widget:GetInfo()
 end
 
 local function calculateDpRatio()
-    local viewSizeX, viewSizeY = Spring.GetViewGeometry()
-    local userScale = Spring.GetConfigFloat("ui_scale", 1)
-    local baseWidth = 1920
+    local viewSizeY = Spring.GetViewGeometry()
+    -- local userScale = Spring.GetConfigFloat("ui_scale", 1)
+    local userScale = 0.8
     local baseHeight = 1080
-    local resFactor = math.min(viewSizeX / baseWidth, viewSizeY / baseHeight)
+    local resFactor = viewSizeY / baseHeight
     local dpRatio = resFactor * userScale
     return math.floor(dpRatio * 100) / 100
 end

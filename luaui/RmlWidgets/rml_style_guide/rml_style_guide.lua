@@ -164,6 +164,7 @@ local init_model = {
     message = "Hello from rml_style_guide!",
     currentTime = os.date("%H:%M:%S"),
     debugMode = false,
+    expanded = true,
     tabs = {
         { id = "about", label = "About" },
         { id = "buttons", label = "Buttons" },
@@ -171,7 +172,6 @@ local init_model = {
         { id = "tags", label = "Tags" },
         { id = "sheets", label = "Sheets" },
         { id = "cards", label = "Cards" },
-        { id = "nav", label = "Nav" },
         { id = "headings", label = "Headings" },
         { id = "panels", label = "Panels" },
         { id = "playPanel", label = "Play Panel" },
@@ -190,10 +190,10 @@ local init_model = {
         compositeGroupInfoCard = {
             container = "flex flex-col gap-1 rounded flex-1",
             title = "flex flex-row items-center",
-            copybutton = "p-1 flex gap-2 items-center w-5 h-5 justify-center",
+            copybutton = "p-0-5 flex gap-2 items-center w-4 h-4 justify-center",
             classInfo = ccg.definitions.themeText.caption .. " flex-1",
         },
-        copySvgStyles = "h-3 w-3 mx-0-5",
+        copySvgStyles = "h-2-5 w-2-5 mx-0-5",
     },
 
     -- Theme management - will be dynamically set from current config/context
@@ -239,6 +239,32 @@ local init_model = {
             Spring.Echo("RML Theme changed to: " .. themeId)
         else
             Spring.Echo(WIDGET_ID .. ": Invalid theme: " .. tostring(themeId))
+        end
+    end,
+
+    toggleExpand = function(event)
+        local model = utils.GetCurrentModel(dm_handle)
+        if model then
+            model.expanded = not model.expanded
+        end
+
+        -- NORMAL position
+            -- /* positional properties */
+            -- display: flex;
+            -- position: absolute;
+            -- left: 50dp;
+            -- top: 50%;
+            -- transform: translateY(-50%);
+            -- /* dimensional properties */
+            -- width: 700dp;
+            -- height: 80vh;
+        if document then
+            -- move to top and make small when collapsed
+            if model.expanded then
+                document:SetClass("collapsed", false)
+            else
+                document:SetClass("collapsed", true)
+            end
         end
     end,
 }

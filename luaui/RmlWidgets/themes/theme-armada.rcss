@@ -91,8 +91,8 @@
     .bg-gradient_surface-textured {
         background-color: rgba(34, 52, 78, 128);
         decorator:
-            repeating-linear-gradient(90deg, transparent 0 16dp, rgba(231, 247, 210, 20) 17dp 18dp),
-            repeating-linear-gradient(0deg, transparent 0 16dp, rgba(231, 247, 210, 20) 17dp 18dp),
+            repeating-linear-gradient(90deg, transparent 0 13px, rgba(231, 247, 210, 8) 14px 15px),
+            repeating-linear-gradient(0deg, transparent 0 10px, rgba(231, 247, 210, 8) 11px 12px),
             radial-gradient(ellipse at top left, rgba(231, 247, 210, 128), transparent 70%);
     }
 
@@ -104,14 +104,14 @@
     }
 
     .divider-horizontal-primary {
-        height: 1dp;
+        height: 1px;
         decorator: linear-gradient(to right, transparent, rgb(43, 165, 234), transparent);
         margin-top: 8dp;
         margin-bottom: 8dp;
     }
 
     .divider-vertical-primary{
-        width: 1dp;
+        width: 1px;
         decorator: linear-gradient(to bottom, transparent, rgb(43, 165, 234), transparent);
         margin-left: 8dp;
         margin-right: 8dp;

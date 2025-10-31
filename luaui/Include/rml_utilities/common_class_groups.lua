@@ -81,11 +81,11 @@ commonClassGroups.definitions = {
 
     heading = {
         h1 = "text-4xl font-extrabold mt-4 mb-2 text-outline-darker-lg",
-        h2 = "text-3xl font-bold mt-4 mb-2 text-outline-darker-lg",
-        h3 = "text-2xl font-bold mt-4 mb-2 text-outline-darker-lg",
-        h4 = "text-xl font-bold mt-4 mb-2 text-outline-darker-lg",
-        h5 = "text-lg font-bold mt-4 mb-2",
-        h6 = "text-base font-bold mt-4 mb-2",
+        h2 = "text-3xl font-bold mt-3 mb-2 text-outline-darker-lg",
+        h3 = "text-2xl font-bold mt-3 mb-1 text-outline-darker-lg",
+        h4 = "text-xl font-bold mt-2 mb-1 text-outline-darker-lg",
+        h5 = "text-lg font-bold mt-2 mb-1",
+        h6 = "text-base font-bold mt-1 mb-1",
         title = "text-lg font-bold text-primary text-shadow",
         subtitle = "text-base font-normal text-secondary",
         section = "text-xl font-bold text-primary mt-6 mb-3",
@@ -106,7 +106,7 @@ commonClassGroups.definitions = {
     },
 
     nav = {
-        container = "flex bg-dark-alpha min-h-12 box-shadow-md z-10",
+        container = "flex bg-dark-alpha min-h-8 box-shadow-md z-10",
     },
 
     panel = {
@@ -126,22 +126,28 @@ commonClassGroups.definitions = {
             footer = "p-3 bg-darkest-alpha border-top border-darkest",
         },
         primary = {
-            container = "hazards-135 bg-primary-alpha",
-            title = "text-2xl font-bold bg-primary-semi-alpha p-3 bg-gradient-darker-alpha radial-focus-start text-outline-darkest-lg border-bottom-primary",
+            container = "radial-focus-start box-shadow-md hazards-225",
+            title = "text-2xl font-bold bg-primary-semi-alpha p-3 bg-gradient_primary-alpha text-outline-darkest-lg",
             content = "p-4",
-            footer = "p-3 bg-primary-alpha border-top border-primary-alpha",
+            footer = "p-3 bg-primary-alpha",
         },
         construction = {
-            container = "border border-darkest-alpha shadow-lg clip",
+            container = "border border-darkest-alpha clip",
             title = "hazards-construction-textured text-xl font-bold bg-warning p-3 text-outline-darkest-lg border-bottom border-warning-alpha flex items-center justify-between",
             content = "p-4",
             footer = "p-3 bg-darker text-warning text-outline-darkest",
         },
         modal = {
-            container = "hazards-135 bg-darkest rounded-lg border border-dark shadow-lg",
-            title = "text-xl font-bold bg-darkest-semi-alpha p-3 bg-gradient-darker-alpha radial-focus-start text-outline-darkest-lg border-bottom border-darkest rounded-t-lg",
+            container = "hazards-135 bg-darkest rounded-lg border border-dark clip box-shadow-md",
+            title = "text-xl font-bold bg-darkest-semi-alpha p-3 bg-gradient-darker-alpha text-outline-darkest-lg border-bottom border-darkest",
             content = "p-4",
             footer = "p-3 bg-darkest-alpha border-top border-darkest rounded-b-lg",
+        },
+        surface = {
+            container = "rounded-lg border border-surface-alpha shadow-lg clip box-shadow-md",
+            title = "text-xl font-bold bg-surface-semi-alpha p-3 bg-gradient_surface-textured text-outline-darkest-lg",
+            content = "p-4",
+            footer = "p-3 bg-surface-alpha rounded-b-lg",
         },
     },
 

@@ -364,6 +364,37 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .w-80 { width: 320dp; }
 .w-96 { width: 384dp; }
 
+.min-w-0 { min-width: 0dp; }
+.min-w-px { min-width: 1px; }
+.min-w-dp { min-width: 1dp; }
+.min-w-0-5 { min-width: 2dp; }
+.min-w-1 { min-width: 4dp; }
+.min-w-1-5 { min-width: 6dp; }
+.min-w-2 { min-width: 8dp; }
+.min-w-2-5 { min-width: 10dp; }
+.min-w-3 { min-width: 12dp; }
+.min-w-3-5 { min-width: 14dp; }
+.min-w-4 { min-width: 16dp; }
+.min-w-5 { min-width: 20dp; }
+.min-w-6 { min-width: 24dp; }
+.min-w-7 { min-width: 28dp; }
+.min-w-8 { min-width: 32dp; }
+.min-w-9 { min-width: 36dp; }
+.min-w-10 { min-width: 40dp; }
+.min-w-11 { min-width: 44dp; }
+.min-w-12 { min-width: 48dp; }
+.min-w-14 { min-width: 56dp; }
+.min-w-16 { min-width: 64dp; }
+.min-w-20 { min-width: 80dp; }
+.min-w-24 { min-width: 96dp; }
+.min-w-28 { min-width: 112dp; }
+.min-w-32 { min-width: 128dp; }
+.min-w-40 { min-width: 160dp; }
+.min-w-48 { min-width: 192dp; }
+.min-w-64 { min-width: 256dp; }
+.min-w-80 { min-width: 320dp; }
+.min-w-96 { min-width: 384dp; }
+
 .h-0 { height: 0dp; }
 .h-px { height: 1px; }
 .h-dp { height: 1dp; }
@@ -434,15 +465,15 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .min-h-96 { min-height: 384dp; }
 
 /* === Font Sizes === */
-.text-xxs { font-size: 10dp; }
-.text-xs { font-size: 12dp; }
-.text-sm { font-size: 14dp; }
-.text-base { font-size: 16dp; }
-.text-lg { font-size: 18dp; }
-.text-xl { font-size: 20dp; }
-.text-2xl { font-size: 24dp; }
-.text-3xl { font-size: 30dp; }
-.text-4xl { font-size: 36dp; }
+.text-xxs { font-size: 0.625rem; }
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-3xl { font-size: 1.875rem; }
+.text-4xl { font-size: 2.25rem; }
 
 /* === Font Sizes (rem variants) === */
 .text-xxs-rem { font-size: 0.625rem; }
@@ -502,12 +533,6 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .transition-slow { transition: all 0.3s; }
 
 /* === Box Shadow === */
-.box-shadow-sm { box-shadow: rgba(0, 0, 0, 100) 0dp 2dp 8dp; }
-.box-shadow-md { box-shadow: rgba(0, 0, 0, 120) 0dp 4dp 16dp; }
-.box-shadow-lg { box-shadow: rgba(0, 0, 0, 150) 0dp 8dp 32dp; }
-.box-shadow-xl { box-shadow: rgba(0, 0, 0, 180) 0dp 16dp 64dp; }
-.box-shadow-sm-inset { box-shadow: #000a -2px -2px 5px inset; }
-.box-shadow-md-inset { box-shadow: #000a -5px -5px 5px inset; }
 .box-shadow-none { box-shadow: none; }
 
 /* === Hover Effects === */

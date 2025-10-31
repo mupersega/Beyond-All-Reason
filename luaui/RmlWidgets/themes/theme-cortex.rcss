@@ -90,8 +90,8 @@
     /* this gradient is custom per palette, based on the surface and surface-anti colors and contrast */
     .bg-gradient_surface-textured {
         background-color: rgba(117, 117, 117, 128);
-        decorator: repeating-linear-gradient(135deg, transparent 0 3dp, rgba(243, 203, 183, 20) 4dp 5dp),
-            repeating-linear-gradient(45deg, transparent 0 10dp, rgba(243, 203, 183, 10) 11dp 12dp),
+        decorator: repeating-linear-gradient(135deg, transparent 0 5px, rgba(243, 203, 183, 5) 6px 7px),
+            repeating-linear-gradient(45deg, transparent 0 12px, rgba(243, 203, 183, 20) 13px 14px),
             radial-gradient(ellipse at top left, rgba(243, 203, 183, 128), transparent 70%);
     }
 
@@ -103,14 +103,14 @@
     }
 
     .divider-horizontal-primary {
-        height: 1dp;
+        height: 1px;
         decorator: linear-gradient(to right, transparent, rgb(230, 57, 70), transparent);
         margin-top: 8dp;
         margin-bottom: 8dp;
     }
 
     .divider-vertical-primary{
-        width: 1dp;
+        width: 1px;
         decorator: linear-gradient(to bottom, transparent, rgb(230, 57, 70), transparent);
         margin-left: 8dp;
         margin-right: 8dp;

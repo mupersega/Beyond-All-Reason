@@ -16,25 +16,24 @@
 
 <body id="rml-starter-widget" class="widget-shadow rounded-lg">
     <div id="widget-container" data-model="rml_starter_model">
-        
         <!-- Small floating debug buttons -->
         <div class="debug-controls left">
-            <button data-attr-class="ccg.themeButton.ghost + ' p-3 pt-2 pb-1-5'" onclick="widget:Reload()" title="Reload Widget">reload</button>
-            <button data-attr-class="ccg.themeButton.ghost + ' p-3 pt-2 pb-1-5'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">debug</button>
+            <button data-attr-class="ccg.themeButton.ghost + ' p-2 pt-1 pb-0-5'" onclick="widget:Reload()" title="Reload Widget">reload</button>
+            <button data-attr-class="ccg.themeButton.ghost + ' p-2 pt-1 pb-0-5'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">debug</button>
         </div>
 
         <!-- Widget header with controls -->
-        <div data-attr-class="ccg.sheet.default.title + ' min-h-12 flex flex-col items-center relative w-40'">
+        <div data-attr-class="ccg.sheet.default.title + ' flex flex-col items-center relative min-w-32'">
             <div id="tabs-navigation" class="flex-1 flex flex-col justify-center">
                 <button data-for="tab : tabs"
-                    data-attr-class="(activeTab == tab.id ?  ccg.themeButton.default + ' active' :  ccg.themeButton.ghost) + ' tab-button tab-button-hover transition-bg p-3 font-bold text-outline'"
+                    data-attr-class="(activeTab == tab.id ?  ccg.themeButton.default + ' active' :  ccg.themeButton.ghost) + ' tab-button tab-button-hover transition-bg p-2 font-bold text-outline'"
                     data-event-mousedown="setActiveTab(tab.id)">
                     <span class="text-glow-light text-base text-light">{{tab.label}}</span>
                 </button>
             </div>
         </div>
         <!-- Main content area with tab panels -->
-        <div data-attr-class="ccg.sheet.default.container + ' flex'">
+        <div data-attr-class="ccg.sheet.default.container + ' flex w-full'">
 
             <!-- Main content area -->
             <div id="landing" data-if="activeTab == ''">
@@ -781,14 +780,14 @@
                 </div>
             </div>
             <!-- Tools Tab Panel -->
-            <div id="tools" data-attr-class="ccg.sheet.default.container + ' clip overflow-scroll relative'" data-if="activeTab == 'tools'">
+            <div id="tools" data-attr-class="ccg.sheet.default.container + ' clip overflow-scroll relative w-full'" data-if="activeTab == 'tools'">
                 <div data-attr-class="ccg.sheet.construction.title + ' flex flex-col items-center fixed top-0 z-1 w-full'">
                     <h1 data-attr-class="ccg.heading.h1">Tools</h1>
                 </div>
                 <div class="fixed-header-spacer h-24">you can't see me</div>
                 <p data-attr-class="ccg.text.body + ' p-3'">Development tools and utilities for efficient RML widget creation and styling.</p>
                 
-                <div data-attr-class="ccg.sheet.default.content + ' flex flex-col gap-3'">
+                <div data-attr-class="ccg.sheet.default.content + ' flex flex-col gap-3'">                
                     <div data-attr-class="ccg.panel.general + ' flex-col'">
                         <h2 data-attr-class="ccg.heading.h4">Widget Generator Script</h2>
                         <p data-attr-class="ccg.text.body">Use the automated script to quickly scaffold new widgets with best practices built-in:</p>
@@ -815,48 +814,47 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div data-attr-class="ccg.panel.general + ' flex-col'">
-                    <h2 data-attr-class="ccg.heading.h4">RML Style Guide</h2>
-                    <p data-attr-class="ccg.text.body">The comprehensive style guide widget provides live examples and documentation for all available styling options.</p>
-                    
-                    <div data-attr-class="ccg.panel.info + ' mt-3'">
-                        <div class="flex items-center gap-3">
-                            <div class="flex-1">
-                                <h3 data-attr-class="ccg.heading.h5">Interactive Style Reference</h3>
-                                <p data-attr-class="ccg.text.body + ' mt-1'">Browse utility classes, Common Class Groups, color palettes, typography, and component patterns with live examples.</p>
-                                <div class="flex flex-wrap gap-2 mt-2">
-                                    <span data-attr-class="ccg.pill.info">Utility Classes</span>
-                                    <span data-attr-class="ccg.pill.success">CCG Patterns</span>
-                                    <span data-attr-class="ccg.pill.primary">Theme Examples</span>
-                                    <span data-attr-class="ccg.pill.warning">Component Library</span>
+                    <div data-attr-class="ccg.panel.general + ' flex-col mt-4'">
+                        <h2 data-attr-class="ccg.heading.h4">RML Style Guide</h2>
+                        <p data-attr-class="ccg.text.body">The comprehensive style guide widget provides live examples and documentation for all available styling options.</p>
+                        
+                        <div data-attr-class="ccg.panel.info + ' mt-3'">
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1">
+                                    <h3 data-attr-class="ccg.heading.h5">Interactive Style Reference</h3>
+                                    <p data-attr-class="ccg.text.body + ' mt-1'">Browse utility classes, Common Class Groups, color palettes, typography, and component patterns with live examples.</p>
+                                    <div class="flex flex-wrap gap-2 mt-2">
+                                        <span data-attr-class="ccg.pill.info">Utility Classes</span>
+                                        <span data-attr-class="ccg.pill.success">CCG Patterns</span>
+                                        <span data-attr-class="ccg.pill.primary">Theme Examples</span>
+                                        <span data-attr-class="ccg.pill.warning">Component Library</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span data-attr-class="ccg.badge.primary">rml_style_guide</span>
                                 </div>
                             </div>
-                            <div>
-                                <span data-attr-class="ccg.badge.primary">rml_style_guide</span>
-                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="mt-3">
-                        <p data-attr-class="ccg.text.body"><strong class="text-secondary">Key Features:</strong></p>
-                        <div class="mt-2">
-                            <div class="flex items-start gap-2 mt-2">
-                                <div class="w-1-5 h-1-5 bg-accent rounded-full mt-2"></div>
-                                <p data-attr-class="ccg.text.body">Live preview of all utility classes and their effects</p>
-                            </div>
-                            <div class="flex items-start gap-2 mt-2">
-                                <div class="w-1-5 h-1-5 bg-accent rounded-full mt-2"></div>
-                                <p data-attr-class="ccg.text.body">Common Class Group patterns with copy-paste examples</p>
-                            </div>
-                            <div class="flex items-start gap-2 mt-2">
-                                <div class="w-1-5 h-1-5 bg-accent rounded-full mt-2"></div>
-                                <p data-attr-class="ccg.text.body">Theme switching demonstrations showing color variations</p>
-                            </div>
-                            <div class="flex items-start gap-2 mt-2">
-                                <div class="w-1-5 h-1-5 bg-accent rounded-full mt-2"></div>
-                                <p data-attr-class="ccg.text.body">Interactive component examples for buttons, panels, forms, and layouts</p>
+                        
+                        <div class="mt-3">
+                            <p data-attr-class="ccg.text.body"><strong class="text-secondary">Key Features:</strong></p>
+                            <div class="mt-2">
+                                <div class="flex items-start gap-2 mt-2">
+                                    <div class="w-1-5 h-1-5 bg-accent rounded-full mt-2"></div>
+                                    <p data-attr-class="ccg.text.body">Live preview of all utility classes and their effects</p>
+                                </div>
+                                <div class="flex items-start gap-2 mt-2">
+                                    <div class="w-1-5 h-1-5 bg-accent rounded-full mt-2"></div>
+                                    <p data-attr-class="ccg.text.body">Common Class Group patterns with copy-paste examples</p>
+                                </div>
+                                <div class="flex items-start gap-2 mt-2">
+                                    <div class="w-1-5 h-1-5 bg-accent rounded-full mt-2"></div>
+                                    <p data-attr-class="ccg.text.body">Theme switching demonstrations showing color variations</p>
+                                </div>
+                                <div class="flex items-start gap-2 mt-2">
+                                    <div class="w-1-5 h-1-5 bg-accent rounded-full mt-2"></div>
+                                    <p data-attr-class="ccg.text.body">Interactive component examples for buttons, panels, forms, and layouts</p>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -43,17 +43,17 @@
     .bg-surface { background-color: rgb(36, 214, 199); }
     .text-surface { color: rgb(36, 214, 199); }
     .border-surface { border-color: rgb(36, 214, 199); }
-    .bg-surface-alpha { background-color: rgba(36, 214, 199, 175); }
-    .text-surface-alpha { color: rgba(36, 214, 199, 175); }
-    .border-surface-alpha { border-color: rgba(36, 214, 199, 175); }
+    .bg-surface-alpha { background-color: rgba(36, 214, 199, 128); }
+    .text-surface-alpha { color: rgba(36, 214, 199, 128); }
+    .border-surface-alpha { border-color: rgba(36, 214, 199, 128); }
 
     /* === SURFACE-ANTI - DARK TEAL (#072C29) === */
     .bg-surface-anti { background-color: rgb(7, 44, 41); }
     .text-surface-anti { color: rgb(7, 44, 41); }
     .border-surface-anti { border-color: rgb(7, 44, 41); }
-    .bg-surface-anti-alpha { background-color: rgba(7, 44, 41, 175); }
-    .text-surface-anti-alpha { color: rgba(7, 44, 41, 175); }
-    .border-surface-anti-alpha { border-color: rgba(7, 44, 41, 175); }
+    .bg-surface-anti-alpha { background-color: rgba(7, 44, 41, 128); }
+    .text-surface-anti-alpha { color: rgba(7, 44, 41, 128); }
+    .border-surface-anti-alpha { border-color: rgba(7, 44, 41, 128); }
 
     /* === DARK - YELLOW (#B8941A) === */
     .bg-primary-dark { background-color: #B8941A; }
@@ -110,7 +110,7 @@
 
     .bg-gradient_surface-textured {
         background-color: rgba(36, 214, 199, 50);
-        decorator: repeating-linear-gradient(135deg, transparent 0 5dp, rgba(36, 214, 199, 20) 6dp 7dp),
+        decorator: repeating-linear-gradient(135deg, transparent 0 4dp, rgba(36, 214, 199, 10) 5dp 6dp),
             radial-gradient(ellipse at top left, rgba(36, 214, 199, 175), transparent 70%);
     }
 
@@ -122,14 +122,14 @@
     }
     
     .divider-horizontal-primary {
-        height: 1dp;
+        height: 1px;
         decorator: linear-gradient(to right, transparent, rgb(253, 192, 76), transparent);
         margin-top: 8dp;
         margin-bottom: 8dp;
     }
 
     .divider-vertical-primary{
-        width: 1dp;
+        width: 1px;
         decorator: linear-gradient(to bottom, transparent, rgb(253, 192, 76), transparent);
         margin-left: 8dp;
         margin-right: 8dp;

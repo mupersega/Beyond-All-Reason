@@ -11,7 +11,7 @@
     top: 5%;
     right: 10dp;
     /* dimensional properties */
-    width: 1000dp;
+    width: 600dp;
     height: 80%;
     /* Inner content layout properties - specific to widget */
     display: flex;

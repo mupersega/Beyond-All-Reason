@@ -90,8 +90,8 @@
     /* this gradient is custom per palette, based on the surface and surface-anti colors and contrast */
     .bg-gradient_surface-textured {
         background-color: rgba(152, 132, 105, 128);
-        decorator: repeating-linear-gradient(135deg, transparent 0 3dp, rgba(234, 243, 229, 10) 4dp 5dp),
-            repeating-linear-gradient(0deg, transparent 0 16dp, rgba(234, 243, 229, 20) 17dp 18dp),
+        decorator: repeating-linear-gradient(135deg, transparent 0 3dp, rgba(234, 243, 229, 30) 4dp 5dp),
+            repeating-linear-gradient(0deg, transparent 0 20px, rgba(234, 243, 229, 15) 21px 22px),
             radial-gradient(ellipse at top left, rgba(234, 243, 229, 128), transparent 70%);
     }
 

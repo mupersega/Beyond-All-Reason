@@ -16,17 +16,19 @@
 <body id="rml_style_guide-widget" class="widget-shadow rounded-lg">
     <div id="widget-container" data-model="rml_style_guide_model" data-attr-class="ccg.sheet.default.container">
         <!-- Small floating debug buttons -->
-        <div class="debug-controls">
-            <button data-attr-class="ccg.themeButton.ghost + ' p-3 pt-2 pb-1-5'" onclick="widget:Reload()" title="Reload Widget">reload</button>
-            <button data-attr-class="ccg.themeButton.ghost + ' p-3 pt-2 pb-1-5'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">debug</button>
+        <div class="debug-controls pl-2 pr-1 pt-2">
+            <button data-visible="expanded" data-attr-class="ccg.text.warning + ' px-1 hover-glow'" onclick="widget:Reload()">reload</button>
+            <button data-visible="expanded" data-attr-class="ccg.text.warning + ' px-1 hover-glow'" onclick="widget:ToggleDebugger()">debug</button>
+            <div data-attr-class="ccg.text.warning + ' toggle-expand-container'" data-event-click="toggleExpand()">
+                <span data-class-expanded="expanded" class="chevron"></span>
+            </div>
         </div>
-        +
-        <div data-attr-class="ccg.sheet.default.title + ' min-h-12 flex flex-col justify-between items-center relative min-h-20'">
-            <span>
+        <div data-attr-class="ccg.sheet.default.title + ' flex flex-col justify-between items-center relative min-h-14'">
+            <span data-attr-class="expanded ? '' : ccg.heading.h5 + ' z-50'">
                 RMLUI STYLE GUIDE
             </span>
 
-            <div class="flex flex-row justify-center items-center gap-2 text-sm text-light z-50">
+            <div data-visible="expanded" class="flex flex-row justify-center items-center gap-2 text-sm text-light z-50">
                 <span data-attr-class="ccg.text.body">Theme:</span>
                 <button data-for="theme : availableThemes"
                         data-attr-class="(currentTheme == theme.id ? ccg.themeButton.default : ccg.button.ghost) + ' text-sm px-3 py-1 text-outline-none rounded transition-bg'"
@@ -44,12 +46,12 @@
         </div>
 
         <!-- Navigation -->
-        <nav data-attr-class="ccg.nav.container + ' bg-dark-alpha'" style="gap: 1px;">
+        <nav class="flex bg-dark-alpha min-h-8 box-shadow-md z-10" style="gap: 1px;">
             <!-- umm yeh, so this 1px div is here to stop a hover bug in rmlui, will remove later if it gets fixed,
                 remove and you'll see it when you hover the first button -->
             <div data-attr-class="ccg.themeButton.default" style="width: 1px;"></div>
             <button data-for="tab : tabs" class="transition"
-                data-attr-class="(activeTab == tab.id ? ccg.themeButton.default + ' bg-primary_hover': ccg.button.default) + ' transition-bg p-3-5 font-bold text-outline'"
+                data-attr-class="(activeTab == tab.id ? ccg.themeButton.default + ' bg-primary_hover': ccg.button.default) + ' transition-bg p-2-5 font-bold text-outline'"
                 data-event-mousedown="activeTab = tab.id">
                 {{ tab.label }}
             </button>
@@ -64,7 +66,7 @@
             
             <div class="flex flex-col p-2 gap-4">
                 <!-- Main concept explanation -->
-                <div data-attr-class="ccg.panel.general + ' flex flex-row h-80'">
+                <div data-attr-class="ccg.panel.general + ' flex flex-row h-60'">
                     <div class="flex-2">
                         <h3 data-attr-class="ccg.heading.h4">What are Common Class Groups?</h3>
                         <div class="flex flex-col gap-4">
@@ -73,8 +75,7 @@
                             <p data-attr-class="ccg.text.body"><strong>Common Class Groups</strong> bundle utilities into reusable components shared by all developers. Every "primary button" looks identical everywhere before being extended.</p>
                             
                             <div class="relative">
-                                <div class="absolute -left-3 top-3 w-1 h-16 bg-primary rounded-full"></div>
-                                <div class="p-4 bg-darker rounded border border-dark-alpha ml-4">
+                                <div class="p-4 bg-darker rounded border border-dark-alpha">
                                     <p data-attr-class="ccg.themeText.caption + ' mb-2'">Instead of this everywhere:</p>
                                     <p class="code-green text-sm">class="bg-primary text-darkest p-3 rounded font-bold"</p>
                                     <div class="divider-horizontal-primary mt-3 mb-3"></div>
@@ -90,19 +91,19 @@
                         <h4 data-attr-class="ccg.heading.h5">Benefits</h4>
                         <div class="flex flex-col gap-3 mt-4">
                             <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 bg-primary rounded-full"></div>
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
                                 <span data-attr-class="ccg.text.body">Consistent styling</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 bg-primary rounded-full"></div>
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
                                 <span data-attr-class="ccg.text.body">Shared across all developers</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 bg-primary rounded-full"></div>
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
                                 <span data-attr-class="ccg.text.body">Theme compatibility</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 bg-primary rounded-full"></div>
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
                                 <span data-attr-class="ccg.text.body">Copy-paste ready for IDEs</span>
                             </div>
                         </div>
@@ -154,11 +155,11 @@
                             <div data-attr-class="ccg.themeText.pill">nav & panels</div>
                         </div>
                         
-                        <div class="mt-6">
+                        <div class="mt-4">
                             <div class="divider-horizontal-primary"></div>
                             <p data-attr-class="ccg.themeText.caption + ' text-center mt-3'">Explore other tabs to see all components</p>
                             <p data-attr-class="ccg.themeText.caption + ' text-center mt-2'">Click any <button data-attr-class="ccg.button.ghost + ' px-1 text-sm'">
-                                <svg src="../svg/copy_icon.svg" class="h-2-5 w-2-5 mx-dp"></svg>
+                                <svg src="../svg/copy_icon.svg" class="h-1-5 w-1-5 mx-dp"></svg>
                                 COPY</button> button to copy elements to clipboard</p>
                                 <p data-attr-class="ccg.themeText.caption + ' text-center mt-2'">Paste directly into your IDE</p>
                         </div>
@@ -219,7 +220,7 @@
                 </div>
 
                 <!-- Technical implementation -->
-                <div data-attr-class="ccg.panel.general + ' flex flex-row h-64'">
+                <div data-attr-class="ccg.panel.general + ' flex flex-row h-48'">
                     <div class="flex-2">
                         <h3 data-attr-class="ccg.heading.h4">Widget Integration</h3>
                         <div class="flex flex-col gap-4 mt-4">
@@ -262,7 +263,7 @@
                 </div>
 
                 <!-- Custom class groups -->
-                <div data-attr-class="ccg.panel.general + ' flex flex-row h-72'">
+                <div data-attr-class="ccg.panel.general + ' flex flex-row h-52'">
                     <div class="flex-2">
                         <h3 data-attr-class="ccg.heading.h4">Creating Your Own Class Groups</h3>
                         <div class="flex flex-col gap-4 mt-4">
@@ -304,7 +305,7 @@
                             </div>
                         </div>
                         
-                        <div class="mt-4">
+                        <div class="mt-3">
                             <div class="divider-horizontal-primary"></div>
                             <p data-attr-class="ccg.themeText.caption + ' text-center mt-3'">This style guide uses "my.groupCard" for its own layout components.</p>
                         </div>
@@ -319,8 +320,8 @@
                 <h2 data-attr-class="ccg.heading.h4">Themed Buttons</h2>
                 <p data-attr-class="ccg.text.body">Themed button styles using class groups. All buttons in this grouping contain classes which will be affected by the current theme.</p>
             </div>
-            <div class="flex flex-col p-2 gap-4">
-                <div data-for="button : themeButtons" class="min-h-20 flex flex-row items-center gap-4 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+            <div class="flex flex-col p-2 gap-3">
+                <div data-for="button : themeButtons" class="min-h-16 flex flex-row items-center gap-4 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
                     <button data-attr-class="button.styles + ' flex-1 p-3'">{{ button.name }}</button>
                     <div data-attr-class="my.groupCard.container">
                         <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ button.class }}</h3>
@@ -337,8 +338,8 @@
                 <h2 data-attr-class="ccg.heading.h4">Buttons</h2>
                 <p data-attr-class="ccg.text.body">Standard button styles which should be the same across all themes.</p>
             </div>
-            <div class="flex flex-col p-2 gap-4">
-                <div data-for="button : buttons" class="min-h-20 flex flex-row items-center gap-4 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+            <div class="flex flex-col p-2 gap-3">
+                <div data-for="button : buttons" class="min-h-16 flex flex-row items-center gap-4 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
                     <button data-attr-class="button.styles + ' flex-1 p-3'">{{ button.name }}</button>
                     <div data-attr-class="my.groupCard.container">
                         <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ button.class }}</h3>
@@ -360,8 +361,8 @@
                 <h3 data-attr-class="ccg.heading.h4">Text Styles</h3>
                 <p data-attr-class="ccg.text.body">Text styles using fixed semantic colors that remain consistent across all themes.</p>
             </div>
-            <div class="flex flex-col p-2 gap-4">
-                <div data-for="textStyle : textStyles" class="min-h-20 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+            <div class="flex flex-col p-2 gap-3">
+                <div data-for="textStyle : textStyles" class="min-h-16 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
                     <div class="flex-1 p-3">
                         <span data-attr-class="textStyle.styles">{{ textStyle.example }}</span>
                     </div>
@@ -385,8 +386,8 @@
                 <h3 data-attr-class="ccg.heading.h4">Themed Text Styles</h3>
                 <p data-attr-class="ccg.text.body">Text styles using theme colors that adapt to the current theme palette.</p>
             </div>
-            <div class="flex flex-col p-2 gap-4">
-                <div data-for="themeTextStyle : themeTextStyles" class="min-h-20 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+            <div class="flex flex-col p-2 gap-3">
+                <div data-for="themeTextStyle : themeTextStyles" class="min-h-16 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
                     <div class="flex-1 p-3">
                         <span data-attr-class="themeTextStyle.styles">{{ themeTextStyle.example }}</span>
                     </div>
@@ -413,8 +414,8 @@
                 <h3 data-attr-class="ccg.heading.h4">Badges</h3>
                 <p data-attr-class="ccg.text.body">Rectangular status indicators and counters with multiple style variants.</p>
             </div>
-            <div class="flex flex-col p-2 gap-4">
-                <div data-for="badge : badges" class="min-h-20 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+            <div class="flex flex-col p-2 gap-3">
+                <div data-for="badge : badges" class="min-h-16 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
                     <div class="flex-1 p-3 items-center justify-center flex">
                         <span data-attr-class="badge.styles">{{ badge.example }}</span>
                     </div>
@@ -438,8 +439,8 @@
                 <h3 data-attr-class="ccg.heading.h4">Pills</h3>
                 <p data-attr-class="ccg.text.body">Rounded status indicators and tags with multiple style variants.</p>
             </div>
-            <div class="flex flex-col p-2 gap-4">
-                <div data-for="pill : pills" class="min-h-24 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+            <div class="flex flex-col p-2 gap-3">
+                <div data-for="pill : pills" class="min-h-20 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
                     <div class="flex-1 p-3 items-center justify-center flex">
                         <span data-attr-class="pill.styles">{{ pill.example }}</span>
                     </div>
@@ -463,8 +464,8 @@
                 <h3 data-attr-class="ccg.heading.h4">Circles</h3>
                 <p data-attr-class="ccg.text.body">Perfect circular indicators with fixed dimensions, ideal for counters, status dots, and icon containers.</p>
             </div>
-            <div class="flex flex-col p-2 gap-4">
-                <div data-for="circle, i : circles" class="min-h-20 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
+            <div class="flex flex-col p-2 gap-3">
+                <div data-for="circle, i : circles" class="min-h-16 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
                     <div class="flex-1 p-3 items-center justify-center flex">
                         <span data-attr-class="circle.styles + ' text-sm text-dark'">
                             {{ circle.example }}
@@ -493,14 +494,13 @@
                 <p data-attr-class="ccg.text.body">Full-screen container layouts with structured areas: container, title, content, and footer. In the example below, you can see how these areas are defined using flexbox with a height set on each sheet of <span class="code-green">h-80</span>.</p>
             </div>
             <div class="flex flex-col p-2 gap-6">
-                <div data-for="sheet : sheets" class="h-96 flex flex-row gap-3 p-3 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint justify-between">
+                <div data-for="sheet : sheets" class="h-80 flex flex-row gap-3 p-3 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint justify-between">
                     <!-- Sheet Example - Takes up 2 flex parts -->
                     <div class="flex-2 pr-2">
                         <h3 data-attr-class="ccg.themeText.heading">{{ sheet.name }} Sheet</h3>
-                        <div data-attr-class="sheet.container + ' h-80 flex flex-col'">
+                        <div data-attr-class="sheet.container + ' h-72 flex flex-col'">
                             <div data-attr-class="sheet.title + ' flex-1'">
                                 <h1 data-attr-class="ccg.heading.h3">Sheet Title (1 part: flex-1)</h1>
-                                
                             </div>
                             <div data-attr-class="sheet.content + ' flex-4'">
                                 <span data-attr-class="ccg.text.body">Content Area (4 parts: flex-4)</span>
@@ -578,47 +578,28 @@
                 <h2 data-attr-class="ccg.heading.h4">Content Cards</h2>
                 <p data-attr-class="ccg.text.body">Lightweight content containers with clean styling. Perfect for displaying information, stats, or organizing content into digestible blocks.</p>
             </div>
+            <!-- <div data-attr-class="my.groupCard.container + ' flex-4'">
+                        <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ circle.class }}</h3>
+                        <div class="flex flex-col flex-2">
+                            <span data-attr-class="my.groupCard.description + ' flex-1'">{{ circle.description }}</span>
+                            <span data-attr-class="my.groupCard.classInfo + ' flex-1'">{{ circle.styles }}</span>
+                        </div>
+                    </div> -->
             <div class="flex flex-col p-2 gap-4">
                 <div data-for="card : cards" class="min-h-24 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
-                    <div class="flex-1 p-3">
-                        <div data-attr-class="card.styles + ' p-4 h-20'">
+                    <div class="flex-1 p-3 items-center justify-center">
+                        <div data-attr-class="card.styles + ' h-20'">
                             <span class="text-sm">{{ card.name }} card</span>
                         </div>
                     </div>
-                    <div class="flex flex-col text-sm text-primary text-shadow flex-3 h-full border-left border-primary-dark-alpha pl-4">
-                        <h3 class="flex-1">Class group: {{ card.class }}</h3>
-                        <span class="text-sm text-muted text-shadow flex-1">{{ card.styles }}</span>
+                    <div data-attr-class="my.groupCard.container + ' flex-4'">
+                        <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ card.class }}</h3>
+                        <span data-attr-class="my.groupCard.description + ' flex-1'">{{ card.styles }}</span>
                     </div>
                     <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
                         <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                         COPY
                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;div data-attr-class=&quot;{{ card.class }}&quot;&gt;content&lt;/div&gt;</div>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Navigation Section -->
-        <div id="nav-section" class="section" data-if="activeTab == 'nav'">
-            <div class="pl-2">
-                <h2 data-attr-class="ccg.heading.h4">Navigation Containers</h2>
-                <p data-attr-class="ccg.text.body">Navigation layouts for tab bars, menus, and structured navigation elements.</p>
-            </div>
-            <div class="flex flex-col p-2 gap-4">
-                <div data-for="navItem : nav" class="min-h-16 flex flex-row items-center gap-2 p-2 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint">
-                    <div class="flex-1 p-3">
-                        <div data-attr-class="navItem.styles + ' p-2 h-12'">
-                            <span class="text-sm">{{ navItem.name }}</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col text-sm text-primary text-shadow flex-3 h-full border-left border-primary-dark-alpha pl-4">
-                        <h3 class="flex-1">Class group: {{ navItem.class }}</h3>
-                        <span class="text-sm text-muted text-shadow flex-1">{{ navItem.styles }}</span>
-                    </div>
-                    <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
-                        <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
-                        COPY
-                        <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;nav data-attr-class=&quot;{{ navItem.class }}&quot;&gt;content&lt;/nav&gt;</div>
                     </button>
                 </div>
             </div>
