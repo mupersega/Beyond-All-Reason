@@ -66,19 +66,42 @@
     
     /* === Box Shadow === */
     .box-shadow-primary { box-shadow: #7eb141 4dp 4dp 0dp 0dp; }
+    .box-shadow-glow { box-shadow: 0dp 0dp 20dp #7fb14150; }
+    .box-shadow-intense { box-shadow: 0dp 0dp 30dp #7fb14180, 0dp 8dp 32dp rgba(0, 0, 0, 160); }
     
     /* === Text Shadow === */
     .text-shadow-primary { font-effect: shadow( 4px 4px #7eb141 ); }
     .text-glow-primary { font-effect: glow(4px 6px 0px 0px #7eb141); }
 
     /* === Hovers === */
-    /* Background */
-    .bg-primary_hover:hover { background-color: #7eb14180; }
-    /* Text */
-    .text-primary_hover:hover { color: #7eb14180; }
-    .text-primary_hover-glow:hover { font-effect: glow(4px 6px 0px 0px #7eb141); }
-    /* Border */
-    .border-primary_hover:hover { border-color: #7eb14180; }
+    .bg-primary-hover:hover { background-color: #7eb141; }
+    .bg-primary-hover-alpha:hover { background-color: #7eb14180; }
+    .text-primary-hover:hover { color: #7eb141; }
+    .border-primary-hover:hover { border-color: #7eb141; }
+
+    .bg-accent-hover:hover { background-color: #5a8030; }
+    .bg-accent-hover-alpha:hover { background-color: #5a803080; }
+    .text-accent-hover:hover { color: #5a8030; }
+    .border-accent-hover:hover { border-color: #5a8030; }
+
+    .bg-secondary-hover:hover { background-color: #9bc966; }
+    .bg-secondary-hover-alpha:hover { background-color: #9bc96680; }
+    .text-secondary-hover:hover { color: #9bc966; }
+    .border-secondary-hover:hover { border-color: #9bc966; }
+
+    .bg-surface-hover:hover { background-color: rgba(152, 132, 105, 200); }
+    .bg-surface-hover-alpha:hover { background-color: rgba(152, 132, 105, 100); }
+    .text-surface-hover:hover { color: rgba(152, 132, 105, 200); }
+    .border-surface-hover:hover { border-color: rgba(152, 132, 105, 200); }
+
+    .bg-surface-anti-hover:hover { background-color: rgba(234, 243, 229, 200); }
+    .bg-surface-anti-hover-alpha:hover { background-color: rgba(234, 243, 229, 100); }
+    .text-surface-anti-hover:hover { color: rgba(234, 243, 229, 200); }
+    .border-surface-anti-hover:hover { border-color: rgba(234, 243, 229, 200); }
+
+    /* inverse hovers for ghost buttons */
+    .bg-primary-inverse-hover:hover { background-color: #7eb141; }
+    .text-primary-inverse-hover:hover { color: #2D2D2D; }
 
     /* === Gradients === */
     /*  color -- alpha */
@@ -103,14 +126,14 @@
     }
 
     .divider-horizontal-primary {
-        height: 1dp;
+        height: 1px;
         decorator: linear-gradient(to right, transparent, rgb(126, 177, 65), transparent);
         margin-top: 8dp;
         margin-bottom: 8dp;
     }
 
     .divider-vertical-primary{
-        width: 1dp;
+        width: 1px;
         decorator: linear-gradient(to bottom, transparent, rgb(126, 177, 65), transparent);
         margin-left: 8dp;
         margin-right: 8dp;

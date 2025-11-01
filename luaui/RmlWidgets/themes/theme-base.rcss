@@ -62,8 +62,8 @@
     .bg-primary-dark-alpha { background-color: #B8941A80; }
     .text-primary-dark-alpha { color: #B8941A80; }
     .border-primary-dark-alpha { border-color: #B8941A80; }
-    
-    /* === Enhanced Box Shadow System === */
+
+    /* === Box Shadow === */
     .box-shadow-primary { box-shadow: #FDC04C 4dp 4dp 0dp 0dp; }
     .box-shadow-glow { box-shadow: 0dp 0dp 20dp #FDC04C50; }
     .box-shadow-intense { box-shadow: 0dp 0dp 30dp #FDC04C80, 0dp 8dp 32dp rgba(0, 0, 0, 160); }

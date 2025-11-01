@@ -137,28 +137,6 @@ scrollbarhorizontal sliderbar
 	border-radius: 2dp;
 }
 
-/* sliderarrowdec,
-sliderarrowinc
-{
-	width: 6dp;
-	height: 6dp;
-	background-color: rgb(100, 100, 100);
-} */
-
-/* sliderarrowdec
-{
-	border-top-left-radius: 5dp;
-	border-top-right-radius: 5dp;
-	margin-bottom: 2dp;
-} */
-
-/* sliderarrowinc
-{
-	border-bottom-left-radius: 5dp;
-	border-bottom-right-radius: 5dp;
-	margin-top: 2dp;
-} */
-
 sliderarrowinc:hover,
 sliderarrowdec:hover
 {
@@ -168,5 +146,5 @@ sliderarrowdec:hover
 .widget-shadow {
 	box-shadow: #000a 2dp 3dp 3dp 0dp;
 	border: 1dp rgba(0, 0, 0, 150);
-	clip: always;
+	clip: always; /* ensures child elements do not overflow rounded corners */
 }

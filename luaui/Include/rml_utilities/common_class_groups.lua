@@ -110,12 +110,12 @@ commonClassGroups.definitions = {
     },
 
     panel = {
-        default = "bg-darkest-alpha box-shadow-md-inset rounded-sm border-dark border text-shadow hazards-135",
-        primary = "bg-primary-alpha shadow-md rounded-sm border-primary border hazards-135 text-shadow",
-        construction = "bg-warning shadow-lg rounded-sm border-warning border-2 hazards-construction-textured text-outline-darkest-lg border border-warning-alpha",
-        danger = "bg-danger-alpha shadow-md rounded-sm border-danger border hazards-225 text-shadow",
-        general = "gap-6 p-4 rounded border-sm border-darker-alpha box-shadow bg-darker-alpha radial-focus-start-feint",
-        faction = "faction-texture-tiled p-4 rounded border-sm border-darker-alpha bg-primary"
+        default = "bg-darkest-alpha rounded-md border-dark-alpha border text-shadow hazards-135",
+        primary = "bg-primary-alpha shadow-md rounded border-primary-dark border hazards-135 text-shadow",
+        construction = "bg-warning shadow-lg rounded border-warning border-2 hazards-construction-textured text-outline-darkest-lg border border-warning-alpha",
+        danger = "bg-danger-alpha shadow-md rounded border-danger border hazards-225 text-shadow",
+        general = "gap-6 p-4 rounded border-sm border-darker-alpha box-shadow-sm bg-darker-alpha radial-focus-start-feint",
+        info = "bg-info-alpha shadow-md rounded border-darker-alpha border text-shadow radial-focus-start-feint",
     },
 
     sheet = {
@@ -144,7 +144,7 @@ commonClassGroups.definitions = {
             footer = "p-3 bg-darkest-alpha border-top border-darkest rounded-b-lg",
         },
         surface = {
-            container = "rounded-lg border border-surface-alpha shadow-lg clip box-shadow-md",
+            container = "rounded-lg border border-surface-alpha shadow-lg clip box-shadow-md radial-focus-center-feint",
             title = "text-xl font-bold bg-surface-semi-alpha p-3 bg-gradient_surface-textured text-outline-darkest-lg",
             content = "p-4",
             footer = "p-3 bg-surface-alpha rounded-b-lg",

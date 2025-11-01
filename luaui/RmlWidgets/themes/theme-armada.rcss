@@ -66,19 +66,42 @@
 
     /* === Box Shadow === */
     .box-shadow-primary { box-shadow: #2BA5EA 4dp 4dp 0dp 0dp; }
-
+    .box-shadow-glow { box-shadow: 0dp 0dp 20dp #2BA5EA50; }
+    .box-shadow-intense { box-shadow: 0dp 0dp 30dp #2BA5EA80, 0dp 8dp 32dp rgba(0, 0, 0, 160); }
+    
     /* === Text Shadow === */
     .text-shadow-primary { font-effect: shadow( 4px 4px #2BA5EA ); }
     .text-glow-primary { font-effect: glow(4px 6px 0px 0px #2BA5EA); }
 
     /* === Hovers === */
-    /* Background */
-    .bg-primary_hover:hover { background-color: #2BA5EA80; }
-    /* Text */
-    .text-primary_hover:hover { color: #2BA5EA80; }
-    .text-primary_hover-glow:hover { font-effect: glow(4px 6px 0px 0px #2BA5EA); }
-    /* Border */
-    .border-primary_hover:hover { border-color: #2BA5EA80; }
+    .bg-primary-hover:hover { background-color: #2BA5EA; }
+    .bg-primary-hover-alpha:hover { background-color: #2BA5EA80; }
+    .text-primary-hover:hover { color: #2BA5EA; }
+    .border-primary-hover:hover { border-color: #2BA5EA; }
+
+    .bg-accent-hover:hover { background-color: #1F7BB8; }
+    .bg-accent-hover-alpha:hover { background-color: #1F7BB880; }
+    .text-accent-hover:hover { color: #1F7BB8; }
+    .border-accent-hover:hover { border-color: #1F7BB8; }
+
+    .bg-secondary-hover:hover { background-color: #5BB8ED; }
+    .bg-secondary-hover-alpha:hover { background-color: #5BB8ED80; }
+    .text-secondary-hover:hover { color: #5BB8ED; }
+    .border-secondary-hover:hover { border-color: #5BB8ED; }
+
+    .bg-surface-hover:hover { background-color: rgba(34, 52, 78, 200); }
+    .bg-surface-hover-alpha:hover { background-color: rgba(34, 52, 78, 100); }
+    .text-surface-hover:hover { color: rgba(34, 52, 78, 200); }
+    .border-surface-hover:hover { border-color: rgba(34, 52, 78, 200); }
+
+    .bg-surface-anti-hover:hover { background-color: rgba(231, 247, 210, 200); }
+    .bg-surface-anti-hover-alpha:hover { background-color: rgba(231, 247, 210, 100); }
+    .text-surface-anti-hover:hover { color: rgba(231, 247, 210, 200); }
+    .border-surface-anti-hover:hover { border-color: rgba(231, 247, 210, 200); }
+
+    /* inverse hovers for ghost buttons */
+    .bg-primary-inverse-hover:hover { background-color: #2BA5EA; }
+    .text-primary-inverse-hover:hover { color: #2D2D2D; }
 
     /* === Gradients === */
     /*  color -- alpha */

@@ -7,6 +7,18 @@ local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
 local ccg = VFS.Include("luaui/Include/rml_utilities/common_class_groups.lua")
 local themeUtils = VFS.Include("luaui/Include/rml_utilities/theme_utils.lua")
 
+function widget:GetInfo()
+    return {
+        name = "rml_style_guide",
+        desc = "Generated RML widget template",
+        author = "Generated from rml_starter/generate-widget.sh",
+        date = "2025",
+        license = "GNU GPL, v2 or later",
+        layer = -10000,
+        enabled = true,
+    }
+end
+
 -- Helper function for nested sheet structures
 local function createSheetArray(ccgTable, prefix)
     local result = {}
@@ -138,18 +150,6 @@ local function createComponentArray(ccgTable, prefix, componentType)
     return result
 end
 
-function widget:GetInfo()
-    return {
-        name = "rml_style_guide",
-        desc = "Generated RML widget template",
-        author = "Generated from rml_starter/generate-widget.sh",
-        date = "2025",
-        license = "GNU GPL, v2 or later",
-        layer = -10000,
-        enabled = true,
-    }
-end
-
 -- Constants
 local WIDGET_ID = "rml_style_guide"
 local MODEL_NAME = "rml_style_guide_model"
@@ -159,138 +159,121 @@ local RML_PATH = "luaui/RmlWidgets/rml_style_guide/rml_style_guide.rml"
 local document
 local dm_handle
 
--- Initial data model
-local init_model = {
-    message = "Hello from rml_style_guide!",
-    currentTime = os.date("%H:%M:%S"),
-    debugMode = false,
-    expanded = true,
-    tabs = {
-        { id = "about", label = "About" },
-        { id = "buttons", label = "Buttons" },
-        { id = "text", label = "Text" },
-        { id = "tags", label = "Tags" },
-        { id = "sheets", label = "Sheets" },
-        { id = "cards", label = "Cards" },
-        { id = "headings", label = "Headings" },
-        { id = "panels", label = "Panels" },
-        { id = "playPanel", label = "Play Panel" },
-    },
-
-    activeTab = "about", -- Start on the about tab
-
-    -- Custom Class Groups
-    my = {
-        groupCard = {
-            container = "flex flex-col flex-3 h-full border-left border-primary-dark-alpha pl-4 space-between",
-            title = ccg.definitions.themeText.subheading .. " flex-1",
-            description = ccg.definitions.text.body .. " text-sm flex-1",
-            classInfo = ccg.definitions.themeText.caption .. " flex-1",
+-- Create a new data model every time to avoid reference oddities even with dm_handle
+local function initModel()
+    return {
+        message = "Hello from rml_style_guide!",
+        currentTime = os.date("%H:%M:%S"),
+        debugMode = false,
+        expanded = true,
+        tabs = {
+            { id = "about", label = "About" },
+            { id = "buttons", label = "Buttons" },
+            { id = "text", label = "Text" },
+            { id = "tags", label = "Tags" },
+            { id = "sheets", label = "Sheets" },
+            { id = "cards", label = "Cards" },
+            { id = "headings", label = "Headings" },
+            { id = "panels", label = "Panels" },
+            { id = "playPanel", label = "Play Panel" },
         },
-        compositeGroupInfoCard = {
-            container = "flex flex-col gap-1 rounded flex-1",
-            title = "flex flex-row items-center",
-            copybutton = "p-0-5 flex gap-2 items-center w-4 h-4 justify-center",
-            classInfo = ccg.definitions.themeText.caption .. " flex-1",
-        },
-        copySvgStyles = "h-2-5 w-2-5 mx-0-5",
-    },
-
-    -- Theme management - will be dynamically set from current config/context
-    currentTheme = "", -- Will be populated in Initialize from actual current theme
-    availableThemes = {
-        { id = "base", name = "Base" },
-        { id = "armada", name = "Armada" },
-        { id = "cortex", name = "Cortex" },
-        { id = "legion", name = "Legion" },
-    },
     
-    -- Create iterable arrays from class groups
-    buttons = createIterableArray(ccg.definitions.button, ccg.prefix .. ".button"),
-    themeButtons = createIterableArray(ccg.definitions.themeButton, ccg.prefix .. ".themeButton"),
-    textStyles = createTextArray(ccg.definitions.text, ccg.prefix .. ".text"),
-    themeTextStyles = createTextArray(ccg.definitions.themeText, ccg.prefix .. ".themeText"),
-    badges = createComponentArray(ccg.definitions.badge, ccg.prefix .. ".badge", "Badge"),
-    pills = createComponentArray(ccg.definitions.pill, ccg.prefix .. ".pill", "Pill"),
-    circles = createComponentArray(ccg.definitions.circle, ccg.prefix .. ".circle", "Circle"),
-    sheets = createSheetArray(ccg.definitions.sheet, ccg.prefix .. ".sheet"),
-    cards = createIterableArray(ccg.definitions.card, ccg.prefix .. ".card"),
-    nav = createIterableArray(ccg.definitions.nav, ccg.prefix .. ".nav"),
-    headings = createIterableArray(ccg.definitions.heading, ccg.prefix .. ".heading", true),
-    panels = createIterableArray(ccg.definitions.panel, ccg.prefix .. ".panel", true),
-
-    -- Theme switching function for the data model
-    switchTheme = function(event, themeId)
-        if themeUtils.isValid(themeId) then
-            -- Do exactly what gui_options.lua does - this should be the ONLY theme change mechanism
-            Spring.SetConfigString("rml_theme", themeId)
-            
-            -- Apply theme to all RML widgets that have the theme API
-            if WG.rml_theme_changed then
-                WG.rml_theme_changed(themeId)
+        activeTab = "about", -- Start on the about tab
+    
+        -- Custom Class Groups
+        my = {
+            groupCard = {
+                container = "flex flex-col flex-3 h-full border-left border-primary-dark-alpha pl-4 space-between",
+                title = ccg.definitions.themeText.subheading .. " flex-1",
+                description = ccg.definitions.text.body .. " text-sm flex-1",
+                classInfo = ccg.definitions.themeText.caption .. " flex-1",
+            },
+            compositeGroupInfoCard = {
+                container = "flex flex-col gap-1 rounded flex-1",
+                title = "flex flex-row items-center",
+                copybutton = "p-0-5 flex gap-2 items-center w-4 h-4 justify-center",
+                classInfo = ccg.definitions.themeText.caption .. " flex-1",
+            },
+            copySvgStyles = "h-2-5 w-2-5 mx-0-5",
+        },
+    
+        -- Theme management - will be dynamically set from current config/context
+        currentTheme = "", -- Will be populated in Initialize from actual current theme
+        availableThemes = {
+            { id = "base", name = "Base" },
+            { id = "armada", name = "Armada" },
+            { id = "cortex", name = "Cortex" },
+            { id = "legion", name = "Legion" },
+        },
+        
+        -- Create iterable arrays from class groups
+        buttons = createIterableArray(ccg.definitions.button, ccg.prefix .. ".button"),
+        themeButtons = createIterableArray(ccg.definitions.themeButton, ccg.prefix .. ".themeButton"),
+        textStyles = createTextArray(ccg.definitions.text, ccg.prefix .. ".text"),
+        themeTextStyles = createTextArray(ccg.definitions.themeText, ccg.prefix .. ".themeText"),
+        badges = createComponentArray(ccg.definitions.badge, ccg.prefix .. ".badge", "Badge"),
+        pills = createComponentArray(ccg.definitions.pill, ccg.prefix .. ".pill", "Pill"),
+        circles = createComponentArray(ccg.definitions.circle, ccg.prefix .. ".circle", "Circle"),
+        sheets = createSheetArray(ccg.definitions.sheet, ccg.prefix .. ".sheet"),
+        cards = createIterableArray(ccg.definitions.card, ccg.prefix .. ".card"),
+        headings = createIterableArray(ccg.definitions.heading, ccg.prefix .. ".heading", true),
+        panels = createIterableArray(ccg.definitions.panel, ccg.prefix .. ".panel", true),
+    
+        -- Theme switching function for the data model
+        switchTheme = function(event, themeId)
+            if themeUtils.isValid(themeId) then
+                -- Do exactly what gui_options.lua does - it should aim to be the source of truth
+                Spring.SetConfigString("rml_theme", themeId)
+                
+                -- Apply theme to all RML widgets that have the theme API
+                if WG.rml_theme_changed then
+                    WG.rml_theme_changed(themeId)
+                end
+                
+                -- Update our own current theme display
+                local model = utils.GetCurrentModel(dm_handle)
+                if model then
+                    model.currentTheme = themeId
+                end
+                
+                Spring.Echo("RML Theme changed to: " .. themeId)
+            else
+                Spring.Echo(WIDGET_ID .. ": Invalid theme: " .. tostring(themeId))
             end
-            
-            -- Update our own current theme display
+        end,
+    
+        -- ordinarily an expanded and collapsed state should be handled by the model,
+        -- but in this instance the whole widget which gets collapsed has no access to model properties,
+        -- so we target it directly.
+        toggleExpand = function()
             local model = utils.GetCurrentModel(dm_handle)
             if model then
-                model.currentTheme = themeId
+                model.expanded = not model.expanded
             end
-            
-            Spring.Echo("RML Theme changed to: " .. themeId)
-        else
-            Spring.Echo(WIDGET_ID .. ": Invalid theme: " .. tostring(themeId))
-        end
-    end,
-
-    toggleExpand = function(event)
-        local model = utils.GetCurrentModel(dm_handle)
-        if model then
-            model.expanded = not model.expanded
-        end
-
-        -- NORMAL position
-            -- /* positional properties */
-            -- display: flex;
-            -- position: absolute;
-            -- left: 50dp;
-            -- top: 50%;
-            -- transform: translateY(-50%);
-            -- /* dimensional properties */
-            -- width: 700dp;
-            -- height: 80vh;
-        if document then
-            -- move to top and make small when collapsed
-            if model.expanded then
-                document:SetClass("collapsed", false)
-            else
-                document:SetClass("collapsed", true)
+    
+            if document then
+                if model.expanded then
+                    document:SetClass("collapsed", false)
+                else
+                    document:SetClass("collapsed", true)
+                end
             end
-        end
-    end,
-}
+        end,
+    }
+end
 
 function widget:Initialize()
-    if widget:GetInfo().enabled == false then
-        Spring.Echo(WIDGET_ID .. ": Widget is disabled, skipping initialization")
-        return false
-    end
-    
-    Spring.Echo(WIDGET_ID .. ": Initializing widget...")
-    
-    -- Use the modern utility function to initialize
     local result = utils.initializeRmlWidget(self, {
         widgetId = WIDGET_ID,
         modelName = MODEL_NAME,
         rmlPath = RML_PATH,
-        initModel = init_model,
+        initModel = initModel(), -- Use fresh model every time
         useCommonClassGroups = true,
     })
-    
     if not result then
         return false
     end
     
-    -- Store the returned objects
     document = result.document
     dm_handle = result.dm_handle
 
@@ -313,17 +296,11 @@ function widget:Shutdown()
     
     utils.shutdownRmlWidget(self, shutdownParams, document, dm_handle)
     
-    -- Clear our references
+    -- Clear references
     document = nil
     dm_handle = nil
     
     Spring.Echo(WIDGET_ID .. ": Shutdown complete")
-end
-
-function widget:Update()
-    if dm_handle then
-        dm_handle.currentTime = os.date("%H:%M:%S")
-    end
 end
 
 -- Widget functions callable from RML

@@ -98,9 +98,18 @@ function utils.shutdownRmlWidget(widget, shutdownParams, document, dm_handle)
     Spring.Echo(widgetId .. ": Shutting down widget...")
     
     -- Clean up data model
-    if widget.rmlContext and dm_handle then
-        widget.rmlContext:RemoveDataModel(shutdownParams.modelName)
+    if not widget.rmlContext then
+        Spring.Echo(widgetId .. ": Warning: No RML context found during shutdown")
+        return
     end
+    local removed = widget.rmlContext:RemoveDataModel(shutdownParams.modelName)
+    if removed then
+        Spring.Echo(widgetId .. ": Data model '" .. shutdownParams.modelName .. "' removed successfully")
+    else
+        Spring.Echo(widgetId .. ": Warning: Data model '" .. shutdownParams.modelName .. "' could not be removed or did not exist")
+    end
+    -- if widget.rmlContext and dm_handle then
+    -- end
     
     -- Close document
     if document then

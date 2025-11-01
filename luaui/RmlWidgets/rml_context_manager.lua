@@ -12,15 +12,14 @@ function widget:GetInfo()
         author = "Mupersega",
         date = "2025",
         license = "GNU GPL, v2 or later",
-        layer = -1000000,
+        layer = -100000,
         enabled = true
     }
 end
 
 local function calculateDpRatio()
     local viewSizeY = Spring.GetViewGeometry()
-    -- local userScale = Spring.GetConfigFloat("ui_scale", 1)
-    local userScale = 0.8
+    local userScale = Spring.GetConfigFloat("ui_scale", 1)
     local baseHeight = 1080
     local resFactor = viewSizeY / baseHeight
     local dpRatio = resFactor * userScale

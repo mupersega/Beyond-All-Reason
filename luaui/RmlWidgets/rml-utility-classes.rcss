@@ -532,9 +532,6 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .transition-fast { transition: all 0.1s; }
 .transition-slow { transition: all 0.3s; }
 
-/* === Box Shadow === */
-.box-shadow-none { box-shadow: none; }
-
 /* === Hover Effects === */
 /* General hover utilities - theme-agnostic */
 .hover-brighten:hover { filter: brightness(1.2); }

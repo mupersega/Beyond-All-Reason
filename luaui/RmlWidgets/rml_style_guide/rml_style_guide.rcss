@@ -8,8 +8,6 @@
     /* dimensional properties */
     width: 700dp;
     height: 80vh;
-
-    transition: top 0.1s, left 0.1s, width 0.2s, height 0.2s;
 }
 
 #rml_style_guide-widget.collapsed {
@@ -19,17 +17,22 @@
     left: 200dp;
 }
 
+#rml_style_guide-widget.collapsed .toggle-expand-container {
+    right: 3dp;
+}
+
 #widget-container {
     display: flex;
     flex-direction: column;
     flex: 1;
+    position: relative;
 }
 
 /* Small floating debug controls */
 .debug-controls {
     position: absolute;
     top: -3dp;
-    right: -3dp;
+    right: 10dp;
     display: flex;
     gap: 3dp;
     z-index: 10;
@@ -118,21 +121,31 @@
 .section {
     clip: always;
     overflow: hidden scroll;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
+
 .copy-button {
     cursor: copy;
     position: relative;
 }
+
 .copy-button:hover {
     transition: background-color 0.2s;
     background-color: rgba(255, 255, 255, 50);
 }
+
 .copy-button:active {
     transform: translate(1px, 1px);
 }
+
 .copy-button:active>.tooltip {
     transform: translate(-1px, -1px);
 }
+
 .tooltip {
     visibility: hidden;
     text-align: center;
@@ -156,31 +169,32 @@ button:active {
 }
 
 .toggle-expand-container {
+    position:absolute;
+    top: 8dp;
+    right: 4dp;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 20dp;
-    height: 20dp;
-    border-radius: 4px;
+    width: 10dp;
+    height: 10dp;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    z-index: 50;
 }
 
 .chevron {
     width: 4dp;
     height: 4dp;
-    top: -4dp;
     position: relative;
     /* warning yellow #fad400 */
     border-left: 2dp #fad400;
-    border-right: 2dp transparent;
+    border-right: 1dp transparent;
     border-top: 2dp #fad400;
-    border-bottom: 2dp transparent;
-    border-radius: 2dp;
-    transition: transform 0.1s, top 0.1s;
-    opacity: 0.2;
-    transform: rotate(90deg);
-    /* transform: rotate(45deg); */
+    border-bottom: 1dp transparent;
+    border-radius: 5dp;
+    transition: transform 0.1s, right 0.3s,opacity 0.2s;
+    opacity: 0.5;
+    transform: rotate(45deg);
+    top: -4dp;
 }
 
 .chevron:hover {
@@ -188,6 +202,6 @@ button:active {
 }
 
 .chevron.expanded {
-    transform: rotate(180deg);
+    transform: rotate(225deg);
     top: -4dp;
 }

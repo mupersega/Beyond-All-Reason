@@ -112,7 +112,7 @@
 .border-confirm-alpha { border-color: #14b8a680; }
 
 /* === Box Shadow === */
-.box-shadow { box-shadow: rgba(0, 0, 0, 100) 1dp 2dp 4dp 0dp; }
+.box-shadow { box-shadow: rgba(0, 0, 0, 100) 0dp 1dp 2dp 0dp; }
 .box-shadow-sm { box-shadow: rgba(0, 0, 0, 80) 0dp 1dp 2dp 0dp; }
 .box-shadow-md { box-shadow: rgba(0, 0, 0, 120) 1dp 3dp 4dp 0dp; }
 .box-shadow-sm-inset { box-shadow: #000a -2px -2px 5px inset; }
@@ -181,13 +181,17 @@
 
 /* Construction hazards - bold yellow and dark grey diagonal stripes */
 .hazards-construction-textured {
-    decorator: image("rml_style_guide/metal_texture.dds" repeat),
-        repeating-linear-gradient(135deg, #fad400ba 0 3dp, #141414ba 4dp 8dp);
+    decorator: image("../images/rml/metal_texture_lg.png" cover),
+        repeating-linear-gradient(135deg, #fad400ba 0 3dp, #141414c7 4dp 8dp);
 }
 
 .hazards-construction {
     decorator:
-        repeating-linear-gradient(135deg, #fad400ba 0 3dp, #141414ba 4dp 8dp);
+        repeating-linear-gradient(135deg, #fad400ba 0 3dp, #141414c7 4dp 8dp);
+}
+
+.metal-texture {
+    decorator: image("../images/rml/metal_texture_lg.png" cover);
 }
 
 /* === Dividers === */
@@ -263,3 +267,4 @@
 
 /* The concept of overrides are the closest we get to an !important and should be used sparingly and created only for main variables - achieved cos cascades */
 .text-light-override { color: #e5e7eb; }
+.box-shadow-none { box-shadow: none; }

@@ -4,7 +4,6 @@ end
 
 local widget = widget ---@type Widget
 local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
-local themeUtils = VFS.Include("luaui/Include/rml_utilities/theme_utils.lua")
 
 function widget:GetInfo()
     return {
@@ -27,102 +26,114 @@ local RML_PATH = "luaui/rmlwidgets/rml_starter/rml_starter.rml"
 local document
 local dm_handle
 
--- Initial data model - Used only for setting the initial state of the model, not for updates, for this use the dm_handle.
-local init_model = {
-    -- String data with dynamic content
-    message = "Hello! This text comes from the Lua data model and demonstrates variable binding.",
-    
-    -- Array of objects - demonstrates iteration
-    testArray = {
-        { name = "Configuration", value = 100 },
-        { name = "Game State", value = 200 },
-        { name = "UI Controls", value = 300 },
-        { name = "User Preferences", value = 400 },
-    },
-    
-    -- Tab system state (controlled by data binding)
-    activeTab = "", -- Start empty for landing page.
-
-    -- All tabs
-    tabs = {
-        { id = "getting-started", label = "Getting Started" },
-        { id = "base-widget-conventions", label = "Base Widget Conventions" },
-        { id = "widget-positioning", label = "Widget Positioning" },
-        { id = "data-binding", label = "Data Binding" },
-        { id = "tools", label = "Tools" },
-    },
-
-    -- Current time for demonstrations
-    currentTime = os.date("%H:%M:%S"),
-    
-    -- Debug mode toggle
-    debugMode = false,
-    
-    -- Theme management - will be dynamically set from current config/context
-    currentTheme = "", -- Will be populated in Initialize from actual current theme
-    availableThemes = {
-        { id = "base", name = "Base" },
-        { id = "armada", name = "Armada" },
-        { id = "cortex", name = "Cortex" },
-        { id = "legion", name = "Legion" },
-    },
-
-    my = {
-        codeBlock = "flex flex-col p-3 bg-darker rounded border border-dark-alpha code-green text-sm"
-    },
-    
-    -- Data binding demo variables
-    playerName = "Commander",
-
-    -- Comprehensive data binding examples table
-    dataBindingExamples = {
+-- Create a new data model every time to avoid reference oddities even with dm_handle
+local function initModel()
+    return {
+        -- String data with dynamic content
+        message = "Hello! This text comes from the Lua data model and demonstrates variable binding.",
         
-        -- Array examples for iteration
-        playerList = {
-            { name = "Player1", team = "Armada", score = 1250 },
-            { name = "Player2", team = "Cortex", score = 980 },
-            { name = "Player3", team = "Legion", score = 1100 },
+        -- Array of objects - demonstrates iteration
+        testArray = {
+            { name = "Configuration", value = 100 },
+            { name = "Game State", value = 200 },
+            { name = "UI Controls", value = 300 },
+            { name = "User Preferences", value = 400 },
         },
         
-        unitQueue = {
-            { name = "Construction Kbot", cost = 100, time = "15s" },
-            { name = "Light Laser Tower", cost = 250, time = "30s" },
-            { name = "Solar Collector", cost = 150, time = "20s" },
+        -- Tab system state (controlled by data binding)
+        activeTab = "landing", -- Always starts fresh
+
+        -- All tabs
+        tabs = {
+            { id = "landing", label = "Welcome" },
+            { id = "getting-started", label = "Getting Started" },
+            { id = "base-widget-conventions", label = "Base Widget Conventions" },
+            { id = "widget-positioning", label = "Widget Positioning" },
+            { id = "data-binding", label = "Data Binding" },
+            { id = "tools", label = "Tools" },
+        },
+
+        expanded = true,
+
+        -- Current time for demonstrations
+        currentTime = os.date("%H:%M:%S"),
+        
+        -- Debug mode toggle
+        debugMode = false,
+
+        my = {
+            codeBlock = "flex flex-col p-3 bg-darker rounded border border-dark-alpha code-green text-sm"
         },
         
-        -- Time-based examples
-        gameTime = "12:34",
-        lastUpdate = os.date("%H:%M:%S"),
-    },
+        -- Data binding demo variables
+        playerName = "Commander",
 
-    -- How to cleanly use functions in the data model, tab switching itself could be done directly in RML but this is an example.
-    setActiveTab = function(event, tabId)
-        local model = utils.GetCurrentModel(dm_handle) -- Reference the current model via the utility function if from inside the init model
-        if model then
-            if model.activeTab == tabId then
-                return
-            end
-            local oldTabEl = document:GetElementById(model.activeTab)
-            if oldTabEl then
-                local newTabEl = document:GetElementById(tabId)
-                if newTabEl then
-                    model.activeTab = tabId
+        -- Comprehensive data binding examples table
+        dataBindingExamples = {
+            
+            -- Array examples for iteration
+            playerList = {
+                { name = "Player1", team = "Armada", score = 1250 },
+                { name = "Player2", team = "Cortex", score = 980 },
+                { name = "Player3", team = "Legion", score = 1100 },
+            },
+            
+            unitQueue = {
+                { name = "Construction Bot", cost = 100, time = "15s" },
+                { name = "Light Laser Turret", cost = 250, time = "30s" },
+                { name = "Solar Collector", cost = 150, time = "20s" },
+            },
+
+            availableThemes = {
+                { id = "base", name = "Base" },
+                { id = "armada", name = "Armada" },
+                { id = "cortex", name = "Cortex" },
+                { id = "legion", name = "Legion" },
+            },
+        },
+        
+        -- How to cleanly use functions in the data model
+        setActiveTab = function(event, tabId)
+            local model = utils.GetCurrentModel(dm_handle)
+            if model then
+                if model.activeTab == tabId then
+                    return
+                end
+                local oldTabEl = document:GetElementById(model.activeTab)
+                if oldTabEl then
+                    local newTabEl = document:GetElementById(tabId)
+                    if newTabEl then
+                        model.activeTab = tabId
+                    end
                 end
             end
-        end
-    end,
-}
+        end,
+
+        toggleExpand = function()
+            local model = utils.GetCurrentModel(dm_handle)
+            if model then
+                model.expanded = not model.expanded
+            end
+    
+            if document then
+                if model.expanded then
+                    document:SetClass("collapsed", false)
+                else
+                    document:SetClass("collapsed", true)
+                end
+            end
+        end,
+    }
+end
 
 function widget:Initialize()
-    local initParams = {
+    local result = utils.initializeRmlWidget(self, {
         widgetId = WIDGET_ID,
         modelName = MODEL_NAME,
         rmlPath = RML_PATH,
-        initModel = init_model,
+        initModel = initModel(), -- Use fresh model every time
         useCommonClassGroups = true,
-    }
-    
-    local result = utils.initializeRmlWidget(widget, initParams)
+    })
     if not result then
         return false
     end
@@ -130,32 +141,27 @@ function widget:Initialize()
     document = result.document
     dm_handle = result.dm_handle
     
-    -- This is rml_starter specific to style current selected theme buttons.
-    if dm_handle then
-        dm_handle.currentTheme = themeUtils.GetCurrentTheme()
-    end
-    
-    Spring.Echo(WIDGET_ID .. ": Widget initialized ")
-    
+    Spring.Echo(WIDGET_ID .. ": Widget initialized successfully")
     return true
 end
 
 function widget:Shutdown()
+    Spring.Echo(WIDGET_ID .. ": Shutting down widget...")
+    
+    -- Use the modern utility function to shutdown
     local shutdownParams = {
         widgetId = WIDGET_ID,
         modelName = MODEL_NAME
     }
     
-    utils.shutdownRmlWidget(widget, shutdownParams, document, dm_handle)
+    utils.shutdownRmlWidget(self, shutdownParams, document, dm_handle)
     
-    -- Clear our references
-    document = nil
-    dm_handle = nil
+    Spring.Echo(WIDGET_ID .. ": Shutdown complete")
 end
 
 -- Development helper function for hot reloading
-function widget:Reload(event)
-    Spring.Echo(WIDGET_ID .. ": Reloading widget (event: " .. tostring(event) .. ")")
+function widget:Reload()
+    Spring.Echo(WIDGET_ID .. ": Reloading widget...")
     widget:Shutdown()
     widget:Initialize()
 end

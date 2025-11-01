@@ -66,19 +66,42 @@
 
     /* === Box Shadow === */
     .box-shadow-primary { box-shadow: rgb(230, 57, 70) 4dp 4dp 0dp 0dp; }
-
+    .box-shadow-glow { box-shadow: 0dp 0dp 20dp rgba(230, 57, 70, 80); }
+    .box-shadow-intense { box-shadow: 0dp 0dp 30dp rgba(230, 57, 70, 128), 0dp 8dp 32dp rgba(0, 0, 0, 160); }
+    
     /* === Text Shadow === */
     .text-shadow-primary { font-effect: shadow( 4px 4px rgb(230, 57, 70) ); }
     .text-glow-primary { font-effect: glow(4px 6px 0px 0px rgb(230, 57, 70)); }
 
     /* === Hovers === */
-    /* Background */
-    .bg-primary_hover:hover { background-color: rgba(230, 57, 70, 128); }
-    /* Text */
-    .text-primary_hover:hover { color: rgba(230, 57, 70, 128); }
-    .text-primary_hover-glow:hover { font-effect: glow(4px 6px 0px 0px rgb(230, 57, 70)); }
-    /* Border */
-    .border-primary_hover:hover { border-color: rgba(230, 57, 70, 128); }
+    .bg-primary-hover:hover { background-color: rgb(230, 57, 70); }
+    .bg-primary-hover-alpha:hover { background-color: rgba(230, 57, 70, 128); }
+    .text-primary-hover:hover { color: rgb(230, 57, 70); }
+    .border-primary-hover:hover { border-color: rgb(230, 57, 70); }
+
+    .bg-accent-hover:hover { background-color: rgb(255, 34, 34); }
+    .bg-accent-hover-alpha:hover { background-color: rgba(255, 34, 34, 128); }
+    .text-accent-hover:hover { color: rgb(255, 34, 34); }
+    .border-accent-hover:hover { border-color: rgb(255, 34, 34); }
+
+    .bg-secondary-hover:hover { background-color: rgb(255, 68, 68); }
+    .bg-secondary-hover-alpha:hover { background-color: rgba(255, 68, 68, 128); }
+    .text-secondary-hover:hover { color: rgb(255, 68, 68); }
+    .border-secondary-hover:hover { border-color: rgb(255, 68, 68); }
+
+    .bg-surface-hover:hover { background-color: rgba(117, 117, 117, 200); }
+    .bg-surface-hover-alpha:hover { background-color: rgba(117, 117, 117, 100); }
+    .text-surface-hover:hover { color: rgba(117, 117, 117, 200); }
+    .border-surface-hover:hover { border-color: rgba(117, 117, 117, 200); }
+
+    .bg-surface-anti-hover:hover { background-color: rgba(243, 203, 183, 200); }
+    .bg-surface-anti-hover-alpha:hover { background-color: rgba(243, 203, 183, 100); }
+    .text-surface-anti-hover:hover { color: rgba(243, 203, 183, 200); }
+    .border-surface-anti-hover:hover { border-color: rgba(243, 203, 183, 200); }
+
+    /* inverse hovers for ghost buttons */
+    .bg-primary-inverse-hover:hover { background-color: rgb(230, 57, 70); }
+    .text-primary-inverse-hover:hover { color: #2D2D2D; }
 
     /* === Gradients === */
     /*  color -- alpha */
