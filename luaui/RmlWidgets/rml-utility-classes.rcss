@@ -504,6 +504,7 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 /* note that border and border color is not included, it is set instead in the theme files */
 .border { border: 1dp; }
 .border-0 { border: 1dp transparent; }
+.border-px { border: 1px; }
 
 .border-bottom { border-bottom: 1dp; }
 .border-top { border-top: 1dp; }
@@ -547,6 +548,8 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 /* Cursor styles for hovers */
 .cursor-pointer { cursor: pointer; }
 .cursor-default { cursor: default; }
+
+.pe-none { pointer-events: none; }
 
 /* === Z-Index === */
 .z-0 { z-index: 0; }
