@@ -11,9 +11,9 @@
 }
 
 #rml_style_guide-widget.collapsed {
-    width: 150dp;
-    height: 40dp;
-    top: 0;
+    width: 144dp;
+    height: 24dp;
+    top: 10dp;
     left: 200dp;
 }
 
@@ -193,7 +193,7 @@ button:active {
     border-radius: 5dp;
     transition: transform 0.1s, right 0.3s,opacity 0.2s;
     opacity: 0.5;
-    transform: rotate(45deg);
+    transform: rotate(225deg);
     top: -4dp;
 }
 
@@ -202,6 +202,14 @@ button:active {
 }
 
 .chevron.expanded {
-    transform: rotate(225deg);
-    top: -4dp;
+    transform: rotate(45deg);
+    top: -2dp;
+}
+
+.collapsed-title {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    font-weight: bold;
+    font-size: 14dp;
 }

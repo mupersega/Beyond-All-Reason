@@ -15,7 +15,7 @@ function widget:GetInfo()
         date = "2025",
         license = "GNU GPL, v2 or later",
         layer = -10000,
-        enabled = true,
+        enabled = false,
     }
 end
 
@@ -280,6 +280,8 @@ function widget:Initialize()
     if dm_handle then
         dm_handle.currentTheme = themeUtils.GetCurrentTheme()
     end
+
+    dm_handle.toggleExpand() -- start expanded true and toggle it closed on init to start collapsed
     
     Spring.Echo(WIDGET_ID .. ": Widget initialized successfully")
     return true

@@ -18,8 +18,8 @@
 }
 
 #rml-starter-widget.collapsed {
-    width: 150dp;
-    height: 40dp;
+    width: 144dp;
+    height: 24dp;
     top: 100dp;
     right: 0dp;
 }
@@ -170,7 +170,7 @@ button:active {
     width: 10dp;
     height: 10dp;
     cursor: pointer;
-    z-index: 50;
+    z-index: 100;
 }
 
 .chevron {

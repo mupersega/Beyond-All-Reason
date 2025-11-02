@@ -21,7 +21,7 @@
             <span data-class-expanded="expanded" class="chevron"></span>
         </div>
         <div data-if="!expanded" class="collapsed-title flex items-center justify-center bg-gradient bg-dark">
-            <span>
+            <span class="text-base font-bold text-outline-darker-lg">
                 rml starter
             </span>
         </div>
@@ -152,7 +152,7 @@
                             </div>
                             <div>
                                 <h3 data-attr-class="ccg.heading.h5">Data Model</h3>
-                                <p data-attr-class="ccg.text.body + ' mt-1-5'">A data model to manage the state and data of the widget, enabling dynamic updates and interactions. A model should be prepared in the <span class="code-green px-1">init_model</span> and then loaded onto the context in the Initialize stage.</p>
+                                <p data-attr-class="ccg.text.body + ' mt-1-5'">A data model to manage the state and data of the widget, enabling dynamic updates and interactions. A model should be prepared in the <span class="code-green px-1">init_model</span> or an <span class="code-green px-1">initModel()</span> function, and then loaded onto the context in the Initialize stage.</p>
                                 <p data-attr-class="ccg.text.body + ' mt-1-5'">Changes to the data model are made through the <span class="code-green px-1">dm_handle</span> upon which RMLUI will automatically propagate updates to the UI re-rendering only the affected elements.</p>
                                 <p data-attr-class="ccg.themeText.caption + ' mt-1-5 text-center font-italic p-4'">
                                     The data model acts as the bridge between the logic layer and the UI layer. Updates to the data model via the dm_handle should automatically reflect in the UI, and vice versa for any two-way binding values.</p>

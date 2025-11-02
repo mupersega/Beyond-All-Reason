@@ -15,25 +15,25 @@
 </head>
 <body id="rml_style_guide-widget" class="widget-shadow rounded-lg">
     <div id="widget-container" data-model="rml_style_guide_model" data-attr-class="ccg.sheet.default.container">
-        <div data-if="!expanded" class="collapsed-title flex items-center justify-center bg-gradient bg-dark">
-            <span>
-                rml starter
-            </span>
-        </div>
         <div data-attr-class="ccg.text.warning + ' toggle-expand-container'" data-event-click="toggleExpand()">
             <span data-class-expanded="expanded" class="chevron"></span>
         </div>
-        <!-- Small floating debug buttons -->
-        <div class="debug-controls pl-2 pr-1 pt-2">
-            <button data-visible="expanded" data-attr-class="ccg.text.warning + ' px-1'" onclick="widget:Reload()">reload</button>
-            <button data-visible="expanded" data-attr-class="ccg.text.warning + ' px-1'" onclick="widget:ToggleDebugger()">debug</button>
+        <div data-if="!expanded" class="collapsed-title flex items-center justify-center bg-gradient bg-dark">
+            <span class="text-base font-bold text-outline-darker-lg">
+                rml style guide
+            </span>
         </div>
-        <div data-attr-class="ccg.sheet.default.title + ' flex flex-col justify-between items-center relative min-h-14'">
-            <span data-attr-class="expanded ? '' : ccg.heading.h6 + ' z-50'">
+        <!-- Small floating debug buttons -->
+        <div data-visible="expanded" class="debug-controls pl-2 pr-1 pt-2">
+            <button data-attr-class="ccg.text.warning + ' px-1'" onclick="widget:Reload()">reload</button>
+            <button data-attr-class="ccg.text.warning + ' px-1'" onclick="widget:ToggleDebugger()">debug</button>
+        </div>
+        <div data-if="expanded" data-attr-class="ccg.sheet.default.title + ' flex flex-col justify-between items-center relative min-h-14'">
+            <span>
                 RMLUI STYLE GUIDE
             </span>
 
-            <div data-visible="expanded" class="flex flex-row justify-center items-center gap-2 text-sm text-light z-50">
+            <div class="flex flex-row justify-center items-center gap-2 text-sm text-light z-50">
                 <span data-attr-class="ccg.text.body">Theme:</span>
                 <button data-for="theme : availableThemes"
                         data-attr-class="(currentTheme == theme.id ? ccg.themeButton.default : ccg.button.ghost) + ' text-sm px-3 py-1 text-outline-none rounded transition-bg'"
@@ -51,7 +51,7 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="flex bg-dark-alpha min-h-8 box-shadow-md z-10" style="gap: 1px;">
+        <nav data-if="expanded" class="flex bg-dark-alpha min-h-8 box-shadow-md z-10" style="gap: 1px;">
             <!-- umm yeh, so this 1px div is here to stop a hover bug in rmlui, will remove later if it gets fixed,
                 remove and you'll see it when you hover the first button -->
             <div data-attr-class="ccg.themeButton.default" style="width: 1px;"></div>
@@ -62,7 +62,7 @@
             </button>
         </nav>
 
-        <div class="relative flex-1">
+        <div data-visible="expanded" class="relative flex-1">
             <!-- About Section -->
             <div id="about-section" class="section" data-visible="activeTab == 'about' && expanded">
                 <div class="pl-2">
