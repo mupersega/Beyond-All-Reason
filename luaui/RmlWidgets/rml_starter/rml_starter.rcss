@@ -9,10 +9,10 @@
     /* positional properties */
     position: absolute;
     top: 5%;
-    right: 10dp;
+    right: 5dp;
     /* dimensional properties */
     width: 600dp;
-    height: 80%;
+    height: 80vh;
     /* Inner content layout properties - specific to widget */
     display: flex;
 }
@@ -21,38 +21,33 @@
     width: 144dp;
     height: 24dp;
     top: 100dp;
-    right: 0dp;
+    transition: transform 0.1s elastic-in-out;
 }
 
-#rml-starter-widget.collapsed .toggle-expand-container {
-    left: 3dp;
+#rml-starter-widget.collapsed:hover {
+    transform: translateX(-3dp);
+}
+
+#rml-starter-widget.collapsed:hover .chevron {
+    opacity: 1;
+    filter: none;
 }
 
 /* Small floating debug controls */
 .debug-controls {
-    position: absolute;
-    top: -3dp;
-    left: 10dp;
     display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 3dp;
     z-index: 50;
 }
 
-.debug-btn {
-    height: 20dp;
-    padding: 0 4dp;
-    cursor: pointer;
-    text-align: center;
-    line-height: 18dp;
-    transition: all 0.1s;
-}
-
 .debug-btn:hover {
-    transform: scale(1.1);
+    filter: brightness(1.2);
 }
 
-.debug-btn:active {
-    transform: scale(0.95);
+.debug-btn:hover>span {
+    transform: translateY(-1dp);
 }
 
 .code-green {
@@ -77,7 +72,6 @@
     z-index: 3;
     flex: 1;
     position: relative;
-    padding-left: 5dp;
 }
 
 #tabs-navigation {
@@ -85,6 +79,7 @@
     flex-direction: column;
     z-index: 10;
     position: relative;
+    backdrop-filter: blur(0.5dp);
 }
 
 .tab-panel {
@@ -102,7 +97,7 @@
     cursor: pointer;
     transition: transform 0.2s, background-color 0.2s;
     text-align: center;
-    min-height: 40dp;
+    min-height: 32dp;
     display: flex;
     font-weight: bold;
     align-items: center;
@@ -161,41 +156,44 @@ button:active {
 }
 
 .toggle-expand-container {
-    position:absolute;
-    top: 8dp;
-    left: 4dp;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 10dp;
-    height: 10dp;
+    width: 15dp;
+    height: 15dp;
     cursor: pointer;
     z-index: 100;
+}
+
+.toggle-expand-container:hover {
+    filter: brightness(1.2);
+}
+
+.toggle-expand-container:hover>.chevron {
+    opacity: 1;
+    filter: none;
+}
+
+.toggle-expand-container:active {
+    transform: translate(1dp, 1dp);
 }
 
 .chevron {
     width: 4dp;
     height: 4dp;
-    position: relative;
     /* warning yellow #fad400 */
-    border-left: 2dp #fad400;
-    border-right: 1dp transparent;
-    border-top: 2dp #fad400;
-    border-bottom: 1dp transparent;
-    border-radius: 5dp;
-    transition: transform 0.1s, right 0.3s,opacity 0.2s;
-    opacity: 0.5;
+    border-left: 4dp #fad400;
+    border-top: 4dp #fad400;
+    border-top-left-radius: 3dp;
+    /* border-radius: 5dp; */
+    transition: transform 0.1s, right 0.3s,opacity 0.1s;
+    opacity: 0.1;
     transform: rotate(315deg);
-    top: -4dp;
-}
-
-.chevron:hover {
-    opacity: 1.0;
+    filter: grayscale(1);
 }
 
 .chevron.expanded {
     transform: rotate(135deg);
-    top: -4dp;
 }
 
 .collapsed-title {
@@ -204,4 +202,25 @@ button:active {
     width: 100%;
     font-weight: bold;
     font-size: 14dp;
+}
+
+/* Target directly where possible the following selector is better then '.collapsed-title:hover .chevron {}' */
+.collapsed-title:hover>.toggle-expand-container>.chevron {
+    opacity: 1;
+    filter: none;
+}
+
+.collapsed-title:hover {
+    filter: brightness(1.1);
+}
+
+input.input-highlighter {
+    transition: border 0.1s elastic-in-out;
+    /* vv dark alpha vv */
+    border: 1dp #4a4a4a80;
+}
+
+input.input-highlighter:focus {
+    /* warning yellow with some alpha */
+    border: 1dp #fad40080;
 }

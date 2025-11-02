@@ -1,14 +1,10 @@
 #!/bin/bash
 
 # RML Widget Generator Script
-# Usage: ./generate-widget.sh --name widget_name [--size sm|md|lg|xl] [--position left|right|center] [--vertical top|middle|bottom]
+# Usage: ./generate-widget.sh --name widget_name
 
 # Default values
 WIDGET_NAME=""
-SIZE="md"
-POSITION="left"
-VERTICAL="top"
-DRAGGABLE=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -17,42 +13,24 @@ while [[ $# -gt 0 ]]; do
             WIDGET_NAME="$2"
             shift 2
             ;;
-        --size)
-            SIZE="$2"
-            shift 2
-            ;;
-        --position)
-            POSITION="$2"
-            shift 2
-            ;;
-        --vertical)
-            VERTICAL="$2"
-            shift 2
-            ;;
-        --draggable)
-            DRAGGABLE=true
-            shift
-            ;;
         -h|--help)
             echo "RML Widget Generator"
             echo ""
-            echo "Usage: $0 --name widget_name [options]"
+            echo "Usage: $0 --name widget_name"
             echo ""
             echo "Required:"
             echo "  --name NAME        Widget name (alphanumeric and underscores only)"
             echo ""
             echo "Options:"
-            echo "  --size SIZE        Widget size: sm (200x150), md (300x400), lg (500x600), xl (800x800)"
-            echo "  --position POS     Horizontal position: left (50dp), center (50% + translateX), right (50dp from right)"
-            echo "  --vertical VER     Vertical position: top (100dp), middle (50% + translateY), bottom (50dp from bottom)"
-            echo "  --draggable        Make the widget draggable by including a drag handle"
             echo "  -h, --help         Show this help message"
             echo ""
             echo "Examples:"
             echo "  $0 --name my_widget"
-            echo "  $0 --name big_panel --size lg --position right"
-            echo "  $0 --name tiny_tooltip --size sm --position center --vertical middle"
-            echo "  $0 --name movable_window --size md --draggable"
+            echo "  $0 --name build_menu"
+            echo "  $0 --name unit_stats"
+            echo ""
+            echo "Generated widgets use standard size (300x400) and position (top-left)."
+            echo "Customize size and position in the generated .rcss file as needed."
             exit 0
             ;;
         *)
@@ -71,7 +49,7 @@ done
 # Validate widget name
 if [[ -z "$WIDGET_NAME" ]]; then
     echo "Error: Widget name is required!"
-    echo "Usage: $0 --name widget_name [options]"
+    echo "Usage: $0 --name widget_name"
     echo "Use --help for more information"
     exit 1
 fi
@@ -82,101 +60,6 @@ if [[ ! "$WIDGET_NAME" =~ ^[a-zA-Z][a-zA-Z0-9_-]*$ ]]; then
     exit 1
 fi
 
-# Validate size
-case $SIZE in
-    sm|small)
-        SIZE="sm"
-        WIDTH="200dp"
-        HEIGHT="150dp"
-        ;;
-    md|medium)
-        SIZE="md"
-        WIDTH="300dp"
-        HEIGHT="400dp"
-        ;;
-    lg|large)
-        SIZE="lg"
-        WIDTH="500dp"
-        HEIGHT="600dp"
-        ;;
-    xl|extra-large)
-        SIZE="xl"
-        WIDTH="800dp"
-        HEIGHT="800dp"
-        ;;
-    *)
-        echo "Error: Invalid size '$SIZE'. Use: sm, md, lg, or xl"
-        exit 1
-        ;;
-esac
-
-# Calculate horizontal position
-case $POSITION in
-    left)
-        LEFT="50dp"
-        TRANSFORM_X=""
-        ;;
-    center)
-        LEFT="50%"
-        TRANSFORM_X="translateX(-50%)"
-        ;;
-    right)
-        LEFT="auto"
-        RIGHT="50dp"
-        TRANSFORM_X=""
-        ;;
-    *)
-        echo "Error: Invalid position '$POSITION'. Use: left, center, or right"
-        exit 1
-        ;;
-esac
-
-# Calculate vertical position
-case $VERTICAL in
-    top)
-        TOP="100dp"
-        TRANSFORM_Y=""
-        ;;
-    middle)
-        TOP="50%"
-        TRANSFORM_Y="translateY(-50%)"
-        ;;
-    bottom)
-        TOP="auto"
-        BOTTOM="50dp"
-        TRANSFORM_Y=""
-        ;;
-    *)
-        echo "Error: Invalid vertical position '$VERTICAL'. Use: top, middle, or bottom"
-        exit 1
-        ;;
-esac
-
-# Combine transforms
-TRANSFORM=""
-if [[ -n "$TRANSFORM_X" && -n "$TRANSFORM_Y" ]]; then
-    TRANSFORM="transform: translate(-50%, -50%);"
-elif [[ -n "$TRANSFORM_X" ]]; then
-    TRANSFORM="transform: translateX(-50%);"
-elif [[ -n "$TRANSFORM_Y" ]]; then
-    TRANSFORM="transform: translateY(-50%);"
-fi
-
-# Build position properties
-POSITION_CSS=""
-if [[ "$POSITION" == "right" ]]; then
-    POSITION_CSS="right: $RIGHT;"
-else
-    POSITION_CSS="left: $LEFT;"
-fi
-
-if [[ "$VERTICAL" == "bottom" ]]; then
-    POSITION_CSS="$POSITION_CSS
-    bottom: $BOTTOM;"
-else
-    POSITION_CSS="$POSITION_CSS
-    top: $TOP;"
-fi
 WIDGET_DIR="../${WIDGET_NAME}"
 
 # Check if widget directory already exists
@@ -186,10 +69,6 @@ if [ -d "$WIDGET_DIR" ]; then
 fi
 
 echo "Generating RML widget: $WIDGET_NAME"
-echo "  Size: $SIZE ($WIDTH x $HEIGHT)"
-echo "  Position: $POSITION ($LEFT)"
-echo "  Vertical: $VERTICAL ($TOP)"
-echo "  Draggable: $DRAGGABLE"
 echo "Creating directory: $WIDGET_DIR"
 
 # Create widget directory
@@ -202,7 +81,8 @@ if not RmlUi then
 end
 
 local widget = widget ---@type Widget
-local utils = VFS.Include("luaui/RmlWidgets/utils.lua")
+local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
+local ccg = VFS.Include("luaui/Include/rml_utilities/common_class_groups.lua") -- already in model but useful here too for custom class groups
 
 function widget:GetInfo()
     return {
@@ -212,7 +92,7 @@ function widget:GetInfo()
         date = "2025",
         license = "GNU GPL, v2 or later",
         layer = -10000,
-        enabled = true,
+        enabled = false,
     }
 end
 
@@ -225,39 +105,54 @@ local RML_PATH = "luaui/RmlWidgets/WIDGET_NAME_PLACEHOLDER/WIDGET_NAME_PLACEHOLD
 local document
 local dm_handle
 
--- Initial data model
-local init_model = {
-    message = "Hello from WIDGET_NAME_PLACEHOLDER!",
-    currentTime = os.date("%H:%M:%S"),
-    debugMode = false,
-}
+-- Create a new data model every time to avoid reference oddities even with dm_handle
+local function initModel()
+    return {
+        message = "Hello from WIDGET_NAME_PLACEHOLDER!",
+        currentTime = os.date("%H:%M:%S"),
+        debugMode = false,
+        status = "Ready",
+        
+        -- Custom class groups for this widget (add your own here)
+        my = {
+            -- Example: custom button style
+            -- customButton = ccg.definitions.button.default .. " custom-additions"
+        },
+        
+        handleConfirm = function()
+            local model = utils.GetCurrentModel(dm_handle)
+            if model then
+                model.status = "Confirmed"
+                model.message = "Action confirmed!"
+                Spring.Echo(WIDGET_ID .. ": User confirmed action")
+            end
+        end,
+        
+        handleCancel = function()
+            local model = utils.GetCurrentModel(dm_handle)
+            if model then
+                model.status = "Cancelled"
+                model.message = "Action cancelled"
+                Spring.Echo(WIDGET_ID .. ": User cancelled action")
+            end
+        end,
+    }
+end
 
 function widget:Initialize()
-    if widget:GetInfo().enabled == false then
-        Spring.Echo(WIDGET_ID .. ": Widget is disabled, skipping initialization")
-        return false
-    end
-    
-    Spring.Echo(WIDGET_ID .. ": Initializing widget...")
-    
-    -- Use the modern utility function to initialize
     local result = utils.initializeRmlWidget(self, {
         widgetId = WIDGET_ID,
         modelName = MODEL_NAME,
         rmlPath = RML_PATH,
-        initModel = init_model,
-        useSharedcommonClassGroups = true,
+        initModel = initModel(), -- Use fresh model every time
+        useCommonClassGroups = true,
     })
-    
     if not result then
         return false
     end
     
-    -- Store the returned objects
     document = result.document
     dm_handle = result.dm_handle
-    
-DRAGGABLE_PLACEHOLDER
     
     Spring.Echo(WIDGET_ID .. ": Widget initialized successfully")
     return true
@@ -274,7 +169,7 @@ function widget:Shutdown()
     
     utils.shutdownRmlWidget(self, shutdownParams, document, dm_handle)
     
-    -- Clear our references
+    -- Clear references
     document = nil
     dm_handle = nil
     
@@ -314,34 +209,61 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << 'EOF'
 <rml>
 <head>
     <title>WIDGET_NAME_PLACEHOLDER Widget</title>
-    
-    <!-- External stylesheets -->
+
+    <!-- External stylesheets - order matters for cascading -->
     <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
-    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
 
     <link rel="stylesheet" href="WIDGET_NAME_PLACEHOLDER.rcss" type="text/rcss" />
 </head>
-<body id="WIDGET_NAME_PLACEHOLDER-widget">
-    <div id="widget-container" data-model="WIDGET_NAME_PLACEHOLDER_model" data-attr-class="panelCard">
-        <handle move_target="WIDGET_NAME_PLACEHOLDER-widget" class="handle cursor-move">
-            ...
-        </handle>
+<body id="WIDGET_NAME_PLACEHOLDER-widget" class="widget-shadow rounded-lg">
+    <div id="widget-container" data-model="WIDGET_NAME_PLACEHOLDER_model" data-attr-class="ccg.sheet.general.container + ' flex flex-col h-full justify-between'">
         <!-- Small floating debug buttons -->
-        <div class="debug-controls">
-            <button class="debug-btn text-dark text-sm font-bold bg-primary" onclick="widget:Reload()" title="Reload Widget">reload</button>
-            <button class="debug-btn text-dark text-sm font-bold bg-primary" onclick="widget:ToggleDebugger()" title="Toggle Debugger">debug</button>
+        <div class="debug-controls absolute top right pr-2 pt-2">
+            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()" title="Reload Widget">
+                <span>reload</span> 
+            </button>
+            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">
+                <span>debug</span>
+            </button>
+        </div>
+        <div data-attr-class="ccg.sheet.general.title + ' flex flex-col justify-between items-center relative min-h-8'">
+            <span>
+                WIDGET_NAME_PLACEHOLDER
+            </span>
+        </div>
+
+        <div data-attr-class="ccg.sheet.general.content">
+            <h1 data-attr-class="ccg.heading.h4">{{message}}</h1>
+            
+            <div class="flex flex-col gap-4">
+                <p data-attr-class="ccg.text.body">This is a generated RML widget template using modern patterns.</p>
+                
+                
+                <!-- Example with basic state -->
+                <div class="flex flex-col gap-3">
+                    <p data-attr-class="ccg.text.body">Status: <span data-attr-class="ccg.text.body">{{status}}</span></p>
+                </div>
+                
+                
+                <p data-attr-class="ccg.text.caption">Time: {{currentTime}}</p>
+            </div>
+        </div>
+        <div data-attr-class="ccg.panel.info + ' p-3 m-3'">
+            <p data-attr-class="ccg.text.warning">Remember!</p>
+            <p data-attr-class="ccg.text.body">Enable the <strong>rml_style_guide</strong> widget to explore all available styling components. Press F11 and search "style guide"</p>
         </div>
         
-        <h1 data-attr-class="textHeading">WIDGET_NAME_PLACEHOLDER</h1>
-        
-        <div data-attr-class="layoutFlexCol">
-            <p data-attr-class="cg-textBody">{{message}}</p>
-            <p data-attr-class="cg-textMuted">Time: {{currentTime}}</p>
+        <div data-attr-class="ccg.sheet.general.footer">            
+            <div class="flex flex-row justify-end gap-2">
+                <button data-attr-class="ccg.button.danger + ' px-2 py-1'" data-event-click="handleCancel()">cancel</button>
+                <button data-attr-class="ccg.button.success + ' px-2 py-1'" data-event-click="handleConfirm()">confirm</button>
+            </div>
         </div>
     </div>
 </body>
@@ -352,14 +274,13 @@ EOF
 cat > "$WIDGET_DIR/${WIDGET_NAME}.rcss" << EOF
 /* WIDGET_NAME_PLACEHOLDER Widget Styles */
 #WIDGET_NAME_PLACEHOLDER-widget {
-    /* positional properties */
+    /* Standard positioning and sizing - customize as needed */
     display: flex;
     position: absolute;
-    $POSITION_CSS
-    $TRANSFORM
-    /* dimensional properties */
-    width: $WIDTH;
-    height: $HEIGHT;
+    left: 50dp;
+    top: 100dp;
+    width: 300dp;
+    height: 400dp;
 }
 
 #widget-container {
@@ -368,73 +289,28 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rcss" << EOF
     flex: 1;
 }
 
-/* Small floating debug controls */
+/* Debug controls */
 .debug-controls {
-    position: absolute;
-    top: -15dp;
-    right: -5dp;
     display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 3dp;
-    z-index: 10;
-}
-
-.debug-btn {
-    height: 20dp;
-    padding: 0 4dp;
-    cursor: pointer;
-    text-align: center;
-    line-height: 18dp;
-    transition: all 0.1s;
+    z-index: 50;
 }
 
 .debug-btn:hover {
-    transform: scale(1.1);
+    filter: brightness(1.2);
 }
 
-.debug-btn:active {
-    transform: scale(0.95);
+.debug-btn:hover>span {
+    transform: translateY(-1dp);
 }
+
+/* Custom widget styles go here */
 
 EOF
-
-# Add draggable styles if requested
-if [ "$DRAGGABLE" = true ]; then
-cat >> "$WIDGET_DIR/${WIDGET_NAME}.rcss" << 'EOF'
-
-/* Draggable handle styles */
-.handle {
-    height: 20dp;
-    cursor: move;
-    text-align: center;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    z-index: 5;
-    border-bottom-left-radius: 10dp;
-    border-bottom-right-radius: 10dp;
-}
-
-.handle:hover {
-    background-color: rgba(0, 0, 0, 50);
-}
-EOF
-fi
 
 # Replace placeholders in all files
-if [ "$DRAGGABLE" = true ]; then
-    DRAGGABLE_CODE="    -- Make widget draggable\\
-    if document and document.body then\\
-        local mainElement = document.body:GetFirstChild()\\
-        if mainElement then\\
-            mainElement:SetAttribute(\\\"drag\\\", \\\"drag\\\")\\
-            Spring.Echo(WIDGET_ID .. \\\": Widget is now draggable\\\")\\
-        end\\
-    end"
-else
-    DRAGGABLE_CODE=""
-fi
-
-sed -i "s/DRAGGABLE_PLACEHOLDER/$DRAGGABLE_CODE/g" "$WIDGET_DIR/${WIDGET_NAME}.lua"
 sed -i "s/WIDGET_NAME_PLACEHOLDER/$WIDGET_NAME/g" "$WIDGET_DIR/${WIDGET_NAME}.lua"
 sed -i "s/WIDGET_NAME_PLACEHOLDER/$WIDGET_NAME/g" "$WIDGET_DIR/${WIDGET_NAME}.rml"
 sed -i "s/WIDGET_NAME_PLACEHOLDER/$WIDGET_NAME/g" "$WIDGET_DIR/${WIDGET_NAME}.rcss"
@@ -443,32 +319,32 @@ echo ""
 echo "✅ RML Widget '$WIDGET_NAME' generated successfully!"
 echo ""
 echo "Configuration:"
-echo "  📐 Size: $SIZE ($WIDTH x $HEIGHT)"
-echo "  📍 Position: $POSITION horizontal, $VERTICAL vertical"
-if [ "$DRAGGABLE" = true ]; then
-    echo "  🖱️  Draggable: Yes"
-else
-    echo "  🖱️  Draggable: No"
-fi
+echo "  📐 Size: 300x400dp (customize in .rcss file)"
+echo "  📍 Position: top-left (customize in .rcss file)"
+echo "  🔧 Enabled: false (change to true in GetInfo() when ready)"
 echo ""
 echo "Files created:"
-echo "  📁 ../RmlWidgets/$WIDGET_NAME/"
-echo "  📄 ../RmlWidgets/$WIDGET_NAME/${WIDGET_NAME}.lua"
-echo "  📄 ../RmlWidgets/$WIDGET_NAME/${WIDGET_NAME}.rml"
-echo "  📄 ../RmlWidgets/$WIDGET_NAME/${WIDGET_NAME}.rcss"
+echo "  📁 $WIDGET_DIR/"
+echo "  📄 $WIDGET_DIR/${WIDGET_NAME}.lua"
+echo "  📄 $WIDGET_DIR/${WIDGET_NAME}.rml"
+echo "  📄 $WIDGET_DIR/${WIDGET_NAME}.rcss"
 echo ""
 echo "The widget includes:"
-echo "  • Streamlined utils.initializeRmlWidget() and utils.shutdownRmlWidget() patterns"
-echo "  • Basic data model with message and currentTime"
-echo "  • Theming setup completed"
+echo "  • Modern utils.initializeRmlWidget() and utils.shutdownRmlWidget() patterns"
+echo "  • Common Class Groups (CCG) integration for consistent styling"
+echo "  • Theme utilities for proper theme support"
+echo "  • Clean starter template with basic data model"
 echo "  • Debugger and Reload functions"
-if [ "$DRAGGABLE" = true ]; then
-    echo "  • Draggable functionality enabled"
-fi
 echo ""
-echo "Usage examples:"
-echo "  ./generate-widget.sh --name my_widget"
-echo "  ./generate-widget.sh --name big_panel --size lg --position right"
-echo "  ./generate-widget.sh --name centered_dialog --size md --position center --vertical middle"
+echo "To use Common Class Groups in your templates:"
+echo "  • Use data-attr-class=\"ccg.button.default\" for standard buttons"
+echo "  • Use data-attr-class=\"ccg.text.body\" for body text"
+echo "  • Use data-attr-class=\"ccg.heading.h4\" for headings"
+echo "  • Extend with: data-attr-class=\"ccg.button.default + ' custom-class'\""
+echo ""
+echo "Next steps:"
+echo "  1. Set enabled = true in the GetInfo() function"
+echo "  2. Customize size and position in the .rcss file"
+echo "  3. Enable the rml_style_guide widget to explore styling options"
 echo ""
 echo "Ready to customize your widget!"

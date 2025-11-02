@@ -7,8 +7,8 @@ local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
 
 function widget:GetInfo()
     return {
-        name = "RML Widget Starter",
-        desc = "Rml Starter template demonstrating RmlUi widget best practices and common patterns.",
+        name = "RML Starter",
+        desc = "RML widget demonstrating RmlUi best practices in BAR, common patterns, and expected conventions for primary widgets.",
         author = "Mupersega",
         date = "2025",
         license = "GNU GPL, v2 or later",
@@ -62,7 +62,8 @@ local function initModel()
         debugMode = false,
 
         my = {
-            codeBlock = "flex flex-col p-3 bg-darker rounded border border-dark-alpha code-green text-sm"
+            codeBlock = "flex flex-col p-3 bg-darker rounded border border-dark-alpha code-green text-sm",
+            tabsNavigationStyles = "font-bold bg-darkest-semi-alpha bg-gradient-darker-alpha radial-focus-start text-outline-darkest-lg border-bottom border-darkest",
         },
         
         -- Data binding demo variables
@@ -161,6 +162,12 @@ function widget:Shutdown()
     Spring.Echo(WIDGET_ID .. ": Shutdown complete")
 end
 
+function widget:Update()
+    if dm_handle then
+        dm_handle.currentTime = os.date("%H:%M:%S")
+    end
+end
+
 -- Development helper function for hot reloading
 function widget:Reload()
     Spring.Echo(WIDGET_ID .. ": Reloading widget...")
@@ -168,21 +175,6 @@ function widget:Reload()
     widget:Initialize()
 end
 
--- Update current time (can be called periodically or in response to events)
-function widget:UpdateCurrentTime()
-    if dm_handle then
-        dm_handle.currentTime = os.date("%H:%M:%S")
-        Spring.Echo(WIDGET_ID .. ": Updated current time to: " .. dm_handle.currentTime)
-    end
-end
-
--- Example of how to update the data model from Lua
-function widget:UpdateMessage(newMessage)
-    if dm_handle then
-        dm_handle.message = newMessage
-        Spring.Echo(WIDGET_ID .. ": Message updated to: " .. newMessage)
-    end
-end
 
 -- Toggle RmlUi debugger - simple toggle function
 function widget:ToggleDebugger()
