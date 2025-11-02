@@ -28,14 +28,9 @@
 .bottom { bottom: 0; }
 
 /* === Flex === */
-/*
-
-Flex used incorrectly in RMLUI can cause significant performance issues.
-
+/* Flex used incorrectly in RMLUI can cause significant performance issues.
 Can it be done without flexbox for the same effect? If so, prefer other layout methods for better performance.
-
 Otherwise, always assign specific dimensions to parents and flex parts to child elements to minimize layout recalculations.
-
 Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 */
 .flex { display: flex; }
