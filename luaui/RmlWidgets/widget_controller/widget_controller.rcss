@@ -1,0 +1,93 @@
+/* widget_controller Widget Styles */
+#widget_controller-widget {
+    /* Standard positioning and sizing - customize as needed */
+    display: flex;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 300dp;
+    height: 60vh;
+    transform: translate(-50%, -50%);
+}
+
+#widget-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Debug controls */
+.debug-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3dp;
+    z-index: 50;
+}
+
+.debug-btn:hover {
+    filter: brightness(1.2);
+}
+
+.debug-btn:hover>span {
+    transform: translateY(-1dp);
+}
+
+/* Custom widget styles go here */
+
+/* Draggable handle styles */
+.handle {
+    height: 100%;
+    cursor: move;
+    text-align: left;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 5;
+    clip: always;
+}
+
+.handle>.greeble {
+    color: #00000000;
+    padding-left: 5dp;
+    position: relative;
+    top: -15dp;
+    font-size: 2.5rem;
+}
+
+@keyframes greeble-pulse {
+    0% { color: #00000000; }
+    50% { color: #fad400; }
+    100% { color: #00000000;  }
+}
+
+@keyframes jiggle-on-x {
+    0% { transform: translateX(0dp) rotate(60deg); }
+    25% { transform: translateX(-1dp) rotate(60deg); }
+    50% { transform: translateX(1dp) rotate(60deg); }
+    75% { transform: translateX(-1dp) rotate(60deg); }
+    100% { transform: translateX(0dp) rotate(60deg); }
+}
+
+.handle:hover>.greeble {
+    animation: none;
+    color: #2cf877;
+}
+
+.handle:active>.greeble {
+    animation: 1s back-in-out infinite greeble-pulse;
+}
+
+.handle:active>.angle-decorator {
+    animation: 0.5s back-in-out infinite jiggle-on-x;
+}
+
+.angle-decorator {
+    position: absolute;
+    top: -120dp;
+    right: -100dp;
+    width: 200dp;
+    height: 200dp;
+    transform: rotate(60deg);
+}

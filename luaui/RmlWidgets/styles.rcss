@@ -61,14 +61,6 @@ strong
 	font-weight: bold;
 }
 
-input {
-	border: 1dp rgba(0, 0, 0, 100);
-}
-
-input:focus {
-	border: 1dp rgba(0, 0, 0, 150);
-}
-
 input[type="checkbox"]
 {
 	width: 20dp;

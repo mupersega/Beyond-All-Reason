@@ -1,0 +1,87 @@
+<rml>
+<head>
+    <title>widget_controller Widget</title>
+
+    <!-- External stylesheets - order matters for cascading -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="widget_controller.rcss" type="text/rcss" />
+
+    <style>
+        .widget-entry-row:hover> .widget-entry-row__text {
+            transform: translateX(5dp);
+        }
+        .widget-entry-row__text {
+            transition: transform 0.2s exponential-out;
+        }
+        #widget-list-container.loadingWidgets>.widget-entry-row {
+            opacity: 0;
+        }
+
+        .search-clear {
+            cursor: pointer;
+            transition: opacity 0.2s;
+            width: 15dp;
+            height: 15dp;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: filter 0.2s;
+        }
+        .search-clear:hover>svg {
+            opacity: 1;
+        }
+        .search-clear:active>svg {
+            transform: scale(0.9);
+        }
+    </style>
+</head>
+<body id="widget_controller-widget" class="widget-shadow">
+    <div id="widget-container" data-model="widget_controller_model" data-attr-class="ccg.sheet.modal.container + ' flex flex-col h-full justify-between border-radius-none'">
+        <!-- Small floating debug buttons -->
+        <div class="debug-controls absolute top right pr-2 pt-2">
+            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()" title="Reload Widget">
+                <span>reload</span> 
+            </button>
+            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">
+                <span>debug</span>
+            </button>
+        </div>
+        <div data-attr-class="ccg.sheet.general.title + ' flex flex-col justify-center items-start relative min-h-3 hazards-construction-textured bg-warning'">
+            <span class="z-50 pe-none text-lg pl-2 text-outline-darkest-xl">
+                Widget Controller
+            </span>
+            <handle move_target="widget_controller-widget" class="handle cursor-move">
+                <span class="greeble z-10">
+                    .
+                </span>
+                <div class="angle-decorator bg-black-semi-alpha border border-warning-alpha box-shadow-sm-inset"></div>
+            </handle>
+        </div>
+
+        <div id="widget-list-container" class="bg-darkest-alpha clip overflow-scroll h-full" data-class-loading="loadingWidgets">
+            <div data-for="widget : visibleWidgets" class="widget-entry-row px-2 py-1 bg-medium-alpha-hover" data-event-click="toggleWidget(widget.name)">
+                <p data-attr-class="(widget.active ? ccg.text.success : ccg.text.danger) + ' widget-entry-row__text text-center'">{{widget.name}}</p>
+            </div>
+        </div>
+
+        <label class="bg-darkest-alpha flex min-h-7 gap-2 items-center justify-center px-2 py-1 border-top border-w-px border-dark-alpha relative" for="filter-input">
+            <div class="input-wrapper relative rounded bg-dark-alpha bg-gradientv flex items-center border-px border-black-alpha clip">
+                <svg src="../svg/filter_icon.svg" data-attr-class="my.svgStyles + ' opacity-75'"></svg>
+                <input id="filter-input" type="text" data-value="filterString" class="bg-dark-alpha bg-gradient p-1 pl-1-5 border-left border-right border-black-alpha" onchange="widget:UpdateVisibleWidgets(element)"></input>
+                <button class="search-clear p-0-5" data-event-mousedown="clearFilterString()"
+                    data-class-filter-grayscale="filterString == ''"
+                    data-class-bg-dark-alpha-hover="filterString != ''">
+                    <svg src="../svg/bin_icon.svg" data-attr-class="my.svgStyles + ' opacity-75 pe-none'"></svg>
+                </button>
+            </div>
+        </label>
+    </div>
+</body>
+</rml>

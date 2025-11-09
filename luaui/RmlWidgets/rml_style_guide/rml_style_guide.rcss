@@ -15,7 +15,6 @@
     height: 24dp;
     top: 20dp;
     left: 200dp;
-    transition: transform 0.1s elastic-in-out;
 }
 
 #widget-container {

@@ -103,13 +103,6 @@
 .text-info-alpha { color: #06b6d480; }
 .border-info-alpha { border-color: #06b6d480; }
 
-/* === CONFIRM TEAL (#14b8a6) === */
-.bg-confirm { background-color: #14b8a6; }
-.text-confirm { color: #14b8a6; }
-.border-confirm { border-color: #14b8a6; }
-.bg-confirm-alpha { background-color: #14b8a680; }
-.text-confirm-alpha { color: #14b8a680; }
-.border-confirm-alpha { border-color: #14b8a680; }
 
 /* === Box Shadow === */
 .box-shadow { box-shadow: rgba(0, 0, 0, 100) 0dp 1dp 2dp 0dp; }
@@ -129,10 +122,30 @@
 .text-outline-dark-lg { font-effect: outline(2dp #4a4a4a); }
 .text-outline-darker { font-effect: outline(1dp #282828); }
 .text-outline-darker-lg { font-effect: outline(2dp #282828); }
+.text-outline-darker-xl { font-effect: outline(3dp #282828); }
 .text-outline-darkest { font-effect: outline(1dp #1d1d1d); }
 .text-outline-darkest-lg { font-effect: outline(2dp #1d1d1d); }
-.text-outline-none { font-effect: outline(1dp #ffffff00); } /* This isn't a great pattern but the closest we can get to a none property, order of this selector matters.*/
+.text-outline-darkest-xl { font-effect: outline(3dp #1d1d1d); }
+.text-outline-light { font-effect: outline(1dp #e5e7eb); }
 
+/* === HOVERS === */
+.bg-light-hover:hover { background-color: #f3f4f6; }
+.bg-medium-hover:hover { background-color: #e5e7eb; }
+.bg-dark-hover:hover { background-color: #3b3b3b; }
+.bg-darkest-hover:hover { background-color: #161616; }
+.bg-black-hover:hover { background-color: #000000; }
+.bg-success-hover:hover { background-color: #16a34a; }
+.bg-warning-hover:hover { background-color: #fbbf24; }
+.bg-danger-hover:hover { background-color: #dc2626; }
+.bg-info-hover:hover { background-color: #0ea5e9; }
+.bg-white-alpha-hover:hover { background-color: #e0e0e0a0; }
+.bg-light-alpha-hover:hover { background-color: #e5e7eba0; }
+.bg-medium-alpha-hover:hover { background-color: #d1d5db80; }
+.bg-dark-alpha-hover:hover { background-color: #4a4a4a80; }
+.bg-darker-alpha-hover:hover { background-color: #1f1f1f80; }
+.bg-darkest-alpha-hover:hover { background-color: #1d1d1d80; }
+.bg-black-alpha-hover:hover { background-color: #06060680; }
+    
 /* === Gradients === */
 .bg-gradient {
     decorator: linear-gradient(150deg, #1d1d1d00 0%, #1d1d1d80 100%);
@@ -267,4 +280,6 @@
 
 /* The concept of overrides are the closest we get to an !important and should be used sparingly and created only for main variables - achieved cos cascades */
 .text-light-override { color: #e5e7eb; }
+.text-outline-none { font-effect: outline(1dp #ffffff00); }
 .box-shadow-none { box-shadow: none; }
+.border-radius-none { border-radius: 0dp; }

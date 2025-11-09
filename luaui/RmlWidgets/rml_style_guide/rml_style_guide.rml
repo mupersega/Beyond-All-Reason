@@ -83,7 +83,7 @@
                 
                 <div class="flex flex-col p-2 gap-4">
                     <!-- Main concept explanation -->
-                    <div data-attr-class="ccg.panel.general + ' flex flex-row h-60'">
+                    <div data-attr-class="ccg.panel.general + ' flex flex-row h-60 gap-6 p-4'">
                         <div class="flex-2">
                             <h3 data-attr-class="ccg.heading.h4">What are Common Class Groups?</h3>
                             <div class="flex flex-col gap-4">
@@ -128,7 +128,7 @@
                     </div>
     
                     <!-- How to use them -->
-                    <div data-attr-class="ccg.panel.general + ' flex flex-row h-84'">
+                    <div data-attr-class="ccg.panel.general + ' flex flex-row h-84 p-4 gap-6'">
                         <div class="flex-2">
                             <h3 data-attr-class="ccg.heading.h4">How to Use Them</h3>
                             <div class="flex flex-col gap-6 mt-4">
@@ -184,7 +184,7 @@
                     </div>
     
                     <!-- Extending components - critical concept -->
-                    <div data-attr-class="ccg.panel.general + ' flex flex-row h-84'">
+                    <div data-attr-class="ccg.panel.general + ' flex flex-row h-84 p-4 gap-6'">
                         <!-- Left side - Extension concept -->
                         <div class="flex-2">
                             <h3 data-attr-class="ccg.heading.h4">Extending Components</h3>
@@ -237,7 +237,7 @@
                     </div>
     
                     <!-- Technical implementation -->
-                    <div data-attr-class="ccg.panel.general + ' flex flex-row h-48'">
+                    <div data-attr-class="ccg.panel.general + ' flex flex-row h-48 p-4 gap-6'">
                         <div class="flex-2">
                             <h3 data-attr-class="ccg.heading.h4">Widget Integration</h3>
                             <div class="flex flex-col gap-4 mt-4">
@@ -280,7 +280,7 @@
                     </div>
     
                     <!-- Custom class groups -->
-                    <div data-attr-class="ccg.panel.general + ' flex flex-row h-52'">
+                    <div data-attr-class="ccg.panel.general + ' flex flex-row h-52 p-4 gap-6'">
                         <div class="flex-2">
                             <h3 data-attr-class="ccg.heading.h4">Creating Your Own Class Groups</h3>
                             <div class="flex flex-col gap-4 mt-4">

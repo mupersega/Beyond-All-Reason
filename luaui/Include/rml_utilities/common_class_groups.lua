@@ -21,7 +21,7 @@ commonClassGroups.definitions = {
         body = "text-sm font-normal text-light",
         info = "text-sm font-bold text-info text-outline-darker-lg",
         caption = "text-sm font-normal text-medium",
-        emphasis = "text-sm font-semibold text-light text-outline-darker-lg",
+        emphasis = "text-sm font-bold text-light text-outline-darker-lg",
         danger = "text-sm font-bold text-danger text-outline-darker-lg",
     },
 
@@ -111,7 +111,7 @@ commonClassGroups.definitions = {
     },
 
     panel = {
-        general = "gap-6 p-4 rounded border-sm border-darker-alpha box-shadow-sm bg-darker-alpha radial-focus-start-feint",
+        general = "rounded border-sm border-darker-alpha box-shadow-sm bg-darker-alpha radial-focus-start-feint",
         primary = "bg-primary-alpha shadow-md rounded border-primary-dark border hazards-135 text-shadow",
         construction = "bg-warning shadow-lg rounded border-warning border-2 hazards-construction-textured text-outline-darkest-lg border border-warning-alpha",
         danger = "bg-danger-alpha shadow-md rounded border-danger border hazards-225 text-shadow",
@@ -140,7 +140,7 @@ commonClassGroups.definitions = {
             footer = "p-3 bg-darker text-warning text-outline-darkest",
         },
         modal = {
-            container = "hazards-135 bg-darkest rounded-lg border border-dark clip box-shadow-md",
+            container = "hazards-135 bg-darkest-alpha rounded-lg border border-dark clip box-shadow-md",
             title = "text-xl font-bold bg-darkest-semi-alpha p-3 bg-gradient-darker-alpha text-outline-darkest-lg border-bottom border-darkest",
             content = "p-4",
             footer = "p-3 bg-darkest-alpha border-top border-darkest rounded-b-lg",
@@ -150,7 +150,7 @@ commonClassGroups.definitions = {
             title = "text-xl font-bold bg-surface-semi-alpha p-3 bg-gradient_surface-textured text-outline-darkest-lg",
             content = "p-4",
             footer = "p-3 bg-surface-alpha rounded-b-lg",
-        },
+        }
     },
 
     card = {

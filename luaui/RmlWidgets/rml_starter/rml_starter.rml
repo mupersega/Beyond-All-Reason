@@ -88,7 +88,7 @@
                 <p data-attr-class="ccg.text.body + ' px-6'">Essential information before creating your first RmlUi widget, for the sake of the following example lets call it <span class="font-bold">my_widget.</span></p>
                 
                 <div data-attr-class="ccg.sheet.general.content + ' flex flex-col gap-3'">
-                    <div data-attr-class="ccg.panel.general + ' box-shadow-none'">
+                    <div data-attr-class="ccg.panel.general + ' p-4 box-shadow-none'">
                         <h2 data-attr-class="ccg.heading.h2">Structure</h2>
                         <div class="pl-2">
                             <div data-attr-class="ccg.heading.h5">Files</div>
@@ -153,7 +153,7 @@
                     </div>
 
 
-                    <div data-attr-class="ccg.panel.general + ' flex-col'">
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h2 data-attr-class="ccg.heading.h2">Core Functionality</h2>
                         <p class="text-light m-1">A basic RmlUi widget should provide:</p>
                         <div class="pl-2">
@@ -186,7 +186,7 @@
                         </div>
                     </div>
 
-                    <div data-attr-class="ccg.panel.general + ' flex-col'">
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h2 data-attr-class="ccg.heading.h2">Quick Start Steps</h2>
                         <p data-attr-class="ccg.text.body + ' mt-1-5'">Ready to create your first widget? Check the <strong>Tools tab</strong> for an automated generator script which will scaffold a new widget embodying best practices and the patterns shown in this guide.</p>
                         <p data-attr-class="ccg.text.body + ' mt-1-5'">The generator creates a complete widget structure with working examples, so you can start building immediately rather than setting up boilerplate code.</p>
@@ -202,7 +202,7 @@
                 <div class="fixed-header-spacer h-24">you can't see me</div>
                 <p data-attr-class="ccg.text.body + ' px-6'">Fundamental concepts that form the basis of an RmlUi widget. Understanding these will help you create more effective and maintainable widgets.</p>
                 <div data-attr-class="ccg.sheet.general.content + ' flex flex-col gap-3'">
-                    <div data-attr-class="ccg.panel.general">
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h2 data-attr-class="ccg.heading.h2">Logic Layer (.lua)</h2>
                         <p data-attr-class="ccg.text.body">The core of your widget's logic is handled in the <span data-attr-class="ccg.badge.info">.lua</span> file. It must contain the following functions:</p>
                         <div class="mt-2">
@@ -238,7 +238,7 @@
                         </div>
                     </div>
 
-                    <div data-attr-class="ccg.panel.general + ' box-shadow-none'">
+                    <div data-attr-class="ccg.panel.general + ' p-4 box-shadow-none'">
                         <h2 data-attr-class="ccg.heading.h2">Structure Layer (.rml)</h2>
                         <p data-attr-class="ccg.text.body">The structure and organization of a widget's UI is defined by its layout and the arrangement of its elements and is the responsibility of the <span class="code-green">.rml</span> file. This includes the use of containers, panels, and individual components to create a cohesive and functional interface.</p>
                         
@@ -291,7 +291,7 @@
                         </div>
                     </div>
 
-                    <div data-attr-class="ccg.panel.general + ' box-shadow-none'">
+                    <div data-attr-class="ccg.panel.general + ' p-4 box-shadow-none'">
                         <h2 data-attr-class="ccg.heading.h2">Styling Layer (.rcss)</h2>
                         <p data-attr-class="ccg.text.body">The visual appearance and layout behavior of your widget is controlled by RCSS (RML Cascading Style Sheets). RCSS follows CSS2 specifications with some CSS3 features, allowing you to style elements much like web development.</p>
                         
@@ -357,18 +357,18 @@
                             <h3 data-attr-class="ccg.heading.h5">Widget-Specific Styling</h3>
                             <p data-attr-class="ccg.text.body + ' mt-1-5'">Widget-specific styles can be added in two ways, or both ways:</p>
                             <div class="flex flex-row gap-3 mt-2">
-                                <div data-attr-class="ccg.panel.general + ' flex-1'">
+                                <div data-attr-class="ccg.panel.general + ' p-4 flex-1'">
                                     <span data-attr-class="ccg.text.success">Separate .rcss file</span>
                                     <p data-attr-class="ccg.text.body + ' mt-2'">Recommended for complex widgets to keep styles organized</p>
                                 </div>
-                                <div data-attr-class="ccg.panel.general + ' flex-1'">
+                                <div data-attr-class="ccg.panel.general + ' p-4 flex-1'">
                                     <span data-attr-class="ccg.text.warning">Inline &lt;head&gt; &lt;style&gt; element</span>
                                     <p data-attr-class="ccg.text.body + ' mt-2'">Convenient for quick prototyping, ideally move to a separate .rcss file upon release for clear organization.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div data-attr-class="ccg.panel.general">
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h2 data-attr-class="ccg.heading.h4">Key Styling Considerations</h2>
                         <p data-attr-class="ccg.text.body">Important gotchas and best practices when working with RCSS styling in RmlUi widgets:</p>
                         <div class="mt-2">
@@ -412,7 +412,7 @@
                 <div class="fixed-header-spacer h-24">you can't see me</div>
                 <p data-attr-class="ccg.text.body + ' px-6'">Understanding how widgets are positioned within the RmlUi 'shared' context is essential for proper widget placement and sizing.</p>
                 <div data-attr-class="ccg.sheet.general.content + ' flex flex-col gap-3'">
-                    <div data-attr-class="ccg.panel.general + ' box-shadow-none'">
+                    <div data-attr-class="ccg.panel.general + ' p-4 box-shadow-none'">
                         <h2 data-attr-class="ccg.heading.h2">CSS Positioning</h2>
                         
                         <div class="mt-2 pl-2">
@@ -537,7 +537,7 @@
                         </div>
                     </div>
 
-                    <div data-attr-class="ccg.panel.general + ' box-shadow-none'">
+                    <div data-attr-class="ccg.panel.general + ' p-4 box-shadow-none'">
                         <h2 data-attr-class="ccg.heading.h2">Positioning in BAR</h2>
                         <p data-attr-class="ccg.text.body + ' mt-1-5'">Each widget is positioned absolutely within the context, which acts as the bounding window. Widgets do not have a master layout system and cannot be positioned relative to each other.</p>
                         <div data-attr-class="ccg.panel.general + ' text-center p-6 m-6'">
@@ -586,7 +586,7 @@
                             </div>
                             <div class="px-2">
                                 <h3 data-attr-class="ccg.heading.h5 + ' mt-6'">More to Explore</h3>
-                                <div data-attr-class="ccg.panel.general + ' flex flex-row gap-1'">
+                                <div data-attr-class="ccg.panel.general + ' flex flex-row gap-6'">
                                     <div class="flex-1 flex flex-col gap-1 items-center">
                                         <div class="flex-1">
                                             <h3 data-attr-class="ccg.heading.h6 + ' text-center'">Position Values</h3>
@@ -641,12 +641,12 @@
                 <p data-attr-class="ccg.text.body + ' px-6'">Data binding automatically updates your UI when data changes. Think of it like React or Vue's reactive variables, the UI updates instantly once they are changed and ideally only re-renders those elements affected.</p>
                     
                 <div data-attr-class="ccg.sheet.general.content + ' flex flex-col gap-3'">
-                    <div data-attr-class="ccg.panel.general + ' flex-col'">
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h3 data-attr-class="ccg.heading.h5">How It Works</h3>
                         <p data-attr-class="ccg.text.body">Modern RML widgets use utilities to set up data models with a clean, standardized approach:</p>
                         
                         <div class="flex flex-row gap-3 mt-3">
-                            <div data-attr-class="ccg.panel.general + ' flex-1'">
+                            <div data-attr-class="ccg.panel.general + ' p-4 flex-1'">
                                 <span data-attr-class="ccg.badge.info">1. Create initModel Function</span>
                                 <p data-attr-class="ccg.text.body + ' mt-2'">Define a function that returns your data structure with initial values.</p>
                                 <div data-attr-class="my.codeBlock + ' mt-2'">
@@ -660,8 +660,8 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div data-attr-class="ccg.panel.general + ' flex-1'">
+
+                            <div data-attr-class="ccg.panel.general + ' p-4 flex-1'">
                                 <span data-attr-class="ccg.badge.success">2. Initialize with Utils</span>
                                 <p data-attr-class="ccg.text.body + ' mt-2'">Use utils.initializeRmlWidget() in your Initialize function.</p>
                                 <div data-attr-class="my.codeBlock + ' mt-2'">
@@ -680,7 +680,7 @@
                         </div>
                         
                         <div class="flex flex-row gap-3 mt-3">
-                            <div data-attr-class="ccg.panel.general + ' flex-1'">
+                            <div data-attr-class="ccg.panel.general + ' p-4 flex-1'">
                                 <span data-attr-class="ccg.badge.warning">3. Connect to UI</span>
                                 <p data-attr-class="ccg.text.body + ' mt-2'">Use data binding attributes in your RML to display data.</p>
                                 <div data-attr-class="my.codeBlock + ' mt-2'">
@@ -689,8 +689,8 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div data-attr-class="ccg.panel.general + ' flex-1'">
+
+                            <div data-attr-class="ccg.panel.general + ' p-4 flex-1'">
                                 <span data-attr-class="ccg.badge.primary">4. Update via dm_handle</span>
                                 <p data-attr-class="ccg.text.body + ' mt-2'">Use the data model handle to update values from Lua.</p>
                                 <div data-attr-class="my.codeBlock + ' mt-2'">
@@ -704,12 +704,12 @@
                         <p data-attr-class="ccg.text.body + ' mt-3'">When you change <span class="code-green px-1">dm_handle.score = 100</span> in your Lua code, the UI automatically shows the new score. The <span class="code-green px-1">utils.initializeRmlWidget()</span> function handles all the complex setup including document loading, model binding, and context management.</p>
                     </div>
 
-                    <div data-attr-class="ccg.panel.general + ' flex-col'">
+                    <div data-attr-class="ccg.panel.general + ' p-4 flex-col'">
                         <h3 data-attr-class="ccg.heading.h5">Essential Patterns</h3>
                         <p data-attr-class="ccg.text.body">These four patterns cover 90% of what you'll need for dynamic UIs:</p>
                         
                         <div class="flex flex-row gap-3 mt-3">
-                            <div data-attr-class="ccg.panel.general + ' flex-1'">
+                            <div data-attr-class="ccg.panel.general + ' p-4 flex-1'">
                                 <span data-attr-class="ccg.badge.info">Display Data</span>
                                 <p data-attr-class="ccg.text.body + ' mt-2'">Show variables in text using double curly braces.</p>
                                 <div data-attr-class="my.codeBlock + ' mt-2'">
@@ -718,8 +718,8 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div data-attr-class="ccg.panel.general + ' flex-1'">
+
+                            <div data-attr-class="ccg.panel.general + ' p-4 flex-1'">
                                 <span data-attr-class="ccg.badge.success">Show/Hide Elements</span>
                                 <p data-attr-class="ccg.text.body + ' mt-2'">Conditionally display elements based on data.</p>
                                 <div data-attr-class="my.codeBlock + ' mt-2'">
@@ -735,7 +735,7 @@
                         </div>
                         
                         <div class="flex flex-row gap-3 mt-3">
-                            <div data-attr-class="ccg.panel.general + ' flex-1'">
+                            <div data-attr-class="ccg.panel.general + ' p-4 flex-1'">
                                 <span data-attr-class="ccg.badge.warning">Repeat Elements</span>
                                 <p data-attr-class="ccg.text.body + ' mt-2'">Loop through arrays to create lists.</p>
                                 <div data-attr-class="my.codeBlock + ' mt-2'">
@@ -746,8 +746,8 @@
                                     <div class="text-xs">&lt;/div&gt;</div>
                                 </div>
                             </div>
-                            
-                            <div data-attr-class="ccg.panel.general + ' flex-1'">
+
+                            <div data-attr-class="ccg.panel.general + ' p-4 flex-1'">
                                 <span data-attr-class="ccg.badge.primary">Handle Input</span>
                                 <p data-attr-class="ccg.text.body + ' mt-2'">Sync form inputs with your data automatically.</p>
                                 <div data-attr-class="my.codeBlock + ' mt-2'">
@@ -759,12 +759,12 @@
                         </div>
                     </div>
 
-                    <div data-attr-class="ccg.panel.general + ' flex-col'">
+                    <div data-attr-class="ccg.panel.general + ' p-4 flex-col'">
                         <h3 data-attr-class="ccg.heading.h5">Live Examples</h3>
                         <p data-attr-class="ccg.text.body">Here are working examples showing each data binding pattern in action using existing widget data:</p>
                         
                         <!-- Text Interpolation Example -->
-                        <div data-attr-class="ccg.panel.general + ' mt-3'">
+                        <div data-attr-class="ccg.panel.general + ' p-4 mt-3'">
                             <h4 data-attr-class="ccg.heading.h6">Text Interpolation</h4>
                             <div class="mt-2">
                                 <div class="flex gap-1">
@@ -786,7 +786,7 @@
                         </div>
 
                         <!-- Conditional Display Example -->
-                        <div data-attr-class="ccg.panel.general + ' mt-3'">
+                        <div data-attr-class="ccg.panel.general + ' p-4 mt-3'">
                             <h4 data-attr-class="ccg.heading.h6">Conditional Display (data-if)</h4>
                             <div class="mt-2">
                                 <div class="flex flex-col gap-2">
@@ -812,7 +812,7 @@
                         </div>
                     </div>
 
-                    <div data-attr-class="ccg.panel.general + ' flex-col'">
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h3 data-attr-class="ccg.heading.h5">Updating Data from Lua</h3>
                         <p data-attr-class="ccg.text.body">To change data model values from your Lua code, you must use the data model handle (<span class="code-green px-1">dm_handle</span>), not the initial model table:</p>
                         
@@ -833,7 +833,7 @@
                     </div>
 
                     <!-- Array Iteration Example -->
-                    <div data-attr-class="ccg.panel.general">
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h3 data-attr-class="ccg.heading.h5">Array Iteration (data-for)</h3>
                         <div class="mt-2">
                             <p data-attr-class="ccg.text.caption + ' mb-2'">Available Themes:</p>
@@ -853,7 +853,7 @@
                     </div>
 
                     <!-- Data Structure Example -->
-                    <div data-attr-class="ccg.panel.general">
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h3 data-attr-class="ccg.heading.h5">Complex Data Structure</h3>
                         <div class="mt-2">
                             <p data-attr-class="ccg.text.caption + ' mb-2'">Test Array Data:</p>
@@ -884,7 +884,7 @@
                 <p data-attr-class="ccg.text.body + ' px-6'">Development tools and utilities for efficient RML widget creation and styling.</p>
                 
                 <div data-attr-class="ccg.sheet.general.content + ' flex flex-col gap-3'">                
-                    <div data-attr-class="ccg.panel.general">
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h2 data-attr-class="ccg.heading.h2">Widget Generator Script</h2>
                         <p data-attr-class="ccg.text.body">Use the automated script to quickly scaffold new widgets with modern best practices:</p>
                         <div data-attr-class="my.codeBlock + ' m-6 p-6'">
@@ -929,7 +929,7 @@
                             <p data-attr-class="ccg.text.body">Never run a script you do not understand, or that hasn't been verified. The generation script provided is a utility script but when this author is gone, then it may be subject to misuse.</p>
                         </div>
                     </div>
-                    <div data-attr-class="ccg.panel.general">
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h2 data-attr-class="ccg.heading.h2">RML Style Guide</h2>
                         <p data-attr-class="ccg.text.body">Interactive reference for the Common Class Groups (CCG) system - the foundation of consistent styling across all widgets. Enable the <span data-attr-class="ccg.text.info">rml_style_guide</span> widget to explore the complete component library.</p>
                         

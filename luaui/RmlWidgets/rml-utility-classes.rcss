@@ -190,7 +190,6 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .my-12 { margin-top: 48dp; margin-bottom: 48dp; }
 
 /* === Padding === */
-.p-0 { padding: 0dp; }
 .p-px { padding: 1px; }
 .p-dp { padding: 1dp; }
 .p-0-5 { padding: 2dp; }
@@ -207,9 +206,10 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .p-8 { padding: 32dp; }
 .p-10 { padding: 40dp; }
 .p-12 { padding: 48dp; }
+.p-0 { padding: 0dp; }
 
 /* Padding sides */
-.pt-0 { padding-top: 0dp; }
+/* set 0 values last to act as overrides if required */
 .pt-px { padding-top: 1px; }
 .pt-dp { padding-top: 1dp; }
 .pt-0-5 { padding-top: 2dp; }
@@ -226,6 +226,7 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .pt-8 { padding-top: 32dp; }
 .pt-10 { padding-top: 40dp; }
 .pt-12 { padding-top: 48dp; }
+.pt-0 { padding-top: 0dp; }
 
 .pb-0 { padding-bottom: 0dp; }
 .pb-px { padding-bottom: 1px; }
@@ -245,7 +246,6 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .pb-10 { padding-bottom: 40dp; }
 .pb-12 { padding-bottom: 48dp; }
 
-.pl-0 { padding-left: 0dp; }
 .pl-px { padding-left: 1px; }
 .pl-dp { padding-left: 1dp; }
 .pl-0-5 { padding-left: 2dp; }
@@ -262,8 +262,8 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .pl-8 { padding-left: 32dp; }
 .pl-10 { padding-left: 40dp; }
 .pl-12 { padding-left: 48dp; }
+.pl-0 { padding-left: 0dp; }
 
-.pr-0 { padding-right: 0dp; }
 .pr-px { padding-right: 1px; }
 .pr-dp { padding-right: 1dp; }
 .pr-0-5 { padding-right: 2dp; }
@@ -280,8 +280,8 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .pr-8 { padding-right: 32dp; }
 .pr-10 { padding-right: 40dp; }
 .pr-12 { padding-right: 48dp; }
+.pr-0 { padding-right: 0dp; }
 
-.px-0 { padding-left: 0dp; padding-right: 0dp; }
 .px-px { padding-left: 1px; padding-right: 1px; }
 .px-dp { padding-left: 1dp; padding-right: 1dp; }
 .px-0-5 { padding-left: 2dp; padding-right: 2dp; }
@@ -298,8 +298,8 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .px-8 { padding-left: 32dp; padding-right: 32dp; }
 .px-10 { padding-left: 40dp; padding-right: 40dp; }
 .px-12 { padding-left: 48dp; padding-right: 48dp; }
+.px-0 { padding-left: 0dp; padding-right: 0dp; }
 
-.py-0 { padding-top: 0dp; padding-bottom: 0dp; }
 .py-px { padding-top: 1px; padding-bottom: 1px; }
 .py-dp { padding-top: 1dp; padding-bottom: 1dp; }
 .py-0-5 { padding-top: 2dp; padding-bottom: 2dp; }
@@ -316,6 +316,7 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .py-8 { padding-top: 32dp; padding-bottom: 32dp; }
 .py-10 { padding-top: 40dp; padding-bottom: 40dp; }
 .py-12 { padding-top: 48dp; padding-bottom: 48dp; }
+.py-0 { padding-top: 0dp; padding-bottom: 0dp; }
 
 /* === Width & Height === */
 .w-full { width: 100%; }
@@ -506,9 +507,11 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .border-left { border-left: 1dp; }
 .border-right { border-right: 1dp; }
 
-.border-sm { border-width: 1dp; }
-.border-md { border-width: 2dp; }
-.border-lg { border-width: 4dp; }
+.border-w-sm { border-width: 1dp; }
+.border-w-md { border-width: 2dp; }
+.border-w-lg { border-width: 4dp; }
+.border-w-xl { border-width: 8dp; }
+.border-w-px { border-width: 1px; }
 
 .rounded { border-radius: 4dp; }
 .rounded-md { border-radius: 6dp; }
@@ -550,3 +553,13 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .z-0 { z-index: 0; }
 .z-10 { z-index: 10; }
 .z-50 { z-index: 50; }
+
+/* === Non-color-specific utilities === */
+.filter-grayscale { filter: grayscale(100%); }
+.filter-sepia { filter: sepia(100%); }
+
+.opacity-0 { opacity: 0; }
+.opacity-25 { opacity: 0.25; }
+.opacity-50 { opacity: 0.5; }
+.opacity-75 { opacity: 0.75; }
+.opacity-100 { opacity: 1; }
