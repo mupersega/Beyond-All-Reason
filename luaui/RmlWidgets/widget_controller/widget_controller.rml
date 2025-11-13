@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="widget_controller.rcss" type="text/rcss" />
 
     <style>
-        .widget-entry-row:hover> .widget-entry-row__text {
+        .widget-entry-row:hover .widget-entry-row__text {
             transform: translateX(5dp);
         }
         .widget-entry-row__text {
@@ -22,6 +22,18 @@
         }
         #widget-list-container.loadingWidgets>.widget-entry-row {
             opacity: 0;
+        }
+
+        /* Pin button styles */
+        .pin-btn {
+            opacity: 0.7;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .widget-entry-row:hover .pin-btn {
+            opacity: 1;
+        }
+        .pin-btn:active {
+            transform: scale(0.95);
         }
 
         /* This works because first relative positioned parent is the widget-container */
@@ -84,8 +96,20 @@
         </div>
 
         <div id="widget-list-container" class="bg-darkest-alpha clip overflow-scroll h-full" data-class-loading="loadingWidgets">
-            <div data-for="widget : visibleWidgets" class="widget-entry-row bg-medium-alpha-hover" data-event-click="toggleWidget(widget.name)" data-event-mouseleave="announceHoveredWidget('')">
-                <p data-attr-class="(widget.active ? ccg.text.success : ccg.text.danger) + ' widget-entry-row__text text-center px-2 py-1'">{{widget.name}}</p>
+            <div data-for="widget : visibleWidgets" class="widget-entry-row bg-medium-alpha-hover flex items-center justify-between" data-event-mouseleave="announceHoveredWidget('')">
+                <!-- Pin button -->
+                <button class="pin-btn p-1 mr-2 rounded bg-dark-alpha-hover border border-medium-alpha-hover" 
+                        data-event-click="toggleWidgetPin(widget.name)"
+                        data-attr-title="'Pin/Unpin widget'">
+                    <svg src="../svg/pin_icon.svg" data-attr-class="my.svgStyles"></svg>
+                </button>
+                <button data-event-click="isWidgetPinned(widget.name)">Check is pinned</button>
+                
+                <p data-attr-class="(widget.active ? ccg.text.success : ccg.text.danger) + ' widget-entry-row__text px-2 py-1 flex-1 cursor-pointer'"
+                    data-event-click="toggleWidget(widget.name)">
+                    {{widget.name}}
+                </p>
+                
                 <div class="description-tooltip bg-darkest-semi-alpha border border-dark-alpha box-shadow-md p-1 text-sm text-center">
                     {{widget.desc}}
                 </div>

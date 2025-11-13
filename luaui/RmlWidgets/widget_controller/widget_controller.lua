@@ -32,6 +32,25 @@ local dirty = false
 local dirtyCounter = 0
 local DIRTY_DELAY = 5  -- Wait 5 ticks before updating
 
+-- Pinned widgets global config functions
+local function setPinnedWidgets(pinnedWidgetsList)
+    local pinnedWidgetsString = table.concat(pinnedWidgetsList, ",")
+    Spring.SetConfigString("pinned_widgets", pinnedWidgetsString)
+end
+
+local function getPinnedWidgets()
+    local pinnedWidgetsString = Spring.GetConfigString("pinned_widgets", "")
+    if pinnedWidgetsString == "" then
+        return {}
+    end
+
+    local pinnedWidgets = {}
+    for widgetName in string.gmatch(pinnedWidgetsString, "([^,]+)") do
+        table.insert(pinnedWidgets, widgetName)
+    end
+    return pinnedWidgets
+end
+
 local loadWidgets = function()
     allWidgets = {}
     local myName = widget:GetInfo().name
@@ -63,6 +82,31 @@ local FilterVisibleWidgets = function(string)
         end
     end
 
+    -- Sort widgets: pinned widgets first, then alphabetical
+    local pinnedList = getPinnedWidgets()
+    local function isWidgetPinned(widgetName)
+        for _, name in ipairs(pinnedList) do
+            if name == widgetName then
+                return true
+            end
+        end
+        return false
+    end
+
+    table.sort(filteredWidgets, function(a, b)
+        local aPinned = isWidgetPinned(a.name)
+        local bPinned = isWidgetPinned(b.name)
+        
+        if aPinned and not bPinned then
+            return true  -- a comes first (pinned)
+        elseif not aPinned and bPinned then
+            return false  -- b comes first (pinned)
+        else
+            -- Both pinned or both not pinned, sort alphabetically
+            return a.name < b.name
+        end
+    end)
+
     return filteredWidgets
 end
 
@@ -73,29 +117,79 @@ local function initModel()
         loadingWidgets = false,
         filterString = "",
         visibleWidgets = {},
+        pinnedWidgets = getPinnedWidgets(), -- Load pinned widgets from global config
 
         my = {
-            svgStyles = "h-2-5 w-2-5 mx-1 mt-0-5", -- currently only used for the filter icon
+            svgStyles = "h-2-5 w-2-5 mx-1 mt-0-5", -- used for the filter icon, pin icon and delete bin
         },
 
-        hoveredWidget = "asdf",
-
-        toggleWidget = function(self, widgetName)
+        toggleWidget = function(event, widgetName)
             widgetHandler:ToggleWidget(widgetName)
             dirty = true
             dirtyCounter = 0  -- Reset counter for delayed update
         end,
 
-        clearFilterString = function(self)
-            dm_handle.filterString = ""
+        toggleWidgetPin = function(event, widgetName)
+            local model = utils.GetCurrentModel(dm_handle)
+            if not model then return end
+            
+            local pinnedList = getPinnedWidgets()
+            local isPinned = false
+            
+            -- Check if already pinned and remove if found
+            for i, name in ipairs(pinnedList) do
+                if name == widgetName then
+                    table.remove(pinnedList, i)
+                    isPinned = true
+                    break
+                end
+            end
+            
+            if not isPinned then
+                table.insert(pinnedList, widgetName)
+            end
+            
+            setPinnedWidgets(pinnedList)
+            -- Update the model's pinnedWidgets so UI reflects changes immediately
+            model.pinnedWidgets = pinnedList
+            
+            -- Re-filter and sort the visible widgets to reflect pinning changes
             local filterInput = document:GetElementById("filter-input")
             if filterInput then
-                filterInput:SetAttribute("value", "")
+                local filterString = filterInput:GetAttribute("value") or ""
+                model.visibleWidgets = FilterVisibleWidgets(filterString)
             end
-            widget:UpdateVisibleWidgets(filterInput)
+            
+            Spring.Echo("Widget " .. widgetName .. " " .. (isPinned and "unpinned" or "pinned"))
         end,
 
-        announceHoveredWidget = function(self, widgetName)
+        isWidgetPinned = function(event, widgetName)
+            Spring.Echo("Checking if widget is pinned: " .. widgetName)
+            local model = utils.GetCurrentModel(dm_handle)
+            local pinnedList = model and model.pinnedWidgets or getPinnedWidgets()
+            for _, name in ipairs(pinnedList) do
+                if name == widgetName then
+                    Spring.Echo("Widget is pinned: " .. widgetName)
+                    return true
+                end
+            end
+            Spring.Echo("Widget is not pinned: " .. widgetName)
+            return false
+        end,
+
+        clearFilterString = function()
+            local model = utils.GetCurrentModel(dm_handle)
+            if model then
+                model.filterString = ""
+                local filterInput = document:GetElementById("filter-input")
+                if filterInput then
+                    filterInput:SetAttribute("value", "")
+                end
+                widget:UpdateVisibleWidgets(filterInput)
+            end
+        end,
+
+        announceHoveredWidget = function(event, widgetName)
             Spring.Echo("Hovered widget: " .. widgetName)
         end,
     }
@@ -122,6 +216,20 @@ function widget:Initialize()
     -- Initialize visibleWidgets
     dm_handle.visibleWidgets = allWidgets
 
+    -- Expose widget pinning functionality to other widgets
+    WG['widget_controller'] = {}
+    WG['widget_controller'].getPinnedWidgets = getPinnedWidgets
+    WG['widget_controller'].setPinnedWidgets = setPinnedWidgets
+    WG['widget_controller'].isWidgetPinned = function(widgetName)
+        local pinnedList = getPinnedWidgets()
+        for _, name in ipairs(pinnedList) do
+            if name == widgetName then
+                return true
+            end
+        end
+        return false
+    end
+
     return true
 end
 
@@ -133,6 +241,9 @@ function widget:Shutdown()
     }
 
     utils.shutdownRmlWidget(self, shutdownParams, document, dm_handle)
+
+    -- Clean up WG reference
+    WG['widget_controller'] = nil
 
     -- Clear references
     document = nil
