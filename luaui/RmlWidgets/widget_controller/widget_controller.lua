@@ -78,6 +78,8 @@ local function initModel()
             svgStyles = "h-2-5 w-2-5 mx-1 mt-0-5", -- currently only used for the filter icon
         },
 
+        hoveredWidget = "asdf",
+
         toggleWidget = function(self, widgetName)
             widgetHandler:ToggleWidget(widgetName)
             dirty = true
@@ -91,6 +93,10 @@ local function initModel()
                 filterInput:SetAttribute("value", "")
             end
             widget:UpdateVisibleWidgets(filterInput)
+        end,
+
+        announceHoveredWidget = function(self, widgetName)
+            Spring.Echo("Hovered widget: " .. widgetName)
         end,
     }
 end

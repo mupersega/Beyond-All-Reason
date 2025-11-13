@@ -33,8 +33,6 @@
     transform: translateY(-1dp);
 }
 
-/* Custom widget styles go here */
-
 /* Draggable handle styles */
 .handle {
     height: 100%;

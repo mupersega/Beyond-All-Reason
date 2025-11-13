@@ -24,6 +24,24 @@
             opacity: 0;
         }
 
+        /* This works because first relative positioned parent is the widget-container */
+        .description-tooltip {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(5dp);
+            min-width: 150dp;
+            max-width: 300dp;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .widget-entry-row:hover>.description-tooltip {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         .search-clear {
             cursor: pointer;
             transition: opacity 0.2s;
@@ -42,7 +60,7 @@
         }
     </style>
 </head>
-<body id="widget_controller-widget" class="widget-shadow">
+<body id="widget_controller-widget">
     <div id="widget-container" data-model="widget_controller_model" data-attr-class="ccg.sheet.modal.container + ' flex flex-col h-full justify-between border-radius-none'">
         <!-- Small floating debug buttons -->
         <div class="debug-controls absolute top right pr-2 pt-2">
@@ -66,8 +84,11 @@
         </div>
 
         <div id="widget-list-container" class="bg-darkest-alpha clip overflow-scroll h-full" data-class-loading="loadingWidgets">
-            <div data-for="widget : visibleWidgets" class="widget-entry-row px-2 py-1 bg-medium-alpha-hover" data-event-click="toggleWidget(widget.name)">
-                <p data-attr-class="(widget.active ? ccg.text.success : ccg.text.danger) + ' widget-entry-row__text text-center'">{{widget.name}}</p>
+            <div data-for="widget : visibleWidgets" class="widget-entry-row bg-medium-alpha-hover" data-event-click="toggleWidget(widget.name)" data-event-mouseleave="announceHoveredWidget('')">
+                <p data-attr-class="(widget.active ? ccg.text.success : ccg.text.danger) + ' widget-entry-row__text text-center px-2 py-1'">{{widget.name}}</p>
+                <div class="description-tooltip bg-darkest-semi-alpha border border-dark-alpha box-shadow-md p-1 text-sm text-center">
+                    {{widget.desc}}
+                </div>
             </div>
         </div>
 
