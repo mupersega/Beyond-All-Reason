@@ -3,26 +3,18 @@
     /* Standard positioning and sizing - customize as needed */
     display: flex;
     position: absolute;
-    left: 50%;
-    top: 50%;
+    left: 50vw;
+    top: 50vh;
+    margin-left: -150dp;
+    margin-top: -30vh;
     width: 300dp;
     height: 60vh;
-    transform: translate(-50%, -50%);
 }
 
 #widget-container {
     display: flex;
     flex-direction: column;
     flex: 1;
-}
-
-/* Debug controls */
-.debug-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 3dp;
-    z-index: 50;
 }
 
 .debug-btn:hover {
@@ -60,14 +52,6 @@
     100% { color: #00000000;  }
 }
 
-@keyframes jiggle-on-x {
-    0% { transform: translateX(0dp) rotate(60deg); }
-    25% { transform: translateX(-1dp) rotate(60deg); }
-    50% { transform: translateX(1dp) rotate(60deg); }
-    75% { transform: translateX(-1dp) rotate(60deg); }
-    100% { transform: translateX(0dp) rotate(60deg); }
-}
-
 .handle:hover>.greeble {
     animation: none;
     color: #2cf877;
@@ -77,15 +61,64 @@
     animation: 1s back-in-out infinite greeble-pulse;
 }
 
-.handle:active>.angle-decorator {
-    animation: 0.5s back-in-out infinite jiggle-on-x;
+/* Title bar — right-side clipped angle accent (Approach 2: rotated div).
+   Dark wedge on the right so the construction texture stays visible
+   behind the title text on the left (visual hierarchy). */
+.title-bar-right-wedge {
+    position: absolute;
+    right: 0dp;
+    top: 0dp;
+    width: 140dp;
+    height: 100%;
+    clip: always;
+    pointer-events: none;
 }
 
-.angle-decorator {
+.title-bar-right-wedge-angle {
     position: absolute;
-    top: -120dp;
-    right: -100dp;
-    width: 200dp;
-    height: 200dp;
-    transform: rotate(60deg);
+    left: 0dp;
+    top: -220dp;
+    width: 300dp;
+    height: 300dp;
+    transform: rotate(72deg);
+    z-index: 0;
+}
+
+/* Hard-coded height on repeated rows — eliminates content measurement.
+   See CLAUDE.md "Performance in a Game Context" rules. */
+.widget-entry-row {
+    height: 22dp;
+}
+
+/* Search input — right-side descending wedge accent, vertically
+   flipped version of the title bar's right-side wedge. */
+.search-notch {
+    position: absolute;
+    right: 0dp;
+    top: 0dp;
+    width: 140dp;
+    height: 100%;
+    clip: always;
+    pointer-events: none;
+}
+
+.search-notch-angle {
+    position: absolute;
+    left: 40dp;
+    top: -200dp;
+    width: 300dp;
+    height: 300dp;
+    transform: rotate(-72deg);
+    z-index: 0;
+}
+
+/* @keyframes placeholder-pulse now lives in components.rcss */
+
+.placeholder-text {
+    font-size: 10dp;
+    left: 14dp;
+    top: 12dp;
+    z-index: 1;
+    color: #78788c;
+    animation: 1.5s linear infinite placeholder-pulse;
 }

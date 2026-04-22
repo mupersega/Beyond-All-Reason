@@ -1,0 +1,354 @@
+/* Eating our own dogfood — the stress test is ITSELF an RML widget,
+   so every performance sin it commits distorts the numbers we capture.
+   Keep this RCSS block ruthlessly cheap per the rules we've codified:
+   - No backdrop-filter (catastrophic at full-screen scale)
+   - No box-shadow on the root (wasted at full-screen; shadow is the
+     single most expensive utility class per isolation tests)
+   - No border-radius on the root (invisible at 100vw/100vh edges)
+   - Solid bg-color on the container is enough for readability */
+#rml_stress_test-widget {
+    position: absolute;
+    top: 0dp;
+    left: 0dp;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+}
+
+.stress-close {
+    position: absolute;
+    top: 4dp;
+    left: 4dp;
+    width: 26dp;
+    height: 26dp;
+    padding: 0dp;
+    background-color: #7a2030cc;
+    border: 1dp #a04050;
+    color: #ffe0e0;
+    font-size: 18dp;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 100;
+}
+
+.stress-close:hover {
+    background-color: #a02040ee;
+}
+
+/* `flex: 1` on the container with two block children (sidebar + stage-wrap)
+   is the approved horizontal-split pattern. Definite width on sidebar +
+   flex:1 on stage-wrap = single-pass layout. Solid (no alpha) bg-color
+   so we don't pay translucency compositing. */
+#widget-container {
+    display: flex;
+    flex: 1;
+    background-color: #14141a;
+}
+
+/* Block layout for vertical stacking (per rule 1 — no flex-column).
+   Scroll container is block, not flex. Definite width so stage-wrap
+   gets a determined flex: 1 remainder. */
+.stress-sidebar {
+    display: block;
+    width: 300dp;
+    padding: 6dp;
+    overflow: hidden scroll;
+    border-right: 1dp #303040;
+    font-size: 9dp;
+}
+
+/* CCG variants — wrapping flex row. Hardcoded width gives the wrap
+   algorithm a definite bound; children have `flex: 0` (content-sized)
+   so their widths don't participate in flex growth — wrap decisions
+   are one-pass given the parent's fixed width.
+   288dp = sidebar content width (see .stress-row). */
+.stress-ccg-grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 288dp;
+    margin-bottom: 3dp;
+}
+
+/* CCG/util buttons — the highest-count button type in the widget.
+   Solid colors, two decorators. `flex: 0` skips flex sizing measurement. */
+.stress-btn-ccg {
+    flex: 0;
+    height: 16dp;
+    padding: 0dp 5dp;
+    margin-right: 2dp;
+    margin-bottom: 2dp;
+    font-size: 9dp;
+    background-color: #2a3040;
+    border: 1dp #4a5064;
+    color: #d0d8e0;
+    cursor: pointer;
+}
+
+.stress-btn-ccg:hover {
+    background-color: #3a4054;
+}
+
+.stress-title {
+    display: block;
+    font-size: 13dp;
+    font-weight: bold;
+    margin-bottom: 3dp;
+    color: #e0e0f0;
+}
+
+.stress-info {
+    display: block;
+    font-size: 9dp;
+    margin-bottom: 6dp;
+    color: #a0a0b0;
+}
+
+.stress-info > div {
+    display: block;
+    height: 11dp;
+}
+
+.stress-section {
+    display: block;
+    margin-top: 5dp;
+    margin-bottom: 2dp;
+    font-size: 8dp;
+    color: #9090a0;
+    text-transform: uppercase;
+}
+
+/* Hardcoded width (sidebar 300dp minus 2×6dp padding = 288dp) so that
+   flex-row children with `flex: 1` resolve in a single pass without the
+   engine having to measure/derive anything from the block-flow chain.
+   If you change .stress-sidebar width or padding, update this too. */
+.stress-row {
+    display: flex;
+    flex-direction: row;
+    width: 288dp;
+    margin-bottom: 2dp;
+}
+
+/* Solid colors (no alpha) — ~90 buttons × alpha-blend per frame is real
+   cost when the container bg is already solid. Same visible result,
+   cheaper paint. Two decorators max (bg + border) per our stacking rule. */
+.stress-btn {
+    display: block;
+    flex: 1;
+    height: 16dp;
+    padding: 0dp 3dp;
+    margin-right: 2dp;
+    background-color: #30304a;
+    border: 1dp #505064;
+    color: #d0d0e0;
+    font-size: 9dp;
+    cursor: pointer;
+}
+
+.stress-btn:hover {
+    background-color: #404064;
+}
+
+.stress-btn-clear {
+    height: 18dp;
+    background-color: #603030;
+    border-color: #805050;
+}
+
+.stress-btn-clear:hover {
+    background-color: #804040;
+}
+
+.stress-btn-timed {
+    width: 100%;
+    height: 20dp;
+    margin-right: 0;
+    margin-bottom: 2dp;
+    background-color: #304a30;
+    border-color: #506450;
+    color: #d0e0d0;
+    font-weight: bold;
+}
+
+.stress-btn-timed:hover {
+    background-color: #406440;
+}
+
+.stress-btn-timed-on {
+    background-color: #60a050;
+    border-color: #80c070;
+    color: #ffffe0;
+}
+
+.stress-btn-timed-on:hover {
+    background-color: #70b060;
+}
+
+.stress-btn-suite {
+    height: 20dp;
+    background-color: #304a64;
+    border-color: #5070a0;
+    color: #d0e0ff;
+    font-weight: bold;
+}
+
+.stress-btn-suite:hover {
+    background-color: #4060a0;
+}
+
+.stress-btn-dur {
+    background-color: #2a2a3a;
+    border-color: #4a4a5a;
+    color: #a0a0b0;
+}
+
+.stress-btn-dur:hover {
+    background-color: #3a3a4a;
+}
+
+.stress-btn-dur-on {
+    background-color: #4a6080;
+    border-color: #6a80a0;
+    color: #e0e8f0;
+    font-weight: bold;
+}
+
+/* Tab bar — the active tab's section is mounted via data-if, so
+   switching tabs swaps ~80% of the sidebar DOM in/out. Critical for
+   keeping the stress test's own overhead down. */
+.stress-tab-bar {
+    margin-top: 6dp;
+    margin-bottom: 4dp;
+}
+
+.stress-btn-tab {
+    height: 20dp;
+    background-color: #1e1e28;
+    border: 1dp #353545;
+    color: #8080a0;
+    font-weight: bold;
+}
+
+.stress-btn-tab:hover {
+    background-color: #2a2a38;
+    color: #b0b0c0;
+}
+
+.stress-btn-tab-on {
+    background-color: #50506a;
+    border-color: #7070a0;
+    color: #e0e0f0;
+}
+
+/* Gated tab content. data-if REQUIRES display to be defined on the
+   element, or the conditional mounting silently breaks. See
+   luaui/RmlWidgets/CLAUDE.md Data Binding gotchas.
+   Hardcoded width matches sidebar content area so children inherit a
+   definite width without needing block-flow derivation. */
+.stress-tab-content {
+    display: block;
+    width: 288dp;
+}
+
+.btn-result {
+    color: #ffe080;
+    font-weight: bold;
+    margin-left: 2dp;
+}
+
+.stress-btn-copy {
+    width: 100%;
+    height: 18dp;
+    background-color: #304a64;
+    border-color: #5070a0;
+    color: #d0e0ff;
+}
+
+.stress-btn-copy:hover {
+    background-color: #4060a0;
+}
+
+/* Results display rendered into the stage on suite completion */
+.stress-results-header {
+    display: block;
+    font-size: 18dp;
+    font-weight: bold;
+    color: #ffe080;
+    padding: 6dp 0;
+    margin-bottom: 2dp;
+    border-bottom: 1dp #504a30aa;
+}
+
+.stress-results-sub {
+    display: block;
+    font-size: 10dp;
+    color: #a0a0b0;
+    margin-bottom: 8dp;
+}
+
+.stress-results-row {
+    display: block;
+    height: 14dp;
+    font-size: 11dp;
+    color: #d0e0f0;
+    padding: 1dp 4dp;
+}
+
+.stress-btn-danger {
+    background-color: #7a2030;
+    border-color: #a04050;
+    color: #ffd0d0;
+}
+
+.stress-btn-danger:hover {
+    background-color: #9a3040;
+}
+
+.stress-stage-wrap {
+    display: block;
+    flex: 1;
+    overflow: hidden scroll;
+    padding: 6dp;
+}
+
+.stress-stage {
+    display: block;
+}
+
+/* Stage content: plain — no styling, definite small height */
+.stress-plain-item {
+    display: block;
+    height: 12dp;
+    font-size: 9dp;
+    color: #b0b0c0;
+}
+
+/* Wrapper for grid rows — block layout, cheap */
+.stress-nest {
+    display: block;
+    margin-bottom: 1dp;
+}
+
+/* Reactive highlight — toggled each tick in class-mode */
+.stress-highlight {
+    color: #ffa060;
+    background-color: #40302080;
+}
+
+/* Anti-pattern container: flex-column, no explicit size.
+   Padded + bordered so nesting is VISIBLE in the stage, while still
+   forcing content-sized layout (the exponential anti-pattern). */
+.stress-flexcol {
+    display: flex;
+    flex-direction: column;
+    padding: 2dp 4dp;
+    margin: 1dp 0dp;
+    border: 1dp #804040aa;
+    background-color: #20141488;
+    color: #e08080;
+    font-size: 9dp;
+}
+
+.stress-hidden {
+    display: none;
+}

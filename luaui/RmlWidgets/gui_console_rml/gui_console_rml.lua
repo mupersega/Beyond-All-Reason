@@ -1,0 +1,484 @@
+if not RmlUi then
+	return
+end
+
+local widget = widget ---@type Widget
+local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
+include("keysym.h.lua")
+
+function widget:GetInfo()
+	return {
+		name = "Console (RML)",
+		desc = "Scrollable, selectable console log",
+		author = "mupersega",
+		date = "2025",
+		license = "GNU GPL, v2 or later",
+		layer = -1000,
+		enabled = true,
+	}
+end
+
+-- Constants
+local WIDGET_ID = "gui_console_rml"
+local MODEL_NAME = "gui_console_rml_model"
+local RML_PATH = "luaui/RmlWidgets/gui_console_rml/gui_console_rml.rml"
+
+local MAX_LINES = 500
+local TRIM_COUNT = 100
+local UPDATE_INTERVAL = 0.1 -- seconds
+
+-- Widget state
+local document
+local dm_handle
+local show = false
+
+local lines = {}
+local dirty = false
+local lastUpdateTimer
+local consoleElement
+local scrollAnchor
+local autoScroll = true
+local copiedTimer
+local copiedLineIndex
+local copiedTextElement
+local inputElement
+local inputHasFocus = false
+
+-- Command history (source of truth is this local table; dm_handle.commandText is the live buffer)
+local commandHistory = {}
+local historyIndex = 0 -- 0 = composing new command, 1..#commandHistory = browsing
+local HISTORY_MAX = 50
+
+local L_DEPRECATED = LOG.DEPRECATED
+local L_ERROR = LOG.ERROR
+local L_WARNING = LOG.WARNING
+local L_DEBUG = LOG.DEBUG
+local isDevSingle = (Spring.Utilities.IsDevMode() and Spring.Utilities.Gametype.IsSinglePlayer())
+
+-- Priority to CSS class mapping
+local priorityClass = {
+	[LOG.ERROR] = " console-error",
+	[LOG.WARNING] = " console-warning",
+	[LOG.DEBUG] = " console-debug",
+}
+
+-- Text pattern fallback when priority doesn't classify
+local function classifyByText(text)
+	local sfind = string.find
+	if sfind(text, "[Ee]rror", 1) or sfind(text, "Failed to load", 1, true) then
+		return " console-error"
+	end
+	if sfind(text, "[Ww]arning", 1) then
+		return " console-warning"
+	end
+	return nil
+end
+
+local spGetGameFrame = Spring.GetGameFrame
+local spGetTimer = Spring.GetTimer
+local spDiffTimers = Spring.DiffTimers
+
+-- Message classification: returns true if line is player chat (not console)
+local function isPlayerChatMessage(line)
+	if line:sub(1, 1) == "<" then return true end
+	if line:match("^%[.-%] ") then return true end
+	if line:sub(1, 1) == ">" then return true end
+	if line:find(" added point: ", 1, true) then return true end
+	if line:find(" shared units to ", 1, true) then return true end
+	return false
+end
+
+-- Message noise filter: returns true if line should be skipped
+local function shouldFilterMessage(line)
+	local sfind = string.find
+	if sfind(line, "Input grabbing is ", 1, true) then return true end
+	if sfind(line, " to access the quit menu", 1, true) then return true end
+	if sfind(line, "VSync::SetInterval", 1, true) then return true end
+	if sfind(line, " now spectating team ", 1, true) then return true end
+	if sfind(line, "TotalHideLobbyInterface, ", 1, true) then return true end
+	if sfind(line, "HandleLobbyOverlay", 1, true) then return true end
+	if sfind(line, "Chobby]", 1, true) then return true end
+	if sfind(line, "liblobby]", 1, true) then return true end
+	if sfind(line, "[LuaMenu", 1, true) then return true end
+	if sfind(line, "ClientMessage]", 1, true) then return true end
+	if sfind(line, "ServerMessage]", 1, true) then return true end
+	if sfind(line, "->", 1, true) then return true end
+	if sfind(line, "server=[0-9a-z][0-9a-z][0-9a-z][0-9a-z]") or sfind(line, "client=[0-9a-z][0-9a-z][0-9a-z][0-9a-z]") then return true end
+	if sfind(line, "-> Version", 1, true) or sfind(line, "ClientReadNet", 1, true) or sfind(line, "Address", 1, true) then return true end
+	if sfind(line, "My player ID is", 1, true) then return true end
+	if sfind(line, "self-destruct in ", 1, true) then return true end
+	if sfind(line, "could not load sound", 1, true) then return true end
+	return false
+end
+
+-- Strip Spring color codes (\255\r\g\b) from text
+local function stripColorCodes(text)
+	return text:gsub("\255...", "")
+end
+
+-- Escape text for safe RML insertion
+local function escapeRml(text)
+	text = text:gsub("&", "&amp;")
+	text = text:gsub("<", "&lt;")
+	text = text:gsub(">", "&gt;")
+	return text
+end
+
+-- Format timestamp from game frames
+local function formatTimestamp(gameFrame)
+	local totalSeconds = math.floor(gameFrame / 30)
+	local minutes = math.floor(totalSeconds / 60)
+	local seconds = totalSeconds % 60
+	return string.format("[%d:%02d]", minutes, seconds)
+end
+
+local function scrollToBottom()
+	if scrollAnchor then
+		scrollAnchor:ScrollIntoView(false)
+	end
+end
+
+
+local function flushToConsole()
+	if not consoleElement then return end
+
+	-- Trim old lines if over limit
+	if #lines > MAX_LINES then
+		local newLines = {}
+		for i = TRIM_COUNT + 1, #lines do
+			newLines[#newLines + 1] = lines[i]
+		end
+		lines = newLines
+	end
+
+	-- Build RML: one <p> per line, each with an index attribute for click-to-copy
+	local parts = {}
+	for i, entry in ipairs(lines) do
+		local cls = "console-line"
+		if copiedLineIndex == i then
+			cls = cls .. " console-line-copied"
+		end
+		cls = cls .. entry.cls
+		parts[i] = '<p class="' .. cls .. '" onclick="widget:CopyLine(' .. i .. ')">' .. escapeRml(entry.text) .. '</p>'
+	end
+	consoleElement.inner_rml = table.concat(parts)
+
+	if autoScroll then
+		scrollToBottom()
+	end
+end
+
+local function toggleShow(newState)
+	if newState == nil then
+		newState = not show
+	end
+	show = newState
+	if show then
+		document:Show()
+		-- Try to auto-focus the input so the user can start typing immediately.
+		-- pcall-guarded because :Focus() is not used elsewhere in BAR's RML
+		-- widgets and we don't want a binding quirk to break opening the console.
+		if inputElement then
+			pcall(function() inputElement:Focus() end)
+		end
+	else
+		document:Hide()
+		inputHasFocus = false
+	end
+end
+
+-- Push a line directly into the console log
+local function echo(text, cls)
+	lines[#lines + 1] = { text = text, cls = cls or "" }
+	dirty = true
+	autoScroll = true
+end
+
+-- Local commands are intercepted before Spring.SendCommands. Use for things
+-- the engine doesn't know about (help text, client-side helpers, etc).
+local localCommands = {}
+
+localCommands.help = function()
+	echo("  luaui reload              reload all luaui widgets", " console-debug")
+	echo("  luaui disable <name>      disable a widget by name", " console-debug")
+	echo("  luaui enable  <name>      enable a widget by name", " console-debug")
+	echo("  luarules reload           reload all gadgets", " console-debug")
+	echo("  console_rml               toggle this console", " console-debug")
+	echo("  widgetselector            toggle widget selector", " console-debug")
+	echo("  pause / togglelos         game toggles", " console-debug")
+	echo("  cheat / give <unit>       dev commands (cheats required)", " console-debug")
+	echo("  bind <key> <action>       rebind a key", " console-debug")
+	echo("  Up / Down arrows          recall command history", " console-debug")
+	echo("  Any other Spring engine command also works.", " console-debug")
+end
+localCommands["?"] = localCommands.help
+
+-- Dispatch the current input's contents as a Spring command, echo it, and clear
+local function submitCommand()
+	if not dm_handle then return end
+	local text = dm_handle.commandText or ""
+	-- trim whitespace
+	text = text:gsub("^%s+", ""):gsub("%s+$", "")
+	if text == "" then return end
+
+	-- strip optional leading slash (user may paste from chat-style docs)
+	local cmd = text:sub(1, 1) == "/" and text:sub(2) or text
+	if cmd == "" then
+		dm_handle.commandText = ""
+		return
+	end
+
+	-- add to history with consecutive-dedupe
+	if commandHistory[#commandHistory] ~= cmd then
+		commandHistory[#commandHistory + 1] = cmd
+		if #commandHistory > HISTORY_MAX then
+			table.remove(commandHistory, 1)
+		end
+	end
+	historyIndex = 0
+
+	-- echo the command the user submitted
+	echo("> " .. cmd, " console-command")
+
+	-- Intercept local commands (help, etc.) before handing off to the engine
+	local firstWord = cmd:match("^(%S+)")
+	local handler = firstWord and localCommands[firstWord:lower()]
+	if handler then
+		handler(cmd)
+	else
+		Spring.SendCommands(cmd)
+	end
+
+	dm_handle.commandText = ""
+end
+
+-- Walk command history; direction = -1 (older) or +1 (newer)
+local function recallHistory(direction)
+	if not dm_handle then return end
+	local n = #commandHistory
+	if n == 0 then return end
+
+	if direction < 0 then
+		-- older
+		if historyIndex == 0 then
+			historyIndex = n
+		elseif historyIndex > 1 then
+			historyIndex = historyIndex - 1
+		end
+	else
+		-- newer
+		if historyIndex == 0 then
+			return -- already at fresh composition
+		elseif historyIndex < n then
+			historyIndex = historyIndex + 1
+		else
+			-- stepping past newest clears the input
+			historyIndex = 0
+			dm_handle.commandText = ""
+			return
+		end
+	end
+
+	dm_handle.commandText = commandHistory[historyIndex] or ""
+end
+
+local function initModel()
+	return {
+		copiedAgo = "",
+		commandText = "",
+
+		my = {
+			svgStyles = "h-2-5 w-2-5",
+			headerBtn = "px-1-5 py-0-5 rounded text-xs cursor-pointer",
+		},
+
+		clearConsole = function()
+			lines = {}
+			dirty = true
+		end,
+
+		scrollToBottom = function()
+			autoScroll = true
+			scrollToBottom()
+		end,
+	}
+end
+
+function widget:Initialize()
+	RmlUi.LoadFontFace("fonts/monospaced/SourceCodePro-Medium.otf")
+
+	local result = utils.initializeRmlWidget(self, {
+		widgetId = WIDGET_ID,
+		modelName = MODEL_NAME,
+		rmlPath = RML_PATH,
+		initModel = initModel(),
+		useCommonClassGroups = true,
+	})
+	if not result then
+		return false
+	end
+
+	document = result.document
+	dm_handle = result.dm_handle
+
+	consoleElement = document:GetElementById("console-text")
+	scrollAnchor = document:GetElementById("scroll-anchor")
+	copiedTextElement = document:GetElementById("copied-text")
+	inputElement = document:GetElementById("console-command-input")
+
+	-- utils.initializeRmlWidget auto-calls document:Show(); start hidden.
+	document:Hide()
+	show = false
+
+	WG['console_rml'] = {
+		toggle = function(state) toggleShow(state) end,
+		isVisible = function() return show end,
+	}
+
+	-- /console_rml slash-command and rebindable action entry point.
+	widgetHandler:AddAction("console_rml", function() toggleShow() end, nil, 't')
+
+	return true
+end
+
+function widget:Shutdown()
+	widgetHandler:RemoveAction("console_rml")
+
+	utils.shutdownRmlWidget(self, {
+		widgetId = WIDGET_ID,
+		modelName = MODEL_NAME,
+	}, document, dm_handle)
+
+	WG['console_rml'] = nil
+	document = nil
+	dm_handle = nil
+	consoleElement = nil
+	scrollAnchor = nil
+	copiedTextElement = nil
+	inputElement = nil
+	inputHasFocus = false
+	copiedLineIndex = nil
+	lines = {}
+end
+
+-- Click a line to copy it
+function widget:CopyLine(index)
+	index = tonumber(index)
+	if index and lines[index] then
+		Spring.SetClipboard(lines[index].text)
+		copiedTimer = spGetTimer()
+		copiedLineIndex = index
+		dirty = true
+	end
+end
+
+-- Copy all button
+function widget:CopyAll()
+	local textParts = {}
+	for i, entry in ipairs(lines) do
+		textParts[i] = entry.text
+	end
+	local text = table.concat(textParts, "\n")
+	if text ~= "" then
+		Spring.SetClipboard(text)
+		copiedTimer = spGetTimer()
+	end
+end
+
+-- User scrolled manually — disable auto-scroll
+function widget:OnScroll()
+	autoScroll = false
+end
+
+function widget:AddConsoleLine(msg, priority)
+	if priority and priority == L_DEPRECATED and not isDevSingle then return end
+
+	msg = msg:match('^%[f=[0-9]+%] (.*)$') or msg
+
+	local gameFrame = spGetGameFrame()
+	local timestamp = formatTimestamp(gameFrame)
+
+	for line in msg:gmatch("[^\n]+") do
+		line = stripColorCodes(line)
+
+		if not isPlayerChatMessage(line) and not shouldFilterMessage(line) then
+			local cls = (priority and priorityClass[priority]) or classifyByText(line) or ""
+			lines[#lines + 1] = { text = timestamp .. " " .. line, cls = cls }
+			dirty = true
+		end
+	end
+end
+
+function widget:Update()
+	if not document or not dm_handle then return end
+
+	local now = spGetTimer()
+
+	-- Update copiedAgo timer and opacity every frame
+	if copiedTimer then
+		local elapsed = spDiffTimers(now, copiedTimer)
+		if elapsed >= 5 then
+			copiedTimer = nil
+			copiedLineIndex = nil
+			dm_handle.copiedAgo = ""
+			if copiedTextElement then
+				copiedTextElement:SetAttribute("style", "opacity: 1;")
+			end
+			flushToConsole()
+		else
+			dm_handle.copiedAgo = "COPIED"
+			if copiedTextElement then
+				local opacity = 1.0 - (elapsed / 5.0)
+				copiedTextElement:SetAttribute("style", "opacity: " .. string.format("%.2f", opacity) .. ";")
+			end
+		end
+	end
+
+	-- Flush new lines to DOM at throttled rate
+	if dirty then
+		if not lastUpdateTimer or spDiffTimers(now, lastUpdateTimer) >= UPDATE_INTERVAL then
+			lastUpdateTimer = now
+			dirty = false
+			flushToConsole()
+		end
+	end
+end
+
+-- Focus tracking: onfocus/onblur on the <input> element update this flag.
+-- Using a plain Lua bool sidesteps RmlUi userdata-comparison quirks that
+-- would occur if we checked document.context.focus_element directly.
+function widget:OnInputFocus()
+	inputHasFocus = true
+end
+
+function widget:OnInputBlur()
+	inputHasFocus = false
+end
+
+function widget:KeyPress(key, mods, isRepeat)
+	if key == KEYSYMS.BACKQUOTE and not isRepeat
+	   and not (mods.alt or mods.ctrl or mods.meta or mods.shift) then
+		toggleShow()
+		return true
+	end
+	if show and key == KEYSYMS.ESCAPE then
+		toggleShow(false)
+		return true
+	end
+	-- Command input keys: only active when the input has focus, so these
+	-- don't steal Enter/Up/Down from the rest of the game when the user
+	-- clicks elsewhere in the console.
+	if show and inputHasFocus then
+		if key == KEYSYMS.RETURN or key == KEYSYMS.KP_ENTER then
+			submitCommand()
+			return true
+		elseif key == KEYSYMS.UP and not isRepeat then
+			recallHistory(-1)
+			return true
+		elseif key == KEYSYMS.DOWN and not isRepeat then
+			recallHistory(1)
+			return true
+		end
+	end
+	return false
+end

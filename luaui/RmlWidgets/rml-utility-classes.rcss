@@ -496,6 +496,10 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 
+/* === Text Transform === */
+.text-upper { text-transform: uppercase; }
+.text-none { text-transform: none; }
+
 /* === Border === */
 /* note that border and border color is not included, it is set instead in the theme files */
 .border { border: 1dp; }
@@ -563,3 +567,22 @@ Read https://mikke89.github.io/RmlUiDoc/pages/rcss/flexboxes.html#performance
 .opacity-50 { opacity: 0.5; }
 .opacity-75 { opacity: 0.75; }
 .opacity-100 { opacity: 1; }
+
+/* === Scrollbar visibility ===
+   Apply `no-scrollbar` to any scrollable container to hide its scrollbar
+   while preserving scroll functionality (mousewheel, drag, keyboard all
+   still work — the track and thumb are just invisible). Default BAR
+   scrollbars are defined in styles.rcss:122-136. Use sparingly for cases
+   where the scrollbar is visually distracting (long flat nav lists, etc.)
+   and the user can reach content via other means. */
+.no-scrollbar scrollbarvertical,
+.no-scrollbar scrollbarhorizontal {
+	width: 0;
+	height: 0;
+}
+.no-scrollbar scrollbarvertical sliderbar,
+.no-scrollbar scrollbarhorizontal sliderbar,
+.no-scrollbar scrollbarvertical slidertrack,
+.no-scrollbar scrollbarhorizontal slidertrack {
+	background-color: transparent;
+}

@@ -1,0 +1,397 @@
+<rml>
+<head>
+    <title>SVG Test</title>
+
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="svg_test.rcss" type="text/rcss" />
+</head>
+<body id="svg_test-widget">
+    <div id="widget-container" data-model="svg_test_model" data-attr-class="ccg.sheet.modal.container + ' flex flex-col border-radius-none'">
+        <!-- Debug controls (gated by Options > Dev > Debug > RML Debug Controls) -->
+        <div data-if="rmlDebugControls" class="debug-controls absolute top right pr-2 pt-2">
+            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()">
+                <span>reload</span>
+            </button>
+            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()">
+                <span>debug</span>
+            </button>
+        </div>
+
+        <!-- Title bar with drag handle -->
+        <div data-attr-class="ccg.sheet.general.title + ' flex flex-col justify-center items-start relative min-h-3 hazards-construction-textured bg-warning'">
+            <span class="z-50 pe-none text-lg pl-2 text-outline-darkest-xl">
+                SVG Injection Tests
+            </span>
+            <svg id="angle-decorator" class="angle-decorator pe-none" />
+            <handle move_target="svg_test-widget" class="handle cursor-move">
+                <span class="greeble z-10">.</span>
+            </handle>
+        </div>
+
+        <!-- Scrollable content -->
+        <div id="scroll-container" class="flex flex-col flex-1 clip overflow-scroll">
+
+            <!-- Static injection tests -->
+            <div class="test-grid p-2 gap-2">
+                <div class="test-cell flex flex-col items-center">
+                    <span class="text-xs text-medium">1: Static</span>
+                    <svg id="test1-svg" src="../svg/pin_icon.svg" />
+                </div>
+                <div class="test-cell flex flex-col items-center">
+                    <span class="text-xs text-medium">2: SetAttr</span>
+                    <svg id="test2-svg" src="../svg/pin_icon.svg" />
+                </div>
+                <div class="test-cell flex flex-col items-center">
+                    <span class="text-xs text-medium">3: inner_rml</span>
+                    <div id="test3-container"></div>
+                </div>
+                <div class="test-cell flex flex-col items-center">
+                    <span class="text-xs text-medium">4: File</span>
+                    <svg id="test4-svg" src="../svg/pin_icon.svg" />
+                </div>
+                <div class="test-cell flex flex-col items-center">
+                    <span class="text-xs text-medium">8: EzSVG</span>
+                    <svg id="test8-svg" src="../svg/pin_icon.svg" />
+                </div>
+                <div class="test-cell flex flex-col items-center">
+                    <span class="text-xs text-medium">9: Manual</span>
+                    <svg id="test9-svg" src="../svg/pin_icon.svg" />
+                </div>
+            </div>
+
+            <!-- Shape library showcase -->
+            <div class="section bg-darkest-alpha border-top border-w-px border-dark-alpha p-3">
+                <div class="flex items-center mb-2">
+                    <span data-attr-class="my.sectionLabel">SVG Shapes (viewBox, container-sized)</span>
+                </div>
+                <div class="flex gap-2 items-end">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Para R</span>
+                        <div class="shape-box">
+                            <svg id="shape-parallelogram" class="shape-fill" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Para L</span>
+                        <div class="shape-box">
+                            <svg id="shape-parallelogram2" class="shape-fill" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Chevron</span>
+                        <div class="shape-box">
+                            <svg id="shape-chevron" class="shape-fill" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Notched</span>
+                        <div class="shape-box">
+                            <svg id="shape-notched" class="shape-fill" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Notch TR</span>
+                        <div class="shape-box">
+                            <svg id="shape-notched-tr" class="shape-fill" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Diamond</span>
+                        <div class="shape-box">
+                            <svg id="shape-diamond" class="shape-fill" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Hexagon</span>
+                        <div class="shape-box">
+                            <svg id="shape-hexagon" class="shape-fill" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Toggle</span>
+                        <div class="shape-box-wide">
+                            <svg id="shape-toggle" class="shape-fill" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color integration tests -->
+                <div class="flex items-center gap-1 mt-2">
+                    <span class="text-xs text-medium mr-2">Color tests:</span>
+
+                    <!-- Test A: Transparent SVG over CSS background-color -->
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">A: CSS bg</span>
+                        <div class="shape-box-wide color-test-bg-green">
+                            <svg id="color-test-a" class="shape-fill" />
+                        </div>
+                    </div>
+
+                    <!-- Test B: Decorator with SVG src -->
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">B: Decorator</span>
+                        <div id="color-test-b" class="shape-box-wide color-test-decorator">
+                        </div>
+                    </div>
+
+                    <!-- Test C: Pre-cached swap (click to toggle) -->
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">C: Swap</span>
+                        <div class="shape-box-wide cursor-pointer" onclick="widget:ToggleColorTest()">
+                            <svg id="color-test-c" class="shape-fill" />
+                        </div>
+                    </div>
+
+                    <!-- Test D: Transparent SVG, hover changes parent bg -->
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">D: Hover</span>
+                        <div class="shape-box-wide color-test-hover">
+                            <svg id="color-test-d" class="shape-fill" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Translucency tests -->
+                <div class="flex items-center gap-1 mt-2">
+                    <span class="text-xs text-medium mr-2">Alpha tests:</span>
+
+                    <!-- E: fill-opacity attribute -->
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">E: fill-opacity</span>
+                        <div class="shape-box-wide alpha-test-bg">
+                            <svg id="alpha-test-e" class="shape-fill" />
+                        </div>
+                    </div>
+
+                    <!-- F: opacity attribute on shape -->
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">F: opacity attr</span>
+                        <div class="shape-box-wide alpha-test-bg">
+                            <svg id="alpha-test-f" class="shape-fill" />
+                        </div>
+                    </div>
+
+                    <!-- G: rgba fill -->
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">G: rgba fill</span>
+                        <div class="shape-box-wide alpha-test-bg">
+                            <svg id="alpha-test-g" class="shape-fill" />
+                        </div>
+                    </div>
+
+                    <!-- H: overlapping shapes with opacity -->
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">H: overlap</span>
+                        <div class="shape-box-wide alpha-test-bg">
+                            <svg id="alpha-test-h" class="shape-fill" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clip panel incubator -->
+            <div class="section bg-darkest-alpha border-top border-w-px border-dark-alpha p-3">
+                <div class="flex items-center mb-2">
+                    <span data-attr-class="my.sectionLabel">Clip Panels</span>
+                </div>
+                <!-- Corners -->
+                <div class="flex gap-3 mb-3">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">BL</span>
+                        <svg id="clip-bl" class="clip-md" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">BR</span>
+                        <svg id="clip-br" class="clip-md" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">TL</span>
+                        <svg id="clip-tl" class="clip-md" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">TR</span>
+                        <svg id="clip-tr" class="clip-md" />
+                    </div>
+                </div>
+                <!-- Taper: left variants at different angles -->
+                <div class="flex gap-3 mb-3 items-end">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Subtle</span>
+                        <svg id="taper-l-subtle" class="clip-md" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Medium</span>
+                        <svg id="taper-l-medium" class="clip-md" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Sharp</span>
+                        <svg id="taper-l-sharp" class="clip-md" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Harsh</span>
+                        <svg id="taper-l-harsh" class="clip-md" />
+                    </div>
+                </div>
+                <!-- Taper: right variants at different angles -->
+                <div class="flex gap-3 mb-3 items-end">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Subtle</span>
+                        <svg id="taper-r-subtle" class="clip-md" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Medium</span>
+                        <svg id="taper-r-medium" class="clip-md" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Sharp</span>
+                        <svg id="taper-r-sharp" class="clip-md" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Harsh</span>
+                        <svg id="taper-r-harsh" class="clip-md" />
+                    </div>
+                </div>
+
+                <!-- Size variants (all BL corner) -->
+                <div class="flex gap-3 items-end">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">XS</span>
+                        <svg id="clip-xs" class="clip-xs" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">SM</span>
+                        <svg id="clip-sm" class="clip-sm" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">MD</span>
+                        <svg id="clip-md2" class="clip-md" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">LG</span>
+                        <svg id="clip-lg" class="clip-lg" />
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-medium">Wide</span>
+                        <svg id="clip-wide" class="clip-wide" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic animated SVG -->
+            <div class="section bg-darkest-alpha border-top border-w-px border-dark-alpha p-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span data-attr-class="my.sectionLabel">Dynamic Animation</span>
+                    <button data-attr-class="(animRunning ? ccg.button.danger : ccg.button.success) + ' ' + my.optBtn"
+                            data-event-click="toggleAnim()">
+                        <span data-if="animRunning">Stop</span>
+                        <span data-if="!animRunning">Start</span>
+                    </button>
+                </div>
+                <div class="dynamic-svg-box border border-dark rounded overflow-hidden">
+                    <svg id="dynamic-svg" class="dynamic-svg" />
+                </div>
+            </div>
+
+            <!-- Score graph -->
+            <div class="section bg-darkest-alpha border-top border-w-px border-dark-alpha p-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span data-attr-class="my.sectionLabel">Score Graph</span>
+                    <div class="flex items-center gap-1">
+                        <button data-attr-class="(graphSmooth ? ccg.button.success : ccg.button.ghost) + ' ' + my.optBtn"
+                                data-event-click="toggleSmooth()">
+                            Smooth
+                        </button>
+                        <button data-attr-class="(graphSweepRunning ? ccg.button.danger : ccg.button.success) + ' ' + my.optBtn"
+                                data-event-click="toggleSweep()">
+                            <span data-if="graphSweepRunning">Stop</span>
+                            <span data-if="!graphSweepRunning">Sweep</span>
+                        </button>
+                        <button data-attr-class="ccg.button.general + ' ' + my.optBtn"
+                                data-event-click="generateGraph()">
+                            Generate
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Duration + Easing options -->
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="flex items-center gap-1">
+                        <span class="text-xs text-medium">Duration:</span>
+                        <button data-attr-class="(sweepDurationMode == 'auto' ? ccg.themeButton.primary : ccg.themeButton.ghost) + ' ' + my.optBtn"
+                                data-event-click="setDuration('auto')">Auto</button>
+                        <button data-attr-class="(sweepDurationMode == '1' ? ccg.themeButton.primary : ccg.themeButton.ghost) + ' ' + my.optBtn"
+                                data-event-click="setDuration('1')">1s</button>
+                        <button data-attr-class="(sweepDurationMode == '3' ? ccg.themeButton.primary : ccg.themeButton.ghost) + ' ' + my.optBtn"
+                                data-event-click="setDuration('3')">3s</button>
+                        <button data-attr-class="(sweepDurationMode == '5' ? ccg.themeButton.primary : ccg.themeButton.ghost) + ' ' + my.optBtn"
+                                data-event-click="setDuration('5')">5s</button>
+                        <button data-attr-class="(sweepDurationMode == '10' ? ccg.themeButton.primary : ccg.themeButton.ghost) + ' ' + my.optBtn"
+                                data-event-click="setDuration('10')">10s</button>
+                    </div>
+                    <span class="text-xs text-medium">{{sweepInfo}}</span>
+                </div>
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="flex items-center gap-1">
+                        <span class="text-xs text-medium">Curve:</span>
+                        <button data-attr-class="(sweepEasing == 'linear' ? ccg.themeButton.primary : ccg.themeButton.ghost) + ' ' + my.optBtn"
+                                data-event-click="setEasing('linear')">Linear</button>
+                        <button data-attr-class="(sweepEasing == 'easeInOutQuad' ? ccg.themeButton.primary : ccg.themeButton.ghost) + ' ' + my.optBtn"
+                                data-event-click="setEasing('easeInOutQuad')">Quad</button>
+                        <button data-attr-class="(sweepEasing == 'easeInOutCubic' ? ccg.themeButton.primary : ccg.themeButton.ghost) + ' ' + my.optBtn"
+                                data-event-click="setEasing('easeInOutCubic')">Cubic</button>
+                        <button data-attr-class="(sweepEasing == 'easeOutBounce' ? ccg.themeButton.primary : ccg.themeButton.ghost) + ' ' + my.optBtn"
+                                data-event-click="setEasing('easeOutBounce')">Bounce</button>
+                        <button data-attr-class="(sweepEasing == 'easeOutElastic' ? ccg.themeButton.primary : ccg.themeButton.ghost) + ' ' + my.optBtn"
+                                data-event-click="setEasing('easeOutElastic')">Elastic</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-row gap-2">
+                    <!-- Player filter list -->
+                    <div class="player-filter-list flex flex-col gap-1">
+                        <div data-for="p : playerList"
+                             class="player-filter-item flex items-center gap-1 cursor-pointer rounded px-1"
+                             data-class-player-selected="p.selected"
+                             data-event-click="togglePlayer(p.index)">
+                            <div class="player-swatch" data-attr-style="'background-color: ' + p.color + ';'"></div>
+                            <span data-attr-class="'text-xs' + (p.isMe ? ' font-bold' : '')">{{p.name}}</span>
+                        </div>
+                    </div>
+                    <!-- Graph -->
+                    <div class="graph-svg-box flex-1 border border-dark rounded overflow-hidden">
+                        <svg id="graph-svg" class="graph-svg" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wind particle field (ambient post-apocalyptic debris).
+                 Simple Newtonian physics: constant leftward wind + slight
+                 settling force, mass = size², so heavy particles plod and
+                 light particles zip. Particles pre-scatter on init so the
+                 canvas isn't blank before Start is clicked. -->
+            <div class="section bg-darkest-alpha border-top border-w-px border-dark-alpha p-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span data-attr-class="my.sectionLabel">Wind Particles</span>
+                    <button data-attr-class="(windRunning ? ccg.button.danger : ccg.button.success) + ' ' + my.optBtn"
+                            data-event-click="toggleWind()">
+                        <span data-if="windRunning">Stop</span>
+                        <span data-if="!windRunning">Start</span>
+                    </button>
+                </div>
+                <div class="wind-canvas-box border border-dark rounded overflow-hidden">
+                    <svg id="wind-svg" class="wind-svg" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</rml>

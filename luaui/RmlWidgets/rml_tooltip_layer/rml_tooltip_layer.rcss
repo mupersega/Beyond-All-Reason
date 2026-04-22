@@ -1,0 +1,23 @@
+/* rml_tooltip_layer — Full-screen transparent overlay for tooltips.
+   All tooltip slots are position: absolute, parked off-screen at init.
+   Show/hide by repositioning only — never add/remove DOM or toggle display.
+   Visual styling uses utility classes in the RML — RCSS handles layout only. */
+
+#rml_tooltip_layer-widget {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100vw;
+	height: 100vh;
+	pointer-events: none;
+}
+
+/* ── Base slot positioning ───────────────────────────────────────────── */
+
+.tooltip-slot {
+	position: absolute;
+	left: -9999dp;
+	top: -9999dp;
+	pointer-events: none;
+	width: 200dp;
+}

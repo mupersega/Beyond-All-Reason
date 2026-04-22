@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
@@ -18,115 +19,85 @@
             transform: translateX(5dp);
         }
         .widget-entry-row__text {
-            transition: transform 0.2s exponential-out;
+            transition: transform 0.15s quadratic-out;
         }
         #widget-list-container.loadingWidgets>.widget-entry-row {
             opacity: 0;
         }
 
-        /* Pin button styles */
+        /* Pin button — unpinned state */
         .pin-btn {
-            opacity: 0.7;
-            transition: opacity 0.2s, transform 0.1s;
+            opacity: 0.2;
+            transition: opacity 0.2s, transform 0.1s, background-color 0.2s;
         }
+        /* Pin button — pinned state */
+        .pin-btn.pinned {
+            opacity: 1;
+        }
+        /* Hover: always show clearly */
         .widget-entry-row:hover .pin-btn {
+            opacity: 0.7;
+        }
+        .widget-entry-row:hover .pin-btn.pinned {
             opacity: 1;
         }
         .pin-btn:active {
             transform: scale(0.95);
         }
 
-        /* This works because first relative positioned parent is the widget-container */
-        .description-tooltip {
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%) translateY(5dp);
-            min-width: 150dp;
-            max-width: 300dp;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .widget-entry-row:hover>.description-tooltip {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .search-clear {
-            cursor: pointer;
-            transition: opacity 0.2s;
-            width: 15dp;
-            height: 15dp;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: filter 0.2s;
-        }
-        .search-clear:hover>svg {
-            opacity: 1;
-        }
-        .search-clear:active>svg {
-            transform: scale(0.9);
-        }
     </style>
 </head>
-<body id="widget_controller-widget">
-    <div id="widget-container" data-model="widget_controller_model" data-attr-class="ccg.sheet.modal.container + ' flex flex-col h-full justify-between border-radius-none'">
-        <!-- Small floating debug buttons -->
-        <div class="debug-controls absolute top right pr-2 pt-2">
-            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()" title="Reload Widget">
-                <span>reload</span> 
-            </button>
-            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">
-                <span>debug</span>
-            </button>
-        </div>
-        <div data-attr-class="ccg.sheet.general.title + ' flex flex-col justify-center items-start relative min-h-3 hazards-construction-textured bg-warning'">
-            <span class="z-50 pe-none text-lg pl-2 text-outline-darkest-xl">
+<body id="widget_controller-widget" class="widget-shadow">
+    <div id="widget-container" data-model="widget_controller_model" class="flex flex-col h-full justify-between bg-darkest-alpha hazards-135 clip">
+        <div data-attr-class="ccg.sheet.modal.title + ' flex items-center justify-between relative min-h-3'">
+            <div class="title-bar-right-wedge">
+                <div class="title-bar-right-wedge-angle bg-darkest-alpha"></div>
+            </div>
+            <span class="z-50 pe-none text-lg pl-2 text-outline-darkest-xl font-bold">
                 Widget Controller
             </span>
             <handle move_target="widget_controller-widget" class="handle cursor-move">
-                <span class="greeble z-10">
-                    .
-                </span>
-                <div class="angle-decorator bg-black-semi-alpha border border-warning-alpha box-shadow-sm-inset"></div>
+                <span class="greeble z-10">.</span>
             </handle>
+            <div class="flex gap-1 z-50">
+                <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()">
+                    <span>reload</span>
+                </button>
+                <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()">
+                    <span>debug</span>
+                </button>
+            </div>
         </div>
 
-        <div id="widget-list-container" class="bg-darkest-alpha clip overflow-scroll h-full" data-class-loading="loadingWidgets">
-            <div data-for="widget : visibleWidgets" class="widget-entry-row bg-medium-alpha-hover flex items-center justify-between" data-event-mouseleave="announceHoveredWidget('')">
+        <div id="widget-list-container" class="bg-darkest-alpha clip overflow-scroll h-full" data-class-loading="loadingWidgets"
+             data-event-mouseout="setHoveredWidget('')">
+            <div data-for="widget : visibleWidgets" class="widget-entry-row bg-medium-alpha-hover flex items-center justify-between"
+                 data-event-mouseover="setHoveredWidget(widget.desc)">
                 <!-- Pin button -->
-                <button class="pin-btn p-1 mr-2 rounded bg-dark-alpha-hover border border-medium-alpha-hover" 
+                <button data-attr-class="'pin-btn cursor-pointer px-1' + (widget.pinned ? ' pinned' : '')"
                         data-event-click="toggleWidgetPin(widget.name)"
                         data-attr-title="'Pin/Unpin widget'">
-                    <svg src="../svg/pin_icon.svg" data-attr-class="my.svgStyles"></svg>
+                    <svg src="../svg/pin_icon.svg" data-attr-class="my.pinSvg"></svg>
                 </button>
-                <button data-event-click="isWidgetPinned(widget.name)">Check is pinned</button>
-                
+
                 <p data-attr-class="(widget.active ? ccg.text.success : ccg.text.danger) + ' widget-entry-row__text px-2 py-1 flex-1 cursor-pointer'"
                     data-event-click="toggleWidget(widget.name)">
                     {{widget.name}}
                 </p>
-                
-                <div class="description-tooltip bg-darkest-semi-alpha border border-dark-alpha box-shadow-md p-1 text-sm text-center">
-                    {{widget.desc}}
-                </div>
             </div>
         </div>
 
-        <label class="bg-darkest-alpha flex min-h-7 gap-2 items-center justify-center px-2 py-1 border-top border-w-px border-dark-alpha relative" for="filter-input">
-            <div class="input-wrapper relative rounded bg-dark-alpha bg-gradientv flex items-center border-px border-black-alpha clip">
-                <svg src="../svg/filter_icon.svg" data-attr-class="my.svgStyles + ' opacity-75'"></svg>
-                <input id="filter-input" type="text" data-value="filterString" class="bg-dark-alpha bg-gradient p-1 pl-1-5 border-left border-right border-black-alpha" onchange="widget:UpdateVisibleWidgets(element)"></input>
-                <button class="search-clear p-0-5" data-event-mousedown="clearFilterString()"
-                    data-class-filter-grayscale="filterString == ''"
-                    data-class-bg-dark-alpha-hover="filterString != ''">
-                    <svg src="../svg/bin_icon.svg" data-attr-class="my.svgStyles + ' opacity-75 pe-none'"></svg>
-                </button>
+        <div class="flex items-center min-h-7 px-2 py-1 bg-darker-alpha relative">
+            <div class="search-notch">
+                <div class="search-notch-angle bg-darkest-alpha"></div>
             </div>
-        </label>
+            <span data-visible="filterString == ''" class="placeholder-text pe-none absolute">Search widgets...</span>
+            <input id="filter-input" type="text"
+                class="flex-1 p-1 text-sm"
+                data-value="filterString"
+                onchange="widget:UpdateVisibleWidgets(element)"></input>
+        </div>
+
     </div>
 </body>
 </rml>

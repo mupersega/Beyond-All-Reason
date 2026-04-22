@@ -154,6 +154,12 @@ button:active {
     transform: translate(1dp, 1dp)
 }
 
+/* SVG Decorator shapes */
+.dec-shape {
+    width: 80dp;
+    height: 54dp;
+}
+
 .toggle-expand-container {
     display: flex;
     align-items: center;

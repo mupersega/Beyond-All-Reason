@@ -13,14 +13,164 @@ local commonClassGroups = WG.rml_commonClassGroups
 
 commonClassGroups.prefix = "ccg"
 
+-- ===========================================================================
+-- Style modes: user-configurable axes that decorate panel CCG entries at
+-- widget-init time. Each axis has a Spring config key; readCurrentOptions()
+-- returns a flat table consumed by buildPanels() below. New axes go here
+-- plus a matching `panel_axes` entry. Defaults are chosen to reproduce the
+-- current visual aesthetic on a fresh install.
+-- ===========================================================================
+
+local STYLE_CONFIG_KEYS = {
+    depth   = "rml_style_depth",
+    radius  = "rml_style_radius",
+    border  = "rml_style_border",
+    texture = "rml_style_texture",
+}
+
+local STYLE_DEFAULTS = {
+    depth   = "subtle",
+    radius  = "subtle",
+    border  = "subtle",
+    texture = "on",
+}
+
+function commonClassGroups.readCurrentOptions()
+    local out = {}
+    for axis, key in pairs(STYLE_CONFIG_KEYS) do
+        out[axis] = Spring.GetConfigString(key, STYLE_DEFAULTS[axis])
+    end
+    return out
+end
+
+-- Semantic base strings for panel variants. Color + text treatment only;
+-- NO global decoration classes. Per-variant borderColor is applied only
+-- when the border axis is active; per-variant signature texture only when
+-- the texture axis is on.
+local panel_base = {
+    general      = { color = "bg-dark-alpha",                     colorNoTexture = "bg-dark-semi-alpha",        signature = "radial-focus-start-feint",       borderColor = "border-darker-alpha" },
+    primary      = { color = "bg-primary-alpha text-shadow",      signature = "hazards-135",                    borderColor = "border-primary-dark" },
+    construction = { color = "bg-warning text-outline-darkest-lg", signature = "hazards-construction-textured", borderColor = "border-warning-alpha" },
+    danger       = { color = "bg-danger-alpha text-shadow",       signature = "hazards-225",                    borderColor = "border-danger"       },
+    info         = { color = "bg-info-alpha text-shadow",         signature = "radial-focus-start-feint",       borderColor = "border-darker-alpha" },
+    success      = { color = "bg-success-alpha text-shadow",      signature = "radial-focus-start-feint",       borderColor = "border-success"      },
+    warning      = { color = "bg-warning-alpha text-shadow",      signature = "radial-focus-start-feint",       borderColor = "border-warning"      },
+}
+
+-- Axis lookups: global utility classes appended to every variant's base.
+local panel_axes = {
+    depth = {
+        off        = "",
+        subtle     = "box-shadow-sm",
+        medium     = "box-shadow-md",
+        pronounced = "box-shadow-lg",
+    },
+    radius = {
+        square  = "",
+        subtle  = "rounded",
+        rounded = "rounded-lg",
+    },
+    border = {
+        off    = "",
+        subtle = "border-w-sm",
+        strong = "border-w-md",
+    },
+    -- `texture` is a gate, not a class lookup: when "on", entry.signature is
+    -- appended; when "off", it's omitted.
+}
+
+local function buildPanels(options)
+    local result = {}
+    for variantName, entry in pairs(panel_base) do
+        -- Variants may declare a `colorNoTexture` override used only when the
+        -- texture axis is off — compensates for the loss of the signature
+        -- overlay by brightening the base. Falls back to the regular color
+        -- when the override isn't declared.
+        local baseColor = entry.color
+        if options.texture == "off" and entry.colorNoTexture then
+            baseColor = entry.colorNoTexture
+        end
+        local parts = { baseColor }
+
+        local depthClass = panel_axes.depth[options.depth] or ""
+        if depthClass ~= "" then parts[#parts + 1] = depthClass end
+
+        local radiusClass = panel_axes.radius[options.radius] or ""
+        if radiusClass ~= "" then parts[#parts + 1] = radiusClass end
+
+        if options.border ~= "off" then
+            local widthClass = panel_axes.border[options.border] or ""
+            if widthClass ~= "" then
+                parts[#parts + 1] = widthClass
+                parts[#parts + 1] = entry.borderColor
+            end
+        end
+
+        if options.texture == "on" and entry.signature then
+            parts[#parts + 1] = entry.signature
+        end
+
+        result[variantName] = table.concat(parts, " ")
+    end
+    return result
+end
+
+commonClassGroups.buildPanels = buildPanels
+
+-- ===========================================================================
+-- Widget container (the <body> element of every RML widget). Driven by the
+-- same style-mode options but via a parallel axis table — shadow/radius
+-- intensities may differ between a panel INSIDE a widget and the widget
+-- frame itself, so we keep them independent.
+--
+-- buildWidgetContainer returns a space-separated class string consumed by
+-- utils.initializeRmlWidget via SetClass. The class names reference
+-- shared selectors defined in styles.rcss (.depth-*, .radius-*, .border-*).
+-- ===========================================================================
+
+local widget_axes = {
+    depth = {
+        off        = "depth-off",
+        subtle     = "depth-subtle",
+        medium     = "depth-medium",
+        pronounced = "depth-pronounced",
+    },
+    radius = {
+        square  = "radius-square",
+        subtle  = "radius-subtle",
+        rounded = "radius-rounded",
+    },
+    border = {
+        off    = "border-off",
+        subtle = "border-subtle",
+        strong = "border-strong",
+    },
+    -- texture axis does not apply to widget containers (they have no per-
+    -- variant signature decoration).
+}
+
+local function buildWidgetContainer(options)
+    local parts = {}
+    local depthClass  = widget_axes.depth[options.depth]
+    local radiusClass = widget_axes.radius[options.radius]
+    local borderClass = widget_axes.border[options.border]
+    if depthClass  then parts[#parts + 1] = depthClass  end
+    if radiusClass then parts[#parts + 1] = radiusClass end
+    if borderClass then parts[#parts + 1] = borderClass end
+    return table.concat(parts, " ")
+end
+
+commonClassGroups.buildWidgetContainer = buildWidgetContainer
+
 commonClassGroups.definitions = {
     text = {
         success = "text-sm font-bold text-success text-outline-darker-lg",
         warning = "text-sm font-bold text-warning text-outline-darker-lg",
-        tooltip = "text-sm font-normal text-light p-2 rounded border bg-darker border-light-alpha",
+        tooltip = "text-sm text-none font-normal text-light p-2 rounded border bg-darker border-light-alpha",
         body = "text-sm font-normal text-light",
         info = "text-sm font-bold text-info text-outline-darker-lg",
         caption = "text-sm font-normal text-medium",
+        description = "text-sm font-normal text-medium",
         emphasis = "text-sm font-bold text-light text-outline-darker-lg",
         danger = "text-sm font-bold text-danger text-outline-darker-lg",
     },
@@ -46,6 +196,7 @@ commonClassGroups.definitions = {
         ghost = "text-sm font-bold text-light pl-2 pr-2 pt-0-5 pb-0-5 rounded border border-light-alpha bg-darkest-alpha",
         surface = "text-sm font-bold text-surface-anti pl-2 pr-2 pt-0-5 pb-0-5 rounded bg-surface",
         general = "text-sm font-bold text-medium pl-2 pr-2 pt-0-5 pb-0-5 rounded bg-gradient bg-light text-outline-darkest-lg",
+        dark = "text-sm font-bold text-light pl-2 pr-2 pt-0-5 pb-0-5 rounded bg-gradient bg-darker text-outline-darkest-lg",
     },
 
     pill = {
@@ -58,6 +209,7 @@ commonClassGroups.definitions = {
         ghost = "text-sm font-bold text-light pl-2 pr-2 pt-0-5 pb-0-5 rounded-full border border-light-alpha bg-darkest-alpha",
         surface = "text-sm font-bold text-surface-anti pl-2 pr-2 pt-0-5 pb-0-5 rounded-full bg-surface",
         general = "text-sm font-bold text-medium pl-2 pr-2 pt-0-5 pb-0-5 rounded-full bg-gradient bg-light text-outline-darkest-lg",
+        dark = "text-sm font-bold text-light pl-2 pr-2 pt-0-5 pb-0-5 rounded-full bg-gradient bg-darker text-outline-darkest-lg",
     },
 
     circle = {
@@ -92,65 +244,68 @@ commonClassGroups.definitions = {
     },
 
     button = {
-        general = "text-center text-light bg-darkest bg-gradient-darkest hover-brighten cursor-pointer",
-        success = "text-center text-success text-outline-darker-lg bg-success radial-focus-center-feint hover-brighten cursor-pointer",
-        warning = "text-center text-warning text-outline-darker-lg bg-warning radial-focus-center-feint hover-brighten cursor-pointer",
-        danger = "text-center text-danger text-outline-darker-lg bg-danger radial-focus-center-feint hover-brighten cursor-pointer",
-        ghost = "text-center text-light font-bold bg-darkest-alpha border border-light-alpha hover-fade cursor-pointer",
+        general = "text-upper text-center text-light bg-darkest bg-gradient-darkest hover-brighten cursor-pointer",
+        success = "text-upper text-center text-success text-outline-darker-lg bg-success radial-focus-center-feint hover-brighten cursor-pointer",
+        warning = "text-upper text-center text-warning text-outline-darker-lg bg-warning radial-focus-center-feint hover-brighten cursor-pointer",
+        danger = "text-upper text-center text-danger text-outline-darker-lg bg-danger radial-focus-center-feint hover-brighten cursor-pointer",
+        ghost = "text-upper text-center text-light font-bold bg-darkest-alpha border border-light-alpha hover-fade cursor-pointer",
     },
-    
+
     themeButton = {
-        primary = "text-center text-darkest font-bold bg-gradient_primary-accent hover-brighten cursor-pointer",
-        ghost = "text-center text-primary font-bold border-2 border border-primary-alpha bg-primary-hover-alpha cursor-pointer",
-        surface = "text-center text-surface-anti font-bold bg-surface border border-surface-alpha hover-brighten cursor-pointer",
-        secondary = "text-center text-primary-dark bg-gradient_primary-alpha font-bold hover-brighten cursor-pointer bg-secondary",
+        primary = "text-upper text-center text-darkest font-bold bg-gradient_primary-accent hover-brighten cursor-pointer",
+        ghost = "text-upper text-center text-primary font-bold border border-primary-alpha bg-primary-hover-alpha cursor-pointer",
+        surface = "text-upper text-center text-surface-anti font-bold bg-surface border border-surface-alpha hover-brighten cursor-pointer",
+        secondary = "text-upper text-center text-primary-dark bg-gradient_primary-alpha font-bold hover-brighten cursor-pointer bg-secondary",
     },
 
     nav = {
         container = "flex bg-dark-alpha min-h-8 box-shadow-md z-10",
     },
 
-    panel = {
-        general = "rounded border-sm border-darker-alpha box-shadow-sm bg-darker-alpha radial-focus-start-feint",
-        primary = "bg-primary-alpha shadow-md rounded border-primary-dark border hazards-135 text-shadow",
-        construction = "bg-warning shadow-lg rounded border-warning border-2 hazards-construction-textured text-outline-darkest-lg border border-warning-alpha",
-        danger = "bg-danger-alpha shadow-md rounded border-danger border hazards-225 text-shadow",
-        info = "bg-info-alpha shadow-md rounded border-darker-alpha border text-shadow radial-focus-start-feint",
-        success = "bg-success-alpha shadow-md rounded border-success border radial-focus-start-feint text-shadow",
-        warning = "bg-warning-alpha shadow-md rounded border-warning border radial-focus-start-feint text-shadow",
-    },
+    -- `panel` is built dynamically in getForModel() from panel_base + panel_axes
+    -- + user style-mode options. See top of file.
 
     sheet = {
         general = {
             container = "hazards-135 bg-darkest",
-            title = "text-2xl font-bold bg-darkest-semi-alpha p-3 bg-gradient-darker-alpha radial-focus-start text-outline-darkest-lg border-bottom border-darkest",
+            title = "text-upper text-2xl font-bold bg-darkest-semi-alpha p-3 bg-gradient-darker-alpha radial-focus-start text-outline-darkest-lg border-bottom border-darkest",
             content = "p-4",
             footer = "p-3 bg-darkest-alpha border-top border-darkest",
         },
         primary = {
             container = "radial-focus-start box-shadow-md hazards-225",
-            title = "text-2xl font-bold bg-primary-semi-alpha p-3 bg-gradient_primary-alpha text-outline-darkest-lg",
+            title = "text-upper text-2xl font-bold bg-primary-semi-alpha p-3 bg-gradient_primary-alpha text-outline-darkest-lg",
             content = "p-4",
             footer = "p-3 bg-primary-alpha",
         },
         construction = {
             container = "border border-darkest-alpha clip",
-            title = "hazards-construction-textured text-xl font-bold bg-warning p-3 text-outline-darkest-lg border-bottom border-warning-alpha flex items-center justify-between",
+            title = "text-upper hazards-construction-textured text-xl font-bold bg-warning p-3 text-outline-darkest-lg border-bottom border-warning-alpha flex items-center justify-between",
             content = "p-4",
             footer = "p-3 bg-darker text-warning text-outline-darkest",
         },
         modal = {
             container = "hazards-135 bg-darkest-alpha rounded-lg border border-dark clip box-shadow-md",
-            title = "text-xl font-bold bg-darkest-semi-alpha p-3 bg-gradient-darker-alpha text-outline-darkest-lg border-bottom border-darkest",
+            title = "text-upper text-xl font-bold bg-darkest-semi-alpha p-3 bg-gradient-darker-alpha text-outline-darkest-lg border-bottom border-darkest",
             content = "p-4",
             footer = "p-3 bg-darkest-alpha border-top border-darkest rounded-b-lg",
         },
         surface = {
             container = "rounded-lg border border-surface-alpha shadow-lg clip box-shadow-md radial-focus-center-feint",
-            title = "text-xl font-bold bg-surface-semi-alpha p-3 bg-gradient_surface-textured text-outline-darkest-lg",
+            title = "text-upper text-xl font-bold bg-surface-semi-alpha p-3 bg-gradient_surface-textured text-outline-darkest-lg",
             content = "p-4",
             footer = "p-3 bg-surface-alpha rounded-b-lg",
         }
+    },
+
+    toggle = {
+        panel = "toggle-panel",
+        success = "toggle-seg toggle-seg-success",
+        warning = "toggle-seg toggle-seg-warning",
+        danger = "toggle-seg toggle-seg-danger",
+        offSuccess = "toggle-seg toggle-seg-inactive-success",
+        offWarning = "toggle-seg toggle-seg-inactive-warning",
+        offDanger = "toggle-seg toggle-seg-inactive-danger",
     },
 
     card = {
@@ -189,6 +344,8 @@ function commonClassGroups.getForModel()
     for componentName, classes in pairs(commonClassGroups.definitions) do
         result[componentName] = classes
     end
+    -- `panel` is composed from base + axes + current user options, not static.
+    result.panel = buildPanels(commonClassGroups.readCurrentOptions())
     return result
 end
 
@@ -196,7 +353,9 @@ end
 function commonClassGroups.getSpecificForModel(componentNames)
     local result = {}
     for _, componentName in ipairs(componentNames) do
-        if commonClassGroups.definitions[componentName] then
+        if componentName == "panel" then
+            result.panel = buildPanels(commonClassGroups.readCurrentOptions())
+        elseif commonClassGroups.definitions[componentName] then
             result[componentName] = commonClassGroups.definitions[componentName]
         else
             Spring.Echo("Warning: Class group '" .. componentName .. "' not found")

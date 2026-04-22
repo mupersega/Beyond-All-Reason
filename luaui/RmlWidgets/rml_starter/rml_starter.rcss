@@ -196,6 +196,16 @@ button:active {
     filter: brightness(1.1);
 }
 
+/* Animated placeholder — uses @keyframes placeholder-pulse from components.rcss */
+.placeholder-text {
+    font-size: 10dp;
+    left: 8dp;
+    top: 8dp;
+    z-index: 1;
+    color: #78788c;
+    animation: 1.5s linear infinite placeholder-pulse;
+}
+
 input.input-highlighter {
     transition: border 0.1s elastic-in-out;
     /* vv dark alpha vv */
@@ -205,4 +215,51 @@ input.input-highlighter {
 input.input-highlighter:focus {
     /* warning yellow with some alpha */
     border: 1dp #fad40080;
+}
+
+/* SVG tab */
+.svg-sweep-btn {
+    min-width: 45dp;
+    text-align: center;
+}
+
+.svg-graph-box {
+    height: 140dp;
+}
+
+.svg-demo-fill {
+    width: 100%;
+    height: 100%;
+}
+
+.svg-playground-shape {
+    width: 120dp;
+    height: 80dp;
+}
+
+.svg-toggle-btn {
+    min-width: 30dp;
+    text-align: center;
+}
+
+.svg-filter-item {
+    opacity: 0.5;
+    transition: opacity 0.15s;
+}
+
+.svg-filter-item:hover {
+    background-color: rgba(255, 255, 255, 8);
+    opacity: 0.75;
+}
+
+.svg-filter-item.svg-filter-selected {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 12);
+}
+
+.svg-filter-swatch {
+    width: 8dp;
+    height: 8dp;
+    border-radius: 2dp;
+    flex-shrink: 0;
 }

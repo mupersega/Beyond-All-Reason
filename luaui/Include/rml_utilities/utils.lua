@@ -45,8 +45,17 @@ function utils.initializeRmlWidget(widget, initParams)
 
     local widgetId = initParams.widgetId
     
-    -- Get the shared RML context
-    widget.rmlContext = RmlUi.GetContext("shared")
+    -- Get the RML context. Default is the "shared" context every BAR
+    -- widget lives in. Test harnesses (e.g. rml_stress_test) can set
+    -- WG.rml_testContextOverride to a different context name BEFORE
+    -- calling widgetHandler:ToggleWidget to have the target widget
+    -- mount into a dedicated test context. Must be cleared by the
+    -- setter immediately after the toggle returns.
+    local contextName = (WG and WG.rml_testContextOverride) or "shared"
+    tracy.ZoneBeginN("RmlUi.GetContext")
+    tracy.ZoneText(tostring(widgetId) .. "@" .. contextName)
+    widget.rmlContext = RmlUi.GetContext(contextName)
+    tracy.ZoneEnd()
     if not widget.rmlContext then
         return false
     end
@@ -66,27 +75,70 @@ function utils.initializeRmlWidget(widget, initParams)
     end
 
     -- Create and bind the data model
+    tracy.ZoneBeginN("RmlUi.OpenDataModel")
+    tracy.ZoneText(tostring(initParams.modelName))
     local dm_handle = widget.rmlContext:OpenDataModel(initParams.modelName, initParams.initModel)
+    tracy.ZoneEnd()
     if not dm_handle then
         return false
     end
 
     -- Load the RML document
+    tracy.ZoneBeginN("RmlUi.LoadDocument")
+    tracy.ZoneText(tostring(initParams.rmlPath))
     local document = widget.rmlContext:LoadDocument(initParams.rmlPath, widget)
+    tracy.ZoneEnd()
     if not document then
         widget.rmlContext:RemoveDataModel(initParams.modelName)
         return false
     end
 
     -- Apply styles and show the document
+    tracy.ZoneBeginN("RmlUi.FirstShow")
+    tracy.ZoneText(tostring(initParams.rmlPath))
     document:ReloadStyleSheet()
     document:Show()
-    
+    tracy.ZoneEnd()
+
+    -- Apply user-configurable style-mode classes to the document body.
+    -- The class list is NOT hardcoded here — it comes from ccg.buildWidgetContainer,
+    -- which is the single source of truth for how style-mode options map to
+    -- class names. Interface-driven styling must always route through CCG;
+    -- per-widget overrides are deliberately not supported.
+    local containerClasses = utils.applyWidgetContainerClasses(widget, document)
+
     -- Return the created objects for the widget to store
     return {
         document = document,
-        dm_handle = dm_handle
+        dm_handle = dm_handle,
+        containerClasses = containerClasses,
     }
+end
+
+-- Apply the CCG-derived widget container class list to the document body.
+-- Clears any classes previously applied by this helper (tracked on the widget
+-- object) before applying the new set, so it can be called repeatedly to
+-- refresh in place without a full widget reload.
+function utils.applyWidgetContainerClasses(widget, document)
+    if not document then return nil end
+
+    -- Clear previous set.
+    local previous = widget._rmlContainerClasses
+    if previous then
+        for _, cls in ipairs(previous) do
+            document:SetClass(cls, false)
+        end
+    end
+
+    -- Apply the new set from CCG.
+    local classStr = ccg.buildWidgetContainer(ccg.readCurrentOptions())
+    local applied = {}
+    for cls in string.gmatch(classStr, "%S+") do
+        document:SetClass(cls, true)
+        applied[#applied + 1] = cls
+    end
+    widget._rmlContainerClasses = applied
+    return applied
 end
 
 -- RML Widget shutdown helper
@@ -111,9 +163,15 @@ function utils.shutdownRmlWidget(widget, shutdownParams, document, dm_handle)
     widget.rmlContext = nil
 end
 
--- Helper to get the current data model handle used primarily in init model functions to avoid reassignment after initialization.
-function utils.GetCurrentModel(dm_handle)
-    return dm_handle
+-- Returns true when the central RML debug option is enabled.
+-- Widgets exposing reload/debug UI buttons should gate them behind this
+-- (typically by polling this in widget:Update and pushing the value into
+-- dm_handle.rmlDebugControls, then using data-if="rmlDebugControls" in RML).
+-- The central toggle lives in gui_options_rml > Dev > Debug > "RML Debugger"
+-- and ALSO opens/closes the RmlUi debugger overlay via RmlUi.SetDebugContext.
+-- The underlying storage is the Spring config key "RMLDebugControls" (0 or 1).
+function utils.isRmlDebugEnabled()
+    return Spring.GetConfigInt("RMLDebugControls", 0) == 1
 end
 
 return utils

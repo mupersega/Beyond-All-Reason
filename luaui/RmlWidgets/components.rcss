@@ -1,0 +1,241 @@
+/* ── Segmented Toggle ──
+   Same recessed-field aesthetic as range track and select: hairline 0.5dp
+   translucent-white border, dark #282828 bg, subtle inset shadow. */
+.toggle-panel {
+	display: flex;
+	flex-direction: row;
+	background-color: #282828;
+	border: 0.5dp #ffffff20;
+	border-radius: 2dp;
+	gap: 1dp;
+	padding: 1dp;
+	cursor: pointer;
+	transition: transform 0.08s;
+	box-shadow: #00000060 0dp 1dp 2dp 0dp inset;
+}
+
+.toggle-panel:hover {
+	border: 0.5dp #ffffff35;
+}
+
+.toggle-panel:active {
+	transform: scale(0.92);
+}
+
+.toggle-seg {
+	width: 12dp;
+	height: 8dp;
+	border-radius: 1dp;
+	transition: background-color 0.15s;
+}
+
+/* ── Inactive ghost states ──
+   box-shadows removed: each toggle segment is rendered many times per options
+   view, and box-shadow is the single most expensive utility per the perf
+   findings log. Background colors alone still read as "on/off". */
+.toggle-seg-inactive-danger {
+	background-color: #ef444420;
+}
+
+.toggle-seg-inactive-success {
+	background-color: #22c55e20;
+}
+
+.toggle-seg-inactive-warning {
+	background-color: #fad40020;
+}
+
+/* Hover brightens inactive segments */
+.toggle-panel:hover .toggle-seg-inactive-danger {
+	background-color: #ef444438;
+}
+
+.toggle-panel:hover .toggle-seg-inactive-success {
+	background-color: #22c55e38;
+}
+
+.toggle-panel:hover .toggle-seg-inactive-warning {
+	background-color: #fad40038;
+}
+
+/* ── Active (lit) states ── */
+.toggle-seg-success {
+	background-color: #22c55e;
+}
+
+.toggle-panel:hover .toggle-seg-success {
+	background-color: #34d76f;
+}
+
+.toggle-seg-warning {
+	background-color: #fad400;
+}
+
+.toggle-panel:hover .toggle-seg-warning {
+	background-color: #ffe033;
+}
+
+.toggle-seg-danger {
+	background-color: #ef4444;
+}
+
+.toggle-panel:hover .toggle-seg-danger {
+	background-color: #f55a5a;
+}
+
+/* ── Range Slider ──
+   Thin rail + prominent handle. Track is a 3dp strip centered in a 12dp
+   slot; thumb stands taller than the rail and rides on it. Both sides of
+   the rail are the same colour so there's no two-tone split across the
+   thumb position. */
+input[type="range"] {
+	flex: 1;
+	height: 10dp;
+}
+
+/* Track fills the full slot height — keeps RmlUi's internal range layout
+   happy and avoids vertical-alignment quirks. */
+input[type="range"] slidertrack {
+	height: 10dp;
+	background-color: #282828;
+	border-radius: 2dp;
+	box-shadow: #00000060 0dp 1dp 2dp 0dp inset;
+}
+
+input[type="range"] sliderprogress {
+	height: 10dp;
+	background-color: #282828;
+	border-radius: 2dp;
+	box-shadow: #00000060 0dp 1dp 2dp 0dp inset;
+}
+
+/* Thumb is shorter than the track and margin-top'd to sit centred in the
+   slot. Track is visible as a 2dp rail above and below the handle, and the
+   horizontal margin keeps the thumb off the very edges of the track. */
+input[type="range"] sliderbar {
+	width: 14dp;
+	height: 6dp;
+	margin: 2dp 2dp;
+	border-radius: 2dp;
+	background-color: #d1d5db;
+	box-shadow: #ffffff18 1dp 1dp 1dp inset;
+	transition: background-color 0.12s quadratic-out;
+}
+
+input[type="range"] sliderbar:hover {
+	background-color: #e5e7eb;
+}
+
+input[type="range"] sliderbar:active {
+	background-color: #9ca3af;
+}
+
+input[type="range"] sliderarrowinc,
+input[type="range"] sliderarrowdec {
+	width: 0dp;
+	height: 0dp;
+}
+
+/* ── Select Dropdown ── */
+select {
+	background-color: transparent;
+	border: 0dp;
+	color: #d1d5db;
+	height: 20dp;
+	padding: 0dp;
+}
+
+select:focus {
+	border: 0dp;
+	padding: 0dp;
+}
+
+select selectvalue {
+	width: auto;
+	/* Selects are flourish controls — intentionally smaller than the
+	   surrounding row. The 18dp selectvalue sits inside the 20dp parent
+	   select, anchored at the top (RmlUi C++ positions selectvalue at
+	   the parent's content origin and that can't be changed via CSS),
+	   leaving a 2dp visual inset at the bottom for a subtle raised feel.
+	   line-height matches selectvalue's own 18dp height so the value
+	   text stays vertically centered inside this box — classic CSS
+	   single-line centering idiom, safer than flex on a C++ pseudo-
+	   element. */
+	height: 18dp;
+	line-height: 18dp;
+	margin-right: 0dp;
+	background-color: #282828;
+	border: 0.5dp #ffffff20;
+	border-radius: 2dp;
+	color: #d1d5db;
+	padding: 0dp 6dp;
+	white-space: pre;
+	box-shadow: #00000060 0dp 1dp 2dp 0dp inset;
+}
+
+select selectvalue:focus {
+	border: 0.5dp #d1d5db;
+}
+
+select selectarrow {
+	width: 0dp;
+	max-width: 0dp;
+	border: 0dp;
+	transform: rotateZ(0deg);
+}
+
+select selectbox {
+	background-color: #282828;
+	border: 0.5dp #ffffff20;
+	border-radius: 2dp;
+}
+
+select option {
+	color: #d1d5db;
+	padding: 3dp 6dp;
+	white-space: pre;
+}
+
+select option:hover {
+	background-color: #ffffff14;
+}
+
+select option:checked {
+	background-color: #ffffff20;
+}
+
+/* ── SVG Decorators ── */
+/* Host: give any container relative positioning so it anchors an absolute
+   svg child that fills it. Does not set position directly so existing layout
+   is untouched when the host already has `position: relative` elsewhere. */
+.svg-decorator-host {
+	position: relative;
+}
+
+/* Fill: absolute-positioned overlay child for SVG decorators. Injected src
+   comes from Lua via svg_decorators.lua. Pointer-events disabled so the
+   decorator never blocks clicks on host controls. */
+.svg-decorator-fill {
+	position: absolute;
+	left: 0dp;
+	top: 0dp;
+	width: 100%;
+	height: 100%;
+	z-index: 0;
+	pointer-events: none;
+}
+
+/* ── Animated Placeholder ──
+   Pulsing placeholder text for search/filter inputs. The <span> is
+   absolutely positioned over the input with pe-none so clicks pass
+   through. Visibility is toggled via data-visible="boundVar == ''".
+   Widget-specific positioning (left/top offsets, font-size) stays in
+   each widget's own RCSS; this just provides the shared animation. */
+@keyframes placeholder-pulse {
+	0%   { opacity: 0.2; }
+	10%  { opacity: 1.0; }
+	20%  { opacity: 0.7; }
+	67%  { opacity: 0.7; }
+	77%  { opacity: 0.2; }
+	100% { opacity: 0.2; }
+}

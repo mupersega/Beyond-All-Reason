@@ -1,0 +1,281 @@
+<rml>
+<head>
+    <title>RML Stress Test</title>
+
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="rml_stress_test.rcss" type="text/rcss" />
+</head>
+<body id="rml_stress_test-widget">
+    <button class="stress-close" onclick="widget:Close()">×</button>
+    <div id="widget-container" data-model="rml_stress_test_model">
+        <div class="stress-sidebar">
+            <div class="stress-title">Stress Test</div>
+            <div class="stress-info">
+                <div>Stage: <span id="stress-count-val">0</span></div>
+                <div>Mode: <span id="stress-mode-val">(empty)</span></div>
+                <div>Tick: <span id="stress-tick-val">off</span></div>
+                <div>Test: <span id="stress-test-val">idle</span></div>
+                <div>Suite: {{suiteStatus}}</div>
+                <div>Baseline: {{baselineStatus}}</div>
+            </div>
+
+            <!-- Always-visible global controls -->
+            <button data-attr-class="'stress-btn stress-btn-timed' + (timedStatus == 'ON' ? ' stress-btn-timed-on' : '')"
+                    data-event-click="toggleTimed()">
+                Timed mode: {{timedStatus}}
+            </button>
+            <div class="stress-row">
+                <button data-attr-class="'stress-btn stress-btn-dur' + (durationStatus == '2s' ? ' stress-btn-dur-on' : '')" data-event-click="setDuration(2)">2s</button>
+                <button data-attr-class="'stress-btn stress-btn-dur' + (durationStatus == '3s' ? ' stress-btn-dur-on' : '')" data-event-click="setDuration(3)">3s</button>
+                <button data-attr-class="'stress-btn stress-btn-dur' + (durationStatus == '5s' ? ' stress-btn-dur-on' : '')" data-event-click="setDuration(5)">5s</button>
+                <button data-attr-class="'stress-btn stress-btn-dur' + (durationStatus == '10s' ? ' stress-btn-dur-on' : '')" data-event-click="setDuration(10)">10s</button>
+            </div>
+            <div class="stress-row">
+                <button class="stress-btn stress-btn-suite" data-event-click="scenario('baseline')">Measure baseline</button>
+            </div>
+            <div class="stress-row">
+                <button class="stress-btn stress-btn-clear" data-event-click="scenario('clear')">Clear stage</button>
+                <button class="stress-btn stress-btn-clear" data-event-click="scenario('clearresults')">Clear results</button>
+            </div>
+            <div class="stress-row">
+                <button class="stress-btn stress-btn-copy" data-event-click="copyResults()">Copy results</button>
+                <button class="stress-btn stress-btn-danger" data-event-click="cancelSuite()">Stop suite</button>
+            </div>
+
+            <!-- Tab bar — only one tab's sections live in the DOM at a time -->
+            <div class="stress-row stress-tab-bar">
+                <button data-attr-class="'stress-btn stress-btn-tab' + (currentTab == 'widgets' ? ' stress-btn-tab-on' : '')" data-event-click="setTab('widgets')">Widgets</button>
+                <button data-attr-class="'stress-btn stress-btn-tab' + (currentTab == 'core' ? ' stress-btn-tab-on' : '')" data-event-click="setTab('core')">Core</button>
+                <button data-attr-class="'stress-btn stress-btn-tab' + (currentTab == 'ccg' ? ' stress-btn-tab-on' : '')" data-event-click="setTab('ccg')">CCG</button>
+                <button data-attr-class="'stress-btn stress-btn-tab' + (currentTab == 'util' ? ' stress-btn-tab-on' : '')" data-event-click="setTab('util')">Util</button>
+            </div>
+
+            <!-- WIDGETS TAB — default, lightest DOM -->
+            <div data-if="currentTab == 'widgets'" class="stress-tab-content">
+                <div class="stress-row">
+                    <button class="stress-btn stress-btn-suite" data-event-click="runWidgetSuite()">Run widget suite</button>
+                </div>
+                <div class="stress-section">Widget tests — enable, measure, auto-disable</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : widgetTestVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('widgettest', v.widgetName, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+                <div class="stress-section">Widget stack — N widgets at once</div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('widgetstack', '3')">stack 3<span class="btn-result">{{results.widgetstack_3}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('widgetstack', '5')">stack 5<span class="btn-result">{{results.widgetstack_5}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('widgetstack', 'all')">stack all<span class="btn-result">{{results.widgetstack_all}}</span></button>
+                </div>
+            </div>
+
+            <!-- CORE TAB — the original scenario sections -->
+            <div data-if="currentTab == 'core'" class="stress-tab-content">
+                <div class="stress-row">
+                    <button class="stress-btn stress-btn-suite" data-event-click="runSuite()">Run main suite</button>
+                </div>
+
+                <div class="stress-section">Flat (siblings)</div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('flat', 100, 'plain')">100 p<span class="btn-result">{{results.flat_100_plain}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 100, 'card')">100 card<span class="btn-result">{{results.flat_100_card}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 100, 'panel')">100 pnl<span class="btn-result">{{results.flat_100_panel}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('flat', 500, 'plain')">500 p<span class="btn-result">{{results.flat_500_plain}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 500, 'card')">500 card<span class="btn-result">{{results.flat_500_card}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 500, 'panel')">500 pnl<span class="btn-result">{{results.flat_500_panel}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('flat', 1000, 'plain')">1k p<span class="btn-result">{{results.flat_1000_plain}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 1000, 'card')">1k card<span class="btn-result">{{results.flat_1000_card}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 1000, 'panel')">1k pnl<span class="btn-result">{{results.flat_1000_panel}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('flat', 2000, 'plain')">2k p<span class="btn-result">{{results.flat_2000_plain}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 2000, 'card')">2k card<span class="btn-result">{{results.flat_2000_card}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 2000, 'panel')">2k pnl<span class="btn-result">{{results.flat_2000_panel}}</span></button>
+                </div>
+
+                <div class="stress-section">Isolation @ 500 (vs plain)</div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('flat', 500, 'pad')">pad<span class="btn-result">{{results.flat_500_pad}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 500, 'bg')">bg<span class="btn-result">{{results.flat_500_bg}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 500, 'shadow')">shadow<span class="btn-result">{{results.flat_500_shadow}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('flat', 500, 'rounded')">rounded<span class="btn-result">{{results.flat_500_rounded}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 500, 'border')">border<span class="btn-result">{{results.flat_500_border}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('flat', 500, 'cardnopad')">card-nopad<span class="btn-result">{{results.flat_500_cardnopad}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flat', 500, 'cardround')">card+round<span class="btn-result">{{results.flat_500_cardround}}</span></button>
+                </div>
+
+                <div class="stress-section">Parent × children grid</div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('grid', 20, 20, 'plain')">20×20 p<span class="btn-result">{{results.grid_20x20_plain}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('grid', 20, 20, 'card')">20×20 card<span class="btn-result">{{results.grid_20x20_card}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('grid', 30, 30, 'plain')">30×30 p<span class="btn-result">{{results.grid_30x30_plain}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('grid', 30, 30, 'card')">30×30 card<span class="btn-result">{{results.grid_30x30_card}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('grid', 50, 50, 'plain')">50×50 p<span class="btn-result">{{results.grid_50x50_plain}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('grid', 50, 50, 'card')">50×50 card<span class="btn-result">{{results.grid_50x50_card}}</span></button>
+                </div>
+
+                <div class="stress-section">Deep nesting</div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('deep', 10, 'plain')">d10 p<span class="btn-result">{{results.deep_10_plain}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('deep', 30, 'plain')">d30 p<span class="btn-result">{{results.deep_30_plain}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('deep', 100, 'plain')">d100 p<span class="btn-result">{{results.deep_100_plain}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('deep', 10, 'card')">d10 card<span class="btn-result">{{results.deep_10_card}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('deep', 30, 'card')">d30 card<span class="btn-result">{{results.deep_30_card}}</span></button>
+                </div>
+
+                <div class="stress-section">Reactive (tick each frame)</div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('reactive', 100, 'text')">100 text<span class="btn-result">{{results.reactive_100_text}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('reactive', 500, 'text')">500 text<span class="btn-result">{{results.reactive_500_text}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('reactive', 1000, 'text')">1k text<span class="btn-result">{{results.reactive_1000_text}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('reactive', 100, 'class')">100 class<span class="btn-result">{{results.reactive_100_class}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('reactive', 500, 'class')">500 class<span class="btn-result">{{results.reactive_500_class}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('reactive', 1000, 'class')">1k class<span class="btn-result">{{results.reactive_1000_class}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('reactive', 100, 'style')">100 style<span class="btn-result">{{results.reactive_100_style}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('reactive', 500, 'style')">500 style<span class="btn-result">{{results.reactive_500_style}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('reactive', 100, 'gamestate')">100 gameFrame<span class="btn-result">{{results.reactive_100_gamestate}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('reactive', 500, 'gamestate')">500 gameFrame<span class="btn-result">{{results.reactive_500_gamestate}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('stoptick')">Stop ticking</button>
+                </div>
+
+                <div class="stress-section">Anti-pattern: nested flex-col</div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('flexcol', 5)">5<span class="btn-result">{{results.flexcol_5}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flexcol', 10)">10<span class="btn-result">{{results.flexcol_10}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flexcol', 15)">15<span class="btn-result">{{results.flexcol_15}}</span></button>
+                    <button class="stress-btn" data-event-click="scenario('flexcol', 20)">20<span class="btn-result">{{results.flexcol_20}}</span></button>
+                </div>
+                <div class="stress-row">
+                    <button class="stress-btn stress-btn-danger" data-event-click="scenario('flexcol', 25)">25 (crash)</button>
+                    <button class="stress-btn stress-btn-danger" data-event-click="scenario('flexcol', 30)">30 (crash)</button>
+                    <button class="stress-btn stress-btn-danger" data-event-click="scenario('flexcol', 50)">50 (crash)</button>
+                </div>
+
+                <div class="stress-section">Stage visibility</div>
+                <div class="stress-row">
+                    <button class="stress-btn" data-event-click="scenario('vis', 'none')">display:none</button>
+                    <button class="stress-btn" data-event-click="scenario('vis', 'show')">visible</button>
+                </div>
+
+                <div class="stress-section">Dev</div>
+                <button class="stress-btn" onclick="widget:Reload()">Reload widget</button>
+            </div>
+
+            <!-- CCG TAB -->
+            <div data-if="currentTab == 'ccg'" class="stress-tab-content">
+                <div class="stress-row">
+                    <button class="stress-btn stress-btn-suite" data-event-click="runCcgSuite()">Run CCG suite</button>
+                </div>
+
+                <div class="stress-section">card @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : ccgCardVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">panel @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : ccgPanelVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">button @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : ccgButtonVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">themeButton @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : ccgThemeButtonVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">badge @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : ccgBadgeVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">pill @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : ccgPillVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">circle @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : ccgCircleVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+            </div>
+
+            <!-- UTIL TAB -->
+            <div data-if="currentTab == 'util'" class="stress-tab-content">
+                <div class="stress-row">
+                    <button class="stress-btn stress-btn-suite" data-event-click="runUtilSuite()">Run utility suite</button>
+                </div>
+
+                <div class="stress-section">gradient @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : utilGradientVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">texture @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : utilTextureVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">theme bg @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : utilThemeBgVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">effect @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : utilEffectVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">Combo ladder — stacked effects on 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : comboVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">Alpha ladder — bg variants @ 100/500/1000</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : alphaLadderVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+
+                <div class="stress-section">Replacement candidates for surface @ 500</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="v : replacementVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
+                </div>
+            </div>
+        </div>
+        <div class="stress-stage-wrap">
+            <div id="stress-stage" class="stress-stage"></div>
+        </div>
+    </div>
+</body>
+</rml>

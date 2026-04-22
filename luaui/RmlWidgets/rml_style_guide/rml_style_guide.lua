@@ -6,6 +6,9 @@ local widget = widget ---@type Widget
 local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
 local ccg = VFS.Include("luaui/Include/rml_utilities/common_class_groups.lua")
 local themeUtils = VFS.Include("luaui/Include/rml_utilities/theme_utils.lua")
+local svgShapes = VFS.Include("luaui/Include/rml_utilities/svg_shapes.lua")
+
+local activeTooltipText = nil  -- drives per-frame tooltip for copy buttons
 
 function widget:GetInfo()
     return {
@@ -157,13 +160,15 @@ local RML_PATH = "luaui/RmlWidgets/rml_style_guide/rml_style_guide.rml"
 -- Widget state
 local document
 local dm_handle
+local lastRmlDebug = nil  -- cache for the "RML Debug Controls" dev flag
 
--- Create a new data model every time to avoid reference oddities even with dm_handle, hence this being a function
+-- Create a fresh model table for each init
 local function initModel()
     return {
         message = "Hello from rml_style_guide!",
         currentTime = os.date("%H:%M:%S"),
         debugMode = false,
+        rmlDebugControls = false,
         expanded = true,
         tabs = {
             { id = "about", label = "About" },
@@ -174,6 +179,7 @@ local function initModel()
             { id = "cards", label = "Cards" },
             { id = "headings", label = "Headings" },
             { id = "panels", label = "Panels" },
+            { id = "decorators", label = "Decorators" },
             { id = "playPanel", label = "Play Panel" },
         },
     
@@ -196,6 +202,14 @@ local function initModel()
             copySvgStyles = "h-2-5 w-2-5 mx-1 mt-0-5",
         },
     
+        showCopyTooltip = function(event, className, name)
+            activeTooltipText = '&lt;button data-attr-class=&quot;' .. className .. '&quot;&gt;' .. name .. '&lt;/button&gt;'
+        end,
+
+        hideCopyTooltip = function(event)
+            activeTooltipText = nil
+        end,
+
         -- Theme management
         currentTheme = "", -- set in init
         availableThemes = {
@@ -216,7 +230,7 @@ local function initModel()
         sheets = createSheetArray(ccg.definitions.sheet, ccg.prefix .. ".sheet"),
         cards = createIterableArray(ccg.definitions.card, ccg.prefix .. ".card"),
         headings = createIterableArray(ccg.definitions.heading, ccg.prefix .. ".heading", true),
-        panels = createIterableArray(ccg.definitions.panel, ccg.prefix .. ".panel", true),
+        panels = createIterableArray(ccg.buildPanels(ccg.readCurrentOptions()), ccg.prefix .. ".panel", true),
     
         -- Theme switching function for the data model
         switchTheme = function(event, themeId)
@@ -230,11 +244,8 @@ local function initModel()
                 end
                 
                 -- Update our own current theme display
-                local model = utils.GetCurrentModel(dm_handle)
-                if model then
-                    model.currentTheme = themeId
-                end
-                
+                dm_handle.currentTheme = themeId
+
             else
                 Spring.Echo(WIDGET_ID .. ": Invalid theme: " .. tostring(themeId))
             end
@@ -244,13 +255,10 @@ local function initModel()
         -- but in this instance the whole widget gets collapsed and has no access to model properties,
         -- so we target it directly.
         toggleExpand = function()
-            local model = utils.GetCurrentModel(dm_handle)
-            if model then
-                model.expanded = not model.expanded
-            end
-    
+            dm_handle.expanded = not dm_handle.expanded
+
             if document then
-                if model.expanded then
+                if dm_handle.expanded then
                     document:SetClass("collapsed", false)
                 else
                     document:SetClass("collapsed", true)
@@ -280,24 +288,91 @@ function widget:Initialize()
     end
 
     dm_handle.toggleExpand() -- start expanded true and toggle it closed on init to start collapsed
-    
+
+    self:InitShapes()
+
     return true
 end
 
+function widget:InitShapes()
+    if not document then return end
+
+    local notchedCornerBase = {
+        sizeX = 45, sizeY = 30,
+        fill = "rgb(38, 38, 42)",
+    }
+
+    local corners = { "bl", "br", "tl", "tr" }
+    for _, corner in ipairs(corners) do
+        local el = document:GetElementById("dec-notched-corner-" .. corner)
+        if el then
+            local opts = {}
+            for k, v in pairs(notchedCornerBase) do opts[k] = v end
+            opts.corner = corner
+            pcall(function() el:SetAttribute("src", svgShapes.notchedCorner(opts)) end)
+        end
+    end
+
+    local shapeBase = {
+        fill = "rgb(38, 38, 42)",
+    }
+
+    for _, presetName in ipairs(svgShapes.intensityOrder) do
+        for _, side in ipairs({ "l", "r" }) do
+            local el = document:GetElementById("dec-taper-" .. side .. "-" .. presetName)
+            if el then
+                local opts = {}
+                for k, val in pairs(shapeBase) do opts[k] = val end
+                opts.depth = presetName
+                opts.side = side == "l" and "left" or "right"
+                pcall(function() el:SetAttribute("src", svgShapes.taper(opts)) end)
+            end
+        end
+
+        local chevronEl = document:GetElementById("dec-chevron-" .. presetName)
+        if chevronEl then
+            local opts = {}
+            for k, val in pairs(shapeBase) do opts[k] = val end
+            opts.depth = presetName
+            pcall(function() chevronEl:SetAttribute("src", svgShapes.chevron(opts)) end)
+        end
+    end
+end
+
 function widget:Shutdown()
-    
+
     local shutdownParams = {
         widgetId = WIDGET_ID,
         modelName = MODEL_NAME
     }
-    
+
     utils.shutdownRmlWidget(self, shutdownParams, document, dm_handle)
-    
+
     -- Clear references
     document = nil
     dm_handle = nil
-    
+
     Spring.Echo(WIDGET_ID .. ": Shutdown complete")
+end
+
+function widget:Update()
+    -- Sync the "RML Debug Controls" dev flag so reload/debug buttons in the
+    -- top-right reflect the option state. Cached so we only write on change.
+    if dm_handle then
+        local rmlDebug = utils.isRmlDebugEnabled()
+        if rmlDebug ~= lastRmlDebug then
+            lastRmlDebug = rmlDebug
+            dm_handle.rmlDebugControls = rmlDebug
+        end
+    end
+
+    -- Drive tooltip per-frame for copy button hovers
+    if activeTooltipText and WG['rml_tooltip'] then
+        local mx, my = Spring.GetMouseState()
+        WG['rml_tooltip'].Show(activeTooltipText, mx, my)
+    elseif not activeTooltipText and WG['rml_tooltip'] then
+        WG['rml_tooltip'].Hide()
+    end
 end
 
 -- Widget functions callable from RML

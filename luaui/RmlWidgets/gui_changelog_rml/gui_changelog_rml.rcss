@@ -1,0 +1,310 @@
+/* ===========================================
+	WIDGET POSITIONING
+	Body id matches the widget name and is set on <body/> in the rml.
+	Position is absolute, relative to the window/screen.
+=========================================== */
+
+#gui_changelog_rml-widget {
+	position: absolute;
+	top: 5vh;
+	right: 5dp;
+	width: 720dp;
+	height: 80vh;
+	display: flex;
+	/* Blur the game world behind the widget. Visible wherever sub-elements
+	   use alpha backgrounds (nav column's bg-darkest-semi-alpha, main pane's
+	   card overlays). Matches the blur treatment used in gui_options_rml
+	   and the theme overlays. */
+	backdrop-filter: blur(3px);
+}
+
+/* ===========================================
+	WIDGET CONTAINER - row layout (matches rml_starter)
+	Nav column on the left (full height), main pane on the right.
+	Debug controls float as an absolute overlay at top-right.
+=========================================== */
+
+#widget-container {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+/* Debug controls (reload/debug buttons) — absolute top-right overlay,
+   gated behind the RML Debug Controls dev flag via `data-if="rmlDebugControls"`.
+   Pattern from widget_controller.rcss:37-46. z-50 via utility class keeps
+   them above the main pane content. */
+.debug-controls {
+	display: flex;
+	gap: 4dp;
+}
+
+/* ===========================================
+	NAV COLUMN
+	Full-height left column containing only the scrollable month list.
+	The "Changelog" title moved to the main pane as a proper h1 heading,
+	so the nav column is now just the month buttons — matching rml_starter
+	where the nav column is only the tab buttons. Same my.tabsNavigationStyles
+	rml_starter applies here — gradient + radial focus glow.
+=========================================== */
+
+.nav-column {
+	display: block;
+	position: relative;
+	width: 150dp;
+	height: 100%;
+	flex-shrink: 0;
+	/* The "breathing room on the right" effect is actually set on
+	   .month-list via `right: 24dp` — absolute-positioned children anchor
+	   to the padding box edge (not the content edge), so padding-right
+	   here would have no visible effect. */
+	z-index: 1;
+}
+
+.month-list {
+	display: block;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	/* `right: 24dp` leaves 24dp of empty nav column on the right of the
+	   month-list. Buttons (width: 100% of month-list) become that much
+	   narrower, and when the active button's skew + translateX(5dp)
+	   shift extends past the button's logical right edge, the clipped
+	   portion is hidden inside the 24dp empty zone — visually reads as
+	   the button leaning into intentional nav whitespace, not getting
+	   chopped off at a panel boundary. */
+	right: 24dp;
+	/* Scroll container: 41 months need vertical scrolling. Horizontal
+	   overflow clips regardless (CSS coerces overflow-x to auto when
+	   overflow-y is scroll) — that's why the 24dp offset above is needed.
+	   Scrollbar stays hidden via `no-scrollbar` in the RML. */
+	overflow: hidden scroll;
+	clip: always;
+	/* 20dp top/bottom keeps the first and last month rows breathing away
+	   from the nav column edges; 8dp left/right for symmetric horizontal
+	   padding against the column sides. Individual padding properties
+	   (no shorthand) per BAR convention. */
+	padding-top: 20dp;
+	padding-right: 8dp;
+	padding-bottom: 20dp;
+	padding-left: 8dp;
+}
+
+/* ===========================================
+	MONTH TAB — 1:1 port of rml_starter's .tab-button pattern
+	(rml_starter.rcss:89-117). Every property below matches the starter
+	exactly except `text-transform: none` (our month headings are mixed
+	case, not SHOUTED) and `width: 100%` (our nav column is fixed width
+	and we want buttons to span it edge-to-edge, unlike the starter's
+	content-sized vertical nav).
+
+	Size-consistency trick: `border: 1dp transparent` reserves the 1dp
+	space that `ccg.themeButton.ghost` applies as its visible border,
+	so active rows (which use `ccg.themeButton.primary` with no border)
+	don't shift or resize between states.
+
+	The inner <span> wraps the month label with `text-light text-glow-light
+	text-base` so the text stays white across both active and inactive
+	states (otherwise the primary/ghost classes' text-darkest/text-primary
+	colors leak through, which doesn't match the starter's look).
+=========================================== */
+
+.month-tab {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	/* Thinner than rml_starter's 32dp — the changelog has 41 month rows
+	   (vs rml_starter's 6 tabs) so each row can be more compact. Vertical
+	   padding at 4dp, horizontal tightened to 4dp as well so the button's
+	   clickable/visible footprint stays compact inside the narrow nav
+	   column. Individual padding properties (no shorthand) per BAR
+	   convention. */
+	min-height: 24dp;
+	padding-top: 4dp;
+	padding-right: 4dp;
+	padding-bottom: 4dp;
+	padding-left: 4dp;
+	margin-bottom: 1dp;
+	border: 1dp transparent;
+	border-radius: 2dp;
+	cursor: pointer;
+	font-weight: bold;
+	text-align: center;
+	text-transform: none;
+	transition: transform 0.2s, background-color 0.2s;
+}
+
+.month-tab:hover {
+	transform: translateY(-2dp);
+	filter: brightness(1.1);
+}
+
+.month-tab:active {
+	border-color: rgba(255, 255, 255, 255);
+}
+
+.month-tab.active {
+	/* Full 1:1 port of rml_starter.rcss:114-117 active state. The translateX
+	   right-shift still gets clipped at .month-list's right edge (scroll
+	   container — unavoidable), but .nav-column's 16dp padding-right means
+	   that clip point sits 16dp inside the nav panel, so the effect reads
+	   as an intentional lean into visible nav whitespace rather than a
+	   hard cut against the main pane. */
+	transform: skew(-5deg, 0deg) translateX(5dp) translateY(-2dp);
+	box-shadow: rgba(0, 0, 0, 100) 3dp 3dp 3dp;
+}
+
+/* ===========================================
+	MAIN PANE
+	Uses ccg.sheet.general.container for hazards-135 + bg-darkest. Flex
+	column layout: header on top (with "Changelog" h1 + month subheading
+	+ drag handle), entries body fills the rest. Mirrors rml_starter's
+	welcome tab structure (rml_starter.rml:60-80).
+=========================================== */
+
+.main-pane {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	height: 100%;
+	overflow: hidden;
+	clip: always;
+}
+
+/* Header block at the top of the main pane. Contains the Changelog h1,
+   a short horizontal divider, and the active-month h3 subheading. The
+   drag handle is an invisible absolute overlay covering the whole header
+   area — grabbing any of the header text drags the widget. Entries below
+   are NOT covered so they remain clickable.
+
+   Panel treatment comes from `ccg.card.general` applied via data-attr-class
+   on the RML side (bg-darker-alpha + box-shadow-sm). The alpha background
+   layers over the main pane's hazards-135 pattern to create depth without
+   being "too dark" — opacity over opacity rather than a flat dark block. */
+.main-header {
+	display: block;
+	position: relative;
+	flex-shrink: 0;
+	padding: 12dp 20dp 16dp 20dp;
+	text-align: center;
+}
+
+.main-header > .drag-handle {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	cursor: move;
+}
+
+.main-heading {
+	display: block;
+	text-align: center;
+}
+
+.sub-heading {
+	display: block;
+	text-align: center;
+}
+
+.changelog-body {
+	display: block;
+	flex: 1;
+	overflow: hidden scroll;
+	padding: 8dp 20dp 20dp 20dp;
+	clip: always;
+}
+
+/* ===========================================
+	ENTRIES (cards)
+	Each entry renders as a panel card via ccg.panel.general — rounded,
+	bordered, subtle shadow. Tag + date + text flow inline inside the card;
+	sub-bullets stack below indented. Text sizes are deliberately small
+	(10-11dp) so dense months fit comfortably without feeling oversized.
+
+	Section headers ("Bugfixes", "General", etc.) are divider-style rows
+	between cards, not cards themselves.
+=========================================== */
+
+.entry-card {
+	display: block;
+	margin-bottom: 4dp;
+	padding: 6dp 10dp;
+}
+
+.entry-section-header {
+	display: block;
+	min-height: 20dp;
+	margin-top: 10dp;
+	margin-bottom: 4dp;
+	padding: 4dp 8dp;
+	border-bottom: 1dp rgba(250, 212, 0, 140);
+	background-color: rgba(0, 0, 0, 100);
+	font-size: 11dp;
+	font-weight: bold;
+	color: #fad400;
+	text-transform: uppercase;
+}
+
+.entry-main {
+	display: block;
+	min-height: 14dp;
+}
+
+.entry-date {
+	display: inline-block;
+	margin-right: 4dp;
+	font-size: 10dp;
+	color: #9ab8d0;
+}
+
+.entry-tag {
+	display: inline-block;
+	margin-right: 4dp;
+	font-size: 11dp;
+	font-weight: bold;
+	color: #fad400;
+}
+
+.entry-text {
+	display: inline;
+	font-size: 11dp;
+	color: #e0e0e0;
+}
+
+.entry-subs {
+	display: block;
+	padding-left: 14dp;
+	margin-top: 2dp;
+}
+
+.entry-sub-row {
+	display: block;
+	min-height: 12dp;
+	padding: 1dp 0 1dp 0;
+}
+
+.entry-sub-bullet {
+	display: inline-block;
+	width: 8dp;
+	color: #9a9a9a;
+	font-size: 10dp;
+}
+
+.entry-sub-text {
+	display: inline;
+	font-size: 10dp;
+	color: #b8b8b8;
+}
+
+.empty-state {
+	display: block;
+	padding: 40dp 20dp;
+	text-align: center;
+	opacity: 0.7;
+}

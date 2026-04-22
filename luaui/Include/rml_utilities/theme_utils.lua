@@ -71,12 +71,15 @@ function themeUtils.applyTheme(themeName)
     if not RmlUi then
         return false
     end
-    
+
     themeName = themeName or "base"
-    
+
+    tracy.ZoneBeginN("RmlUi.ApplyTheme")
+    tracy.ZoneText(tostring(themeName))
+
     -- Get all available themes for deactivation
     local availableThemes = themeUtils.getAvailable()
-    
+
     -- Apply theme to all contexts using context-level theme activation
     local contexts = RmlUi.contexts()
     for _, context in ipairs(contexts) do
@@ -86,11 +89,12 @@ function themeUtils.applyTheme(themeName)
                 context:ActivateTheme(themeId, false)
             end
         end
-        
+
         -- Then activate the target theme
         context:ActivateTheme(themeName, true)
     end
-    
+
+    tracy.ZoneEnd()
     return true
 end
 

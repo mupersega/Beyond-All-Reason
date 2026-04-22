@@ -334,7 +334,7 @@ local function updateButtons()
 		addButton('resign', Spring.I18N('ui.topbar.button.resign'))
 	end
 
-	if WG['options'] then addButton('options', Spring.I18N('ui.topbar.button.settings')) end
+	if WG['options'] or WG['options_rml'] then addButton('options', Spring.I18N('ui.topbar.button.settings')) end
 	if WG['keybinds'] then addButton('keybinds', Spring.I18N('ui.topbar.button.keys')) end
 	if WG['changelog'] then addButton('changelog', Spring.I18N('ui.topbar.button.changes')) end
 	if WG['teamstats'] then addButton('stats', Spring.I18N('ui.topbar.button.stats')) end
@@ -2029,6 +2029,7 @@ end
 local function hideWindows()
 	local closedWindow = false
 	closedWindow = closeWindow('options') or closedWindow
+	closedWindow = closeWindow('options_rml') or closedWindow
 	closedWindow = closeWindow('scavengerinfo') or closedWindow
 	closedWindow = closeWindow('keybinds') or closedWindow
 	closedWindow = closeWindow('changelog') or closedWindow
@@ -2062,6 +2063,39 @@ local function toggleWindow(name)
 	return isvisible
 end
 
+-- Treat multiple WG namespaces as aliases for the same logical window. Used
+-- while gui_options.lua (legacy, WG['options']) and gui_options_rml
+-- (WG['options_rml']) coexist during the RML migration: the settings button
+-- dispatches to both; only the enabled one responds. Sequential toggleWindow
+-- calls would break this because the second call's hideWindows() would close
+-- whatever the first call just opened.
+local function toggleWindowMulti(names)
+	local anyVisible = false
+	for i = 1, #names do
+		local w = WG[names[i]]
+		if w ~= nil and w.isvisible and w.isvisible() then
+			anyVisible = true
+			break
+		end
+	end
+	if anyVisible then
+		for i = 1, #names do
+			local w = WG[names[i]]
+			if w ~= nil and w.isvisible and w.isvisible() then
+				w.toggle()
+			end
+		end
+	else
+		hideWindows()
+		for i = 1, #names do
+			local w = WG[names[i]]
+			if w ~= nil and w.toggle then
+				w.toggle()
+			end
+		end
+	end
+end
+
 local function applyButtonAction(button)
 	if playSounds then Spring.PlaySoundFile(leftclick, 0.8, 'ui') end
 
@@ -2088,7 +2122,9 @@ local function applyButtonAction(button)
 			end
 		end
 	elseif button == 'options' then
-		toggleWindow('options')
+		-- Dual-dispatch during RML options migration: fires both the legacy
+		-- gui_options.lua and gui_options_rml; only the enabled one responds.
+		toggleWindowMulti({ 'options', 'options_rml' })
 	elseif button == 'save' then
 		if isSinglePlayer and allowSavegame and WG['savegame'] then
 			local time = os.date("%Y%m%d_%H%M%S")
@@ -2124,7 +2160,14 @@ end
 
 function widget:KeyPress(key)
 	if key == 27 then -- ESC
-		if not WG['options'] or (WG['options'].disallowEsc and not WG['options'].disallowEsc()) then
+		local optionsBlocking = false
+		if WG['options'] and WG['options'].disallowEsc and WG['options'].disallowEsc() then
+			optionsBlocking = true
+		end
+		if WG['options_rml'] and WG['options_rml'].disallowEsc and WG['options_rml'].disallowEsc() then
+			optionsBlocking = true
+		end
+		if not optionsBlocking then
 			local escDidSomething = hideWindows()
 			if escapeKeyPressesQuit and not escDidSomething then
 				applyButtonAction('quit')

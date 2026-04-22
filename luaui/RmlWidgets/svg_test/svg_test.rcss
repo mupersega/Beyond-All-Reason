@@ -1,0 +1,257 @@
+/* SVG Test Widget Styles */
+#svg_test-widget {
+    display: flex;
+    position: absolute;
+    top: 40dp;
+    left: 50dp;
+    width: 550dp;
+    height: 500dp;
+}
+
+#widget-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Debug controls */
+.debug-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3dp;
+    z-index: 50;
+}
+
+.debug-btn:hover {
+    filter: brightness(1.2);
+}
+
+.debug-btn:hover>span {
+    transform: translateY(-1dp);
+}
+
+/* Draggable handle styles */
+.handle {
+    height: 100%;
+    cursor: move;
+    text-align: left;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 5;
+    clip: always;
+}
+
+.handle>.greeble {
+    color: #00000000;
+    padding-left: 5dp;
+    position: relative;
+    top: -15dp;
+    font-size: 2.5rem;
+}
+
+@keyframes greeble-pulse {
+    0% { color: #00000000; }
+    50% { color: #fad400; }
+    100% { color: #00000000; }
+}
+
+.handle:hover>.greeble {
+    animation: none;
+    color: #2cf877;
+}
+
+.handle:active>.greeble {
+    animation: 1s back-in-out infinite greeble-pulse;
+}
+
+.angle-decorator {
+    /* Small angled backdrop sitting behind the debug-controls buttons at the
+       top-right of the header. Shape is a taper drawn in SVG (see
+       svg_test.lua) so the angled edges stay crisp.
+
+       Slight negative top/right so the element overhangs the title bar edges
+       by 2dp on both axes — lets the parent's edge cleanly clip any stroke
+       pixels at the viewBox boundary instead of them bleeding through. */
+    position: absolute;
+    top: -2dp;
+    right: -2dp;
+    width: 240dp;
+    height: 32dp;
+}
+
+/* Scroll container */
+#scroll-container {
+    flex: 1;
+}
+
+#scroll-container scrollbarvertical {
+    width: 5dp;
+    margin-left: 2dp;
+}
+
+#scroll-container scrollbarvertical sliderbar {
+    background-color: rgba(100, 100, 120, 150);
+    border-radius: 2dp;
+}
+
+#scroll-container scrollbarvertical sliderbar:hover {
+    background-color: rgba(130, 130, 150, 200);
+}
+
+#scroll-container scrollbarvertical slidertrack {
+    background-color: rgba(20, 20, 30, 100);
+}
+
+/* Test grid */
+.test-grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    height: 60dp;
+}
+
+.test-cell {
+    width: 80dp;
+    height: 50dp;
+}
+
+.test-cell svg {
+    width: 24dp;
+    height: 24dp;
+}
+
+/* Shape showcase */
+.shape-box {
+    width: 40dp;
+    height: 40dp;
+}
+
+.shape-box-wide {
+    width: 60dp;
+    height: 20dp;
+}
+
+.shape-fill {
+    width: 100%;
+    height: 100%;
+}
+
+/* Color integration tests */
+.color-test-bg-green {
+    background-color: rgb(34, 197, 94);
+}
+
+.color-test-decorator {
+    /* Test: can RmlUi use an SVG string or file as a decorator image? */
+}
+
+.color-test-hover {
+    background-color: rgb(100, 100, 100);
+    transition: background-color 0.15s;
+}
+
+.color-test-hover:hover {
+    background-color: rgb(34, 197, 94);
+}
+
+/* Alpha tests — bright bg so translucency is obvious */
+.alpha-test-bg {
+    background-color: rgb(200, 50, 50);
+}
+
+/* Clip panel incubator */
+.clip-xs {
+    width: 30dp;
+    height: 20dp;
+}
+
+.clip-sm {
+    width: 50dp;
+    height: 34dp;
+}
+
+.clip-md {
+    width: 80dp;
+    height: 54dp;
+}
+
+.clip-lg {
+    width: 120dp;
+    height: 80dp;
+}
+
+.clip-wide {
+    width: 180dp;
+    height: 44dp;
+}
+
+/* Sections */
+.section {
+    flex-shrink: 0;
+}
+
+/* Dynamic SVG */
+.dynamic-svg-box {
+    height: 120dp;
+}
+
+.dynamic-svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Player filter list */
+.player-filter-list {
+    width: 70dp;
+    flex-shrink: 0;
+}
+
+.player-filter-item {
+    height: 18dp;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+}
+
+.player-filter-item:hover {
+    background-color: rgba(255, 255, 255, 8);
+}
+
+.player-filter-item.player-selected {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 12);
+}
+
+.player-swatch {
+    width: 10dp;
+    height: 10dp;
+    border-radius: 2dp;
+    flex-shrink: 0;
+}
+
+/* Score graph */
+.graph-svg-box {
+    height: 180dp;
+}
+
+.graph-svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Wind particle field — post-apocalyptic ambient debris.
+   Small fixed-size canvas rather than full-width. Aspect (200:70 = 2.857)
+   matches the SVG viewBox (400:140) exactly so preserveAspectRatio="none"
+   doesn't produce anamorphic stretch. */
+.wind-canvas-box {
+    width: 200dp;
+    height: 70dp;
+}
+
+.wind-svg {
+    width: 100%;
+    height: 100%;
+}

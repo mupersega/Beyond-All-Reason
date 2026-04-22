@@ -1,0 +1,526 @@
+/* Options RML Widget Styles */
+
+/* ─── Panel heading — Approach 2 (rotated div + parent clip) ──────────── */
+/* See contexts MCP bar-rml-ui/decoration-approaches for the full pattern.
+   The heading lives in an absolutely-positioned wrapper that sits flush
+   with the panel's top-left corner (ignoring the panel's padding), and
+   uses clip: always to contain a rotated child that creates the diagonal
+   edge. The heading text paints on top of this via its own absolute
+   positioning at a higher z-index. */
+
+/* Reserves 34dp of top padding on the panel so normal-flow content doesn't
+   overlap the 30dp-tall absolute heading above it. Overrides the p-2
+   padding-top from ccg.panel.general because widget-local CSS loads last. */
+.panel-with-abs-heading {
+	padding-top: 29dp;
+}
+
+/* The heading element IS the clip container. Fixed 30dp height,
+   content-sized width via white-space: nowrap. 50dp of right padding gives
+   the rotated angle decorator room to extend past the text visibly. Left
+   padding centers text inside the angled fill; top padding centers text-lg
+   glyphs vertically in the 30dp container. */
+.panel-heading-abs {
+	position: absolute;
+	top: 0dp;
+	left: 0dp;
+	height: 25dp;
+	line-height: 25dp;
+	padding: 0dp 50dp 0dp 8dp;
+	z-index: 10;
+	clip: always;
+	white-space: nowrap;
+}
+
+/* Oversized rotated square, anchored to the top-right of the heading.
+   The 300×300 box at top: -200 and right: 0, rotated 45°, creates a
+   diagonal cut that crosses the heading's clip region consistently
+   regardless of the heading's variable width. z-index: -1 paints the
+   rotated fill behind the heading's static text but above the parent
+   panel's background. */
+.panel-heading-angle {
+	position: absolute;
+	right: 0dp;
+	top: -220dp;
+	width: 300dp;
+	height: 300dp;
+	transform: rotate(37deg);
+	z-index: -1;
+	/* Drop shadow — offset in local coords, rotates with the element so it
+	   sits to one side of the visible diagonal edge. */
+	box-shadow: #e7e7e731 2dp 2dp 5dp 0dp;
+	/* Decorative only — the 300dp rotated square extends well past the
+	   heading's clip region and will intercept clicks on setting rows
+	   beneath it (Behaviour group was the symptom). Parent's pe-none
+	   doesn't cascade to positioned children in RmlUi. */
+	pointer-events: none;
+}
+
+/* ─── Options title bar — left-side clipped angle accent (experiment) ──
+   Same pattern as .panel-heading-abs / .panel-heading-angle above — the
+   clip container is a fixed-size absolute box at the left of the title
+   bar, and an oversized rotated square inside creates a diagonal cut at
+   the container's right edge. Positioned behind the "Options" text span
+   (which sits at z-50) via default stacking. pe-none so it can't block
+   clicks on the drag handle sitting above it. Mirrors the construction
+   aesthetic of the setting-group headings (Volume / Soundtrack / etc)
+   used throughout the panel body. */
+.title-bar-left-wedge {
+	position: absolute;
+	left: 0dp;
+	top: 0dp;
+	width: 170dp;
+	height: 100%;
+	clip: always;
+	pointer-events: none;
+}
+
+.title-bar-left-wedge-angle {
+	position: absolute;
+	right: 0dp;
+	top: -220dp;
+	width: 300dp;
+	height: 300dp;
+	transform: rotate(45deg);
+	z-index: 0;
+	/* Decorative — see .panel-heading-angle for the full rationale.
+	   Same RmlUi cascade quirk: parent wedge has pe-none but it doesn't
+	   reach this rotated positioned child. */
+	pointer-events: none;
+}
+
+/* Options title bar — right-side clipped angle accent, variation of the
+   .title-bar-left-wedge pair above. Positional anchoring flipped (host
+   right: 0, rotated child left: 0 inside the host) so the square pokes
+   into the host from the opposite direction. Rotation is STEEPER (72°
+   vs 45°) so the right side reads as a related pair with the left rather
+   than a strict mirror — visual variety across the title bar's two
+   accents. */
+.title-bar-right-wedge {
+	position: absolute;
+	right: 0dp;
+	top: 0dp;
+	width: 170dp;
+	height: 100%;
+	clip: always;
+	pointer-events: none;
+}
+
+.title-bar-right-wedge-angle {
+	position: absolute;
+	left: 0dp;
+	top: -220dp;
+	width: 300dp;
+	height: 300dp;
+	transform: rotate(72deg);
+	z-index: 0;
+	/* See .title-bar-left-wedge-angle — same rationale. */
+	pointer-events: none;
+}
+
+/* Left-edge slide-in drawer. Document stays mounted; .drawer-open
+   toggled from Lua drives the translateX transition.
+   Body is block — only one child (widget-container) sizes 100%/100%
+   against it, so no outer flex layer needed. */
+#gui_options_rml-widget {
+	position: absolute;
+	left: 0dp;
+	top: 0dp;
+	width: 480dp;
+	height: 100vh;
+	display: block;
+	backdrop-filter: blur(5px);
+	transform: translateX(-100%);
+	transition: transform 0.25s cubic-out;
+}
+
+#gui_options_rml-widget.drawer-open {
+	transform: translateX(0dp);
+}
+
+/* The only flex layer at the top: splits rail (48dp) and content (flex:1). */
+#widget-container {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	height: 100%;
+	background-color: #1d1d1de0;
+}
+
+/* Drawer content column (right of the rail) — flex column so the
+   scroll area inside can fill remaining vertical space. */
+#drawer-content {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+
+/* Vertical tab rail on the drawer's left edge. Block layout for
+   simple vertical stacking — cheap per-frame. Colors come from the
+   CCG button classes applied in the .rml (ccg.button.general /
+   ccg.themeButton.primary); .rail-tab just locks the 48dp square. */
+#tab-rail {
+	width: 48dp;
+	flex-shrink: 0;
+	display: block;
+	background-color: #141414;
+}
+
+.rail-tab {
+	display: block;
+	height: 48dp;
+	width: 48dp;
+	line-height: 48dp;
+	font-size: 10dp;
+}
+
+.rail-tab:active {
+	transform: scale(0.92);
+}
+
+/* Tab content wrapper — flex column so the scroll-area inside can fill
+   remaining space below the sub-tab nav. This is the "fill remaining space"
+   exception from the flex-perf rules. */
+.options-content {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+
+/* Scrollable section list — block layout for single-pass rendering.
+   Contains the panel sections for the currently-active (sub-)tab. */
+.scroll-area {
+	flex: 1;
+	padding: 2dp 4dp 4dp 4dp;
+	overflow: hidden scroll;
+}
+
+/* Spacing between section panels inside the scroll area */
+.scroll-area > div {
+	margin-bottom: 3dp;
+}
+
+/* Option row layout */
+.option-row {
+	display: flex;
+	align-items: center;
+	padding: 2dp 6dp;
+	min-height: 20dp;
+	gap: 4dp;
+}
+
+.option-label {
+	flex: 1;
+	font-size: 9dp;
+	color: #e5e7eb;
+}
+
+/* Slider card — same row layout as toggle card */
+.slider-card {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 22dp;
+	padding: 0dp 6dp;
+	border-radius: 2dp;
+}
+
+.slider-card:hover {
+	background-color: #ffffff14;
+}
+
+/* Toggle card — entire row is clickable */
+.toggle-card {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 20dp;
+	padding: 0dp 6dp;
+	border-radius: 2dp;
+	cursor: pointer;
+}
+
+.toggle-card:hover {
+	background-color: #ffffff14;
+}
+
+.toggle-card:active {
+	background-color: #ffffff08;
+}
+
+/* Two-column layout for toggle sections */
+.toggle-columns {
+	display: flex;
+	flex-direction: row;
+	gap: 10dp;
+}
+
+.toggle-col {
+	flex: 1;
+	display: block;
+}
+
+/* Section headers */
+.section-header {
+	padding: 4dp 6dp 2dp 6dp;
+	margin-bottom: 1dp;
+}
+
+.section-divider {
+	height: 1dp;
+	margin-bottom: 1dp;
+}
+
+/* Slider area */
+.slider-area {
+	display: flex;
+	align-items: center;
+	flex: 1.5;
+	gap: 4dp;
+}
+
+.slider-value {
+	min-width: 30dp;
+	text-align: center;
+}
+
+/* Labels get a fixed 40% of the setting-control so the control's left
+   edge is the same regardless of label text length. Slider and select
+   both take the remaining 60% (flex: 1.5 vs label's 1 resolves to the
+   same ratio, but pinning label's basis explicitly is what makes the
+   alignment stable across rows with varying-length labels). */
+.option-label {
+	flex: 0 0 40%;
+}
+
+.setting-control > select {
+	flex: 1;
+}
+
+.setting-control > select selectvalue {
+	width: 100%;
+}
+
+
+/* Select card — dropdown inside a card row */
+.select-card {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 22dp;
+	padding: 0dp 6dp;
+	border-radius: 2dp;
+}
+
+/* Option group — parent toggle with indented children */
+.option-group-children {
+	padding-left: 12dp;
+	display: block;
+}
+
+/* Every settings group — parent row + optional children inside .option-
+   group-children — shares a subtle darker bg so the whole group reads as
+   a single visual block. Hover effects on individual .setting-row children
+   still fire cleanly since the group bg is behind them, not on them. */
+.option-group {
+	background-color: #00000020;
+	margin-bottom: 1dp;
+}
+
+/* Parent row inside a group gets a small margin-bottom to separate it
+   visually from the children container below. The group's shared bg
+   shows through the margin gap as a subtle divider. */
+.option-group > .setting-row {
+	margin-bottom: 2dp;
+}
+
+/* Inner setting group — constrained width for small groups */
+.setting-group {
+	width: 50%;
+	margin-bottom: 3dp;
+}
+
+/* Full-width setting group (e.g. Light Effects with many sub-options) */
+.setting-group-wide {
+	margin-bottom: 3dp;
+}
+
+.option-group-children.dimmed {
+	opacity: 0.35;
+	pointer-events: none;
+}
+
+.select-card:hover {
+	background-color: #ffffff14;
+}
+
+.select-card select {
+	flex: 1.5;
+	font-size: 8dp;
+	padding: 0dp;
+}
+
+/* Debug controls */
+.debug-controls {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 3dp;
+	z-index: 50;
+}
+
+.debug-btn:hover {
+	filter: brightness(1.2);
+}
+
+.debug-btn:hover > span {
+	transform: translateY(-1dp);
+}
+
+/* Dev tab — construction hazard-stripe treatment. Applied to the rail
+   button by the RML data-attr-class ternary. The dev tab deliberately
+   does NOT swap to ccg.themeButton.primary when active — switching to
+   the yellow primary-gradient fights the hazard stripes. Instead it
+   stays construction-striped in both states and brightens via a filter
+   when active, so selection is visible but the construction visual
+   stays intact. RCSS rgba alpha is 0-255, not 0-1. */
+button.tab-dev-construction {
+	color: #e5e7eb;
+	/* Outlined only on the dev tab because its hazard-stripe background
+	   is visually busy (high-contrast yellow/dark at 135°) — without this
+	   the abbr glyphs disappear into the pattern. Other rail tabs sit on
+	   solid dark or bright-yellow backgrounds and don't need (or want)
+	   an outline — on the active yellow tab a dark outline stacks with
+	   the dark text and reads as a black smear. */
+	font-effect: outline(3dp #1d1d1d);
+}
+
+button.tab-dev-active {
+	filter: brightness(1.5);
+	box-shadow: inset 0 0 10dp 2dp rgba(250, 212, 0, 120);
+}
+
+button.tab-dev-construction:active {
+	transform: scale(0.92);
+}
+
+/* ─── Settings restructure: 40/60 row layout ─────────────────────────── */
+/* Full-width setting row with control on the left (40%) and description
+   text on the right (60%). Replaces .slider-card / .toggle-card for
+   panels that adopt the new layout. Used first in the Terrain prototype;
+   will roll out to all panels in Phase 3.
+   See contexts MCP bar-rml-ui/decoration-approaches and the
+   .claude/skills/options-restructure/ skill for the full pattern. */
+
+.setting-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	min-height: 22dp;
+	padding: 2dp 6dp;
+	border-radius: 2dp;
+	gap: 16dp;
+}
+
+.setting-row:hover {
+	background-color: #ffffff14;
+}
+
+/* Clickable toggle rows need cursor and active feedback */
+.setting-row.clickable {
+	cursor: pointer;
+}
+
+.setting-row.clickable:active {
+	background-color: #ffffff08;
+}
+
+/* Left side: label + interactive control. 50% fixed width. */
+.setting-control {
+	flex: 0 0 50%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 4dp;
+}
+
+/* Right side: description text layout. Fills remaining 50%. Text
+   styling (size, weight, color, italic) comes from ccg.text.description
+   applied via data-attr-class in the RML, not from this class — so it
+   can be tuned globally from common_class_groups.lua. */
+.setting-desc {
+	flex: 1;
+}
+
+/* ─── Row readability experiments ─────────────────────────────────────
+   Three approaches for keeping the eye on track horizontally across
+   the 50/50 split. Applied to different Terrain cards so you can compare
+   them by scrolling through Environment. Pick the winner and delete
+   the other two. */
+
+/* When .option-group-children is used inside the new setting-row layout,
+   the container's padding-left: 12dp (from the shared class) would shrink
+   the container and make the child's 50% narrower than the parent's 50%,
+   misaligning the controls. This modifier zeroes the container padding
+   and moves the visual indent to the child labels instead, keeping the
+   flex column aligned. */
+.setting-indent-labels {
+	padding-left: 0dp;
+}
+
+.setting-indent-labels .option-label {
+	padding-left: 12dp;
+}
+
+/* Marks an option card as broken / do-not-use. The card dims and ignores
+   pointer events, so clicks never reach the underlying onclick handler. */
+.disabled {
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+/* Animated placeholder — uses @keyframes placeholder-pulse from
+   components.rcss. Widget-specific positioning for the options search. */
+.placeholder-text {
+	font-size: 10dp;
+	left: 12dp;
+	top: 5dp;
+	z-index: 1;
+	color: #78788c;
+	animation: 1.5s linear infinite placeholder-pulse;
+}
+
+/* Search feature ---------------------------------------------------------
+   Floating results dropdown — positioning only. Background, border, and
+   hover come from bg-darkest + border utilities inline in the RML, and
+   row-level styling (padding, hover, cursor, height) comes from utility
+   classes. */
+.search-results {
+	left: 0dp;
+	right: 0dp;
+	/* Anchored to the title bar (position: relative via svg-decorator-host);
+	   top: 100% drops the panel directly below the title bar regardless of
+	   the bar's computed height. */
+	top: 100%;
+	/* Fits MAX_SEARCH_RESULTS (12) × .h-6 row height (24dp) with a little
+	   breathing room, so no row is clipped by overflow-hidden. */
+	max-height: 300dp;
+	display: block;
+}
+
+/* Highlight pulse applied by Lua after scrolling a search result into
+   view. Runs once for HIGHLIGHT_DURATION_SEC. */
+@keyframes search-highlight-pulse {
+	0%   { background-color: rgba(255, 200, 0, 0); }
+	40%  { background-color: rgba(255, 200, 0, 140); }
+	100% { background-color: rgba(255, 200, 0, 0); }
+}
+
+.highlight-search-match {
+	animation: 1.5s ease-out 1 search-highlight-pulse;
+}
+
+/* Arrow-key selected row in the search results dropdown. */
+.search-selected {
+	background-color: rgba(255, 200, 0, 60);
+}

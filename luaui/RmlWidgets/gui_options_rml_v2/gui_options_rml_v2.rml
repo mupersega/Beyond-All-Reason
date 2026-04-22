@@ -1,0 +1,33 @@
+<rml>
+<head>
+    <title>Options RML V2</title>
+
+    <!-- ABSOLUTE MINIMUM stylesheet set. We want to observe what an
+         options-like widget costs with zero theme / utility / CCG /
+         component overhead. Only styles.rcss for font + base text. -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="gui_options_rml_v2.rcss" type="text/rcss" />
+</head>
+<body id="gui_options_rml_v2-widget">
+    <div id="widget-container" data-model="gui_options_rml_v2_model">
+        <div class="v2-title">Options V2 (minimal)</div>
+        <div id="v2-list" class="v2-list">
+            <div class="v2-row">Master volume: <span class="v2-value">80</span></div>
+            <div class="v2-row">Music volume: <span class="v2-value">60</span></div>
+            <div class="v2-row">Effects volume: <span class="v2-value">100</span></div>
+            <div class="v2-row">Voice volume: <span class="v2-value">70</span></div>
+            <div class="v2-row">UI scale: <span class="v2-value">1.0</span></div>
+            <div class="v2-row">Cursor size: <span class="v2-value">24</span></div>
+            <div class="v2-row">Draw distance: <span class="v2-value">80</span></div>
+            <div class="v2-row">Shadows: <span class="v2-value">ON</span></div>
+            <div class="v2-row">Anti-aliasing: <span class="v2-value">MSAA 4x</span></div>
+            <div class="v2-row">Bloom: <span class="v2-value">ON</span></div>
+            <div class="v2-row">FSAA: <span class="v2-value">OFF</span></div>
+            <div class="v2-row">V-Sync: <span class="v2-value">ON</span></div>
+            <div class="v2-row">FPS limit: <span class="v2-value">144</span></div>
+            <div class="v2-row">Resolution: <span class="v2-value">1920x1080</span></div>
+            <div class="v2-row">Language: <span class="v2-value">en</span></div>
+        </div>
+    </div>
+</body>
+</rml>

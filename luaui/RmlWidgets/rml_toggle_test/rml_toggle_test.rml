@@ -1,0 +1,188 @@
+<rml>
+<head>
+    <title>RML Input Test</title>
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <!-- Use the real options widget styles -->
+    <link rel="stylesheet" href="../gui_options_rml/gui_options_rml.rcss" type="text/rcss" />
+
+    <style>
+        body {
+            position: absolute;
+            top: 80dp;
+            left: 80dp;
+            width: 600dp;
+            height: 500dp;
+            display: flex;
+            backdrop-filter: blur(5px);
+        }
+        #widget-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            background-color: #1d1d1de0;
+        }
+        .scroll-area {
+            flex: 1;
+            padding: 2dp 4dp 4dp 4dp;
+            overflow: hidden scroll;
+            min-height: 400dp;
+        }
+        .scroll-area > div {
+            margin-bottom: 3dp;
+        }
+        select selectbox {
+            max-height: 240dp;
+        }
+        select option {
+            height: 22dp;
+            font-size: 8dp;
+            line-height: 22dp;
+        }
+    </style>
+</head>
+<body id="rml_toggle_test-widget" class="widget-shadow rounded-lg">
+    <div id="widget-container" data-model="rml_toggle_test_model">
+
+        <div data-attr-class="ccg.sheet.modal.title + ' flex items-center justify-between relative min-h-3'">
+            <span class="z-50 pe-none text-lg pl-2 text-outline-darkest-xl font-bold">
+                Options Prototype
+            </span>
+            <handle move_target="rml_toggle_test-widget" class="handle cursor-move">
+                <span class="greeble z-10">.</span>
+            </handle>
+        </div>
+
+        <div class="scroll-area">
+
+            <!-- Triple data-for: sections → groups → children.
+                 All one-way bindings. Write-once proxy. -->
+            <div data-for="section : sections">
+            <div data-attr-class="ccg.panel.general + ' p-2 relative panel-with-abs-heading'">
+                <div data-attr-class="my.panelHeading">
+                    <div class="panel-heading-angle bg-darkest-alpha radial-focus-start"></div>
+                    {{section.heading}}
+                </div>
+
+                <div data-for="group : section.groups" data-attr-class="ccg.card.general + ' mb-1' + (group.parent.disabled ? ' disabled' : '')">
+
+                    <!-- Parent: bool toggle -->
+                    <div data-if="group.parent.type == 'bool'" class="setting-row clickable"
+                         data-attr-id="'cfg-' + group.parent.id"
+                         onclick="widget:OnToggle(element)">
+                        <div class="setting-control">
+                            <span class="option-label pe-none font-bold">{{group.parent.name}}</span>
+                            <div data-attr-class="ccg.toggle.panel + ' pe-none'">
+                                <div data-attr-class="(group.parent.value ? ccg.toggle.offDanger : ccg.toggle.danger)"></div>
+                                <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
+                            </div>
+                        </div>
+                        <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
+                    </div>
+
+                    <!-- Parent: slider -->
+                    <div data-if="group.parent.type == 'slider'" class="setting-row">
+                        <div class="setting-control">
+                            <span class="option-label font-bold">{{group.parent.name}}</span>
+                            <div class="slider-area">
+                                <input type="range"
+                                       data-attr-id="'cfg-' + group.parent.id"
+                                       data-attr-min="group.parent.min"
+                                       data-attr-max="group.parent.max"
+                                       data-attr-step="group.parent.step"
+                                       data-attr-value="group.parent.value"
+                                       onchange="widget:OnSlider(element)" />
+                                <span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span>
+                            </div>
+                        </div>
+                        <span data-attr-class="ccg.text.description + ' setting-desc'">{{group.parent.desc}}</span>
+                    </div>
+
+                    <!-- Parent: select -->
+                    <div data-if="group.parent.type == 'select'" class="setting-row">
+                        <div class="setting-control">
+                            <span class="option-label font-bold">{{group.parent.name}}</span>
+                            <select data-attr-id="'cfg-' + group.parent.id"
+                                    onchange="widget:OnSelect(element)">
+                                <option data-for="choice : group.parent.selectOptions"
+                                        data-attr-value="choice.value"
+                                        data-attr-selected="choice.value == group.parent.value">
+                                    {{choice.label}}
+                                </option>
+                            </select>
+                        </div>
+                        <span data-attr-class="ccg.text.description + ' setting-desc'">{{group.parent.desc}}</span>
+                    </div>
+
+                    <!-- Parent: action -->
+                    <div data-if="group.parent.type == 'action'" class="setting-row clickable"
+                         data-attr-id="'cfg-' + group.parent.id"
+                         onclick="widget:OnAction(element)">
+                        <div class="setting-control">
+                            <span data-attr-class="group.parent.labelClass + ' pe-none'">{{group.parent.name}}</span>
+                        </div>
+                        <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
+                    </div>
+
+                    <!-- Divider before children -->
+                    <div data-if="group.hasChildren" class="setting-divider"></div>
+
+                    <!-- Children container -->
+                    <div data-if="group.hasChildren"
+                         data-attr-class="'option-group-children setting-indent-labels' + (group.parentOff ? ' dimmed' : '')"
+                         data-attr-id="'children-' + group.parent.id">
+
+                        <div data-for="child : group.children">
+
+                            <!-- Child: bool -->
+                            <div data-if="child.type == 'bool'" class="setting-row clickable"
+                                 data-attr-id="'cfg-' + child.id"
+                                 onclick="widget:OnToggle(element)">
+                                <div class="setting-control">
+                                    <span class="option-label pe-none">{{child.name}}</span>
+                                    <div data-attr-class="ccg.toggle.panel + ' pe-none'">
+                                        <div data-attr-class="(child.value ? ccg.toggle.offDanger : ccg.toggle.danger)"></div>
+                                        <div data-attr-class="(child.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
+                                    </div>
+                                </div>
+                                <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{child.desc}}</span>
+                            </div>
+
+                            <!-- Child: slider -->
+                            <div data-if="child.type == 'slider'" class="setting-row">
+                                <div class="setting-control">
+                                    <span class="option-label">{{child.name}}</span>
+                                    <div class="slider-area">
+                                        <input type="range"
+                                               data-attr-id="'cfg-' + child.id"
+                                               data-attr-min="child.min"
+                                               data-attr-max="child.max"
+                                               data-attr-step="child.step"
+                                               data-attr-value="child.value"
+                                               onchange="widget:OnSlider(element)" />
+                                        <span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + child.id">{{child.value}}</span>
+                                    </div>
+                                </div>
+                                <span data-attr-class="ccg.text.description + ' setting-desc'">{{child.desc}}</span>
+                            </div>
+
+                            <div class="setting-divider"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div> <!-- end section panel -->
+            </div> <!-- end section data-for -->
+
+        </div>
+    </div>
+</body>
+</rml>

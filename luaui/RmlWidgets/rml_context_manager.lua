@@ -79,9 +79,12 @@ function widget:Initialize()
         self:SetTheme(newTheme)
     end
 
-    -- TODO: add listener for ui_scale changes to update dp_ratio also when that changes
-    
-    Spring.Echo("RML Context Manager: Registered WG.rml_theme_changed")
+    -- Expose dp_ratio updater so options widget can trigger it on ui_scale change
+    WG.rml_ui_scale_changed = function()
+        updateContextsDpRatio()
+    end
+
+    Spring.Echo("RML Context Manager: Registered WG.rml_theme_changed, WG.rml_ui_scale_changed")
 end
 
 function widget:ViewResize()
@@ -122,7 +125,8 @@ function widget:RecvLuaMsg(msg, playerID)
 end
 
 function widget:Shutdown()
-    -- Clean up the global theme change handler
+    -- Clean up global handlers
     WG.rml_theme_changed = nil
+    WG.rml_ui_scale_changed = nil
     Spring.Echo("Rml Context Manager shutdown, dynamic context dp ratio updates to contexts disabled." )
 end

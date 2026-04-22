@@ -1,0 +1,47 @@
+/* Options RML V2 — absolute minimum styling.
+   Block layout throughout. Solid background. Hardcoded widths/heights.
+   No flex, no CCG, no decorators, no transitions, no hovers, no borders.
+   The point is to establish a FLOOR: if even this widget costs N FPS
+   while visible, that's the baseline framework overhead for "a widget
+   that has 15 rows of text on screen". */
+
+#gui_options_rml_v2-widget {
+    position: absolute;
+    top: 80dp;
+    left: 80dp;
+    width: 300dp;
+    height: 400dp;
+    display: block;
+    background-color: #14141a;
+    color: #d0d0d0;
+    font-size: 12dp;
+}
+
+#widget-container {
+    display: block;
+    padding: 8dp;
+    width: 284dp;
+}
+
+.v2-title {
+    display: block;
+    height: 20dp;
+    font-size: 14dp;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 6dp;
+}
+
+.v2-list {
+    display: block;
+}
+
+.v2-row {
+    display: block;
+    height: 18dp;
+    color: #a0a0a0;
+}
+
+.v2-value {
+    color: #e0e0e0;
+}

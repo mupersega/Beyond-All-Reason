@@ -1,0 +1,185 @@
+/* Console (RML) Widget Styles */
+#gui_console_rml-widget {
+	display: flex;
+	position: absolute;
+	top: 60vh;
+	left: 50dp;
+	width: 600dp;
+	height: 35vh;
+}
+
+#widget-container {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	background-color: rgba(10, 10, 15, 230);
+	border-width: 1dp;
+	border-color: rgba(60, 60, 70, 180);
+	border-radius: 4dp;
+	overflow: hidden;
+}
+
+/* Header */
+.console-header {
+	height: 28dp;
+	background-color: rgba(5, 5, 10, 200);
+	border-bottom-width: 1dp;
+	border-color: rgba(60, 60, 70, 120);
+}
+
+/* Header button active state */
+.console-header button:active {
+	background-color: rgba(255, 255, 255, 60);
+}
+
+/* Drag handle: covers full header for drag, sits below content */
+.console-handle {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	cursor: move;
+	z-index: 1;
+}
+
+/* Resize handle: bottom-right corner */
+.resize-handle {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 12dp;
+	height: 12dp;
+	cursor: resize;
+	z-index: 50;
+	background-color: rgba(100, 100, 120, 80);
+	border-radius: 2dp 0 4dp 0;
+}
+
+.resize-handle:hover {
+	background-color: rgba(140, 140, 160, 150);
+}
+
+.resize-handle:active {
+	background-color: rgba(180, 180, 200, 200);
+}
+
+/* Scrollable console area */
+.console-scroll {
+	flex: 1;
+	overflow: auto;
+	padding: 4dp 6dp;
+}
+
+/* Console text content */
+#console-text {
+	font-family: "Source Code Pro";
+	font-size: 8dp;
+	color: rgba(200, 200, 200, 255);
+}
+
+/* Individual console lines */
+.console-line {
+	padding: 1dp 3dp;
+	cursor: pointer;
+	border-radius: 2dp;
+	border-width: 1dp;
+	border-color: transparent;
+}
+
+.console-line:hover {
+	background-color: rgba(60, 60, 80, 120);
+}
+
+.console-line:active {
+	background-color: rgba(80, 80, 110, 160);
+}
+
+/* Priority-based line coloring */
+.console-error {
+	color: rgba(255, 120, 120, 255);
+}
+
+.console-warning {
+	color: rgba(255, 200, 140, 255);
+}
+
+.console-debug {
+	color: rgba(140, 140, 140, 255);
+}
+
+/* Echoed submitted commands */
+.console-command {
+	color: rgba(120, 200, 255, 255);
+	font-weight: bold;
+}
+
+/* Command input row (bottom of console) */
+.console-input-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	height: 26dp;
+	background-color: rgba(5, 5, 10, 220);
+	border-top-width: 1dp;
+	border-color: rgba(60, 60, 70, 140);
+	padding: 0 6dp;
+}
+
+.console-prompt {
+	font-family: "Source Code Pro";
+	font-size: 11dp;
+	color: rgba(120, 200, 255, 255);
+	margin-right: 6dp;
+	font-weight: bold;
+}
+
+.console-command-input {
+	flex: 1;
+	font-family: "Source Code Pro";
+	font-size: 9dp;
+	color: rgba(220, 220, 220, 255);
+	background-color: transparent;
+	border-width: 0;
+	padding: 2dp 0;
+	cursor: text;
+}
+
+.console-command-input:focus {
+	color: rgba(255, 255, 255, 255);
+}
+
+.console-command-input::placeholder {
+	color: rgba(120, 120, 140, 180);
+}
+
+/* Copied line highlight */
+.console-line-copied {
+	border-width: 1dp;
+	border-color: rgba(76, 175, 80, 180);
+	background-color: rgba(76, 175, 80, 40);
+}
+
+/* Scroll anchor */
+#scroll-anchor {
+	height: 1dp;
+}
+
+/* Scrollbar styling */
+.console-scroll scrollbarvertical {
+	width: 5dp;
+	margin-left: 2dp;
+}
+
+.console-scroll scrollbarvertical sliderbar {
+	background-color: rgba(100, 100, 120, 150);
+	border-radius: 2dp;
+}
+
+.console-scroll scrollbarvertical sliderbar:hover {
+	background-color: rgba(130, 130, 150, 200);
+}
+
+.console-scroll scrollbarvertical slidertrack {
+	background-color: rgba(20, 20, 30, 100);
+}

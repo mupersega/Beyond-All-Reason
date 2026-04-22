@@ -1,0 +1,92 @@
+<rml>
+<head>
+	<title>Changelog</title>
+
+	<!-- External stylesheets - order matters for cascading -->
+	<link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+	<link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+	<link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+	<link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+	<link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+	<link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+	<link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+	<link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+	<link rel="stylesheet" href="gui_changelog_rml.rcss" type="text/rcss" />
+</head>
+
+<body id="gui_changelog_rml-widget" class="widget-shadow rounded-lg">
+	<div id="widget-container" data-model="gui_changelog_rml_model">
+
+		<!-- Debug controls (reload/debug) — top-right absolute overlay on the
+		     widget container, gated behind the "RML Debug Controls" dev flag.
+		     Pattern from widget_controller.rml:69. -->
+		<div data-if="rmlDebugControls" class="debug-controls absolute top right pr-2 pt-2 z-50">
+			<button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()" title="Reload Widget">
+				<span class="pe-none">reload</span>
+			</button>
+			<button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">
+				<span class="pe-none">debug</span>
+			</button>
+		</div>
+
+		<!-- Nav column: full-height scrollable month list. No header — the
+		     "Changelog" title lives in the main pane as a proper h1 heading.
+		     Same my.tabsNavigationStyles rml_starter uses — gradient +
+		     radial focus glow. -->
+		<div data-attr-class="my.tabsNavigationStyles + ' nav-column'">
+			<div class="month-list no-scrollbar">
+				<button data-for="month : months"
+					data-attr-class="(activeMonth == month.id ? ccg.themeButton.primary + ' active' : ccg.themeButton.ghost) + ' month-tab'"
+					data-event-mousedown="setActiveMonth(month.id)">
+					<span class="text-glow-light text-base text-light pe-none">{{month.heading}}</span>
+				</button>
+			</div>
+		</div>
+
+		<!-- Main content area: full-height. Uses ccg.sheet.general.container
+		     for hazards-135 + bg-darkest treatment. Header section carries
+		     the "Changelog" h1 + active-month h3 subheading + drag handle;
+		     body section below holds the actual entries. Pattern mirrors
+		     rml_starter's welcome tab (rml_starter.rml:60-80). -->
+		<div data-attr-class="ccg.sheet.general.container + ' main-pane'">
+			<div data-attr-class="ccg.card.general + ' main-header'">
+				<h1 data-attr-class="ccg.heading.h1 + ' main-heading pe-none'">{{titleText}}</h1>
+				<span class="divider-horizontal-primary w-40 pe-none"></span>
+				<h2 data-attr-class="ccg.heading.h3 + ' sub-heading pe-none'">{{activeMonthHeading}}</h2>
+				<handle move_target="gui_changelog_rml-widget" class="drag-handle cursor-move"></handle>
+			</div>
+			<div class="changelog-body no-scrollbar">
+				<div data-for="entry : currentMonthEntries">
+					<!-- Section header (e.g. "Bugfixes", "General") — divider
+					     between groups of cards, not a card itself. -->
+					<div data-if="entry.section" class="entry-section-header">
+						<span class="pe-none">{{entry.text}}</span>
+					</div>
+					<!-- Regular entry as a card. Uses ccg.panel.general for the
+					     rounded + bordered + shadowed container, matching the
+					     card pattern rml_starter.rml:92 uses for its content
+					     sections. -->
+					<div data-if="!entry.section" data-attr-class="ccg.panel.general + ' entry-card'">
+						<div class="entry-main">
+							<span data-if="entry.hasDate" class="entry-date pe-none">{{entry.date}}</span>
+							<span data-if="entry.hasTag" class="entry-tag pe-none">[{{entry.tag}}]</span>
+							<span data-if="entry.text != ''" class="entry-text pe-none">{{entry.text}}</span>
+						</div>
+						<div data-if="entry.hasSubbullets" class="entry-subs">
+							<div data-for="sub : entry.subbullets" class="entry-sub-row">
+								<span class="entry-sub-bullet pe-none">-</span>
+								<span class="entry-sub-text pe-none">{{sub.text}}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div data-if="currentMonthEmpty" class="empty-state">
+					<span data-attr-class="ccg.text.caption">No entries in this month.</span>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</body>
+</rml>

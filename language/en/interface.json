@@ -1055,6 +1055,15 @@
 				"custom": "Custom",
 				"dev": "Dev"
 			},
+			"subtab": {
+				"display": "Display",
+				"rendering": "Rendering",
+				"environment": "Environment",
+				"debug": "Debug",
+				"map": "Map",
+				"lighting": "Lighting",
+				"water": "Water"
+			},
 			"filter": "filter",
 			"option": {
 				"select_enabled": "enabled",
@@ -1079,6 +1088,9 @@
 				"label_screen": "Screen",
 				"label_interface": "Interface",
 				"label_lighting": "Lighting",
+				"label_terrain": "Terrain",
+				"label_postprocessing": "Post-Processing",
+				"label_weather": "Weather",
 				"label_effects": "Effects",
 				"label_visuals": "Visuals",
 				"label_ranges": "Ranges",
@@ -1089,6 +1101,7 @@
 				"label_game": "Game",
 				"label_info": "Info",
 				"label_soundtrack": "Soundtrack",
+				"label_general": "General",
 				"label_playlist": "Playlist",
 				"label_messages": "Messages",
 				"label_cursor": "Cursor",
@@ -1354,6 +1367,8 @@
 				"lockcamera_transitiontime_descr": "When viewing a players camera...\nhow smooth should the transitions between camera movement be?",
 				"interface": "Interface",
 				"uiscale": "scale",
+				"rml_theme": "RML theme",
+				"rml_theme_descr": "Choose the color theme for RML widgets",
 				"guiopacity": "opacity",
 				"guitilescale": "background tile scale",
 				"guitileopacity": "opacity",

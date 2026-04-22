@@ -120,21 +120,15 @@ local function initModel()
         },
         
         handleConfirm = function()
-            local model = utils.GetCurrentModel(dm_handle)
-            if model then
-                model.status = "Confirmed"
-                model.message = "Action confirmed!"
-                Spring.Echo(WIDGET_ID .. ": User confirmed action")
-            end
+            dm_handle.status = "Confirmed"
+            dm_handle.message = "Action confirmed!"
+            Spring.Echo(WIDGET_ID .. ": User confirmed action")
         end,
-        
+
         handleCancel = function()
-            local model = utils.GetCurrentModel(dm_handle)
-            if model then
-                model.status = "Cancelled"
-                model.message = "Action cancelled"
-                Spring.Echo(WIDGET_ID .. ": User cancelled action")
-            end
+            dm_handle.status = "Cancelled"
+            dm_handle.message = "Action cancelled"
+            Spring.Echo(WIDGET_ID .. ": User cancelled action")
         end,
     }
 end
@@ -214,6 +208,7 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << 'EOF'
     <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />

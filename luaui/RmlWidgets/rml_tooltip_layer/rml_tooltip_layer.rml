@@ -1,0 +1,32 @@
+<rml>
+<head>
+    <title>RML Tooltip Layer</title>
+
+    <!-- Mandatory stylesheet order -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <!-- Widget-specific styles last -->
+    <link rel="stylesheet" href="rml_tooltip_layer.rcss" type="text/rcss" />
+</head>
+<body id="rml_tooltip_layer-widget" class="pe-none">
+    <div id="widget-container" data-model="rml_tooltip_layer_model">
+
+        <!-- Slot 1: Simple description tooltip -->
+        <div id="tooltip-desc" data-attr-class="ccg.panel.general + ' tooltip-slot p-2 bg-darkest text-sm text-light'"></div>
+
+        <!-- Slot 2: Title + description tooltip -->
+        <div id="tooltip-titled" data-attr-class="ccg.panel.general + ' tooltip-slot p-2 bg-darkest text-sm text-light'">
+            <div id="tooltip-titled-title" data-attr-class="my.titledTitle"></div>
+            <div id="tooltip-titled-desc" data-attr-class="my.titledDesc"></div>
+        </div>
+
+    </div>
+</body>
+</rml>
