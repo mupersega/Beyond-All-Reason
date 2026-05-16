@@ -1,6 +1,6 @@
 <rml>
 <head>
-	<title>Console (RML)</title>
+	<title>Log Viewer (RML)</title>
 
 	<!-- External stylesheets - order matters for cascading -->
 	<link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
@@ -12,17 +12,17 @@
 	<link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
 	<link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
 
-	<link rel="stylesheet" href="gui_console_rml.rcss" type="text/rcss" />
+	<link rel="stylesheet" href="gui_log_viewer_rml.rcss" type="text/rcss" />
 </head>
-<body id="gui_console_rml-widget">
-	<div id="widget-container" data-model="gui_console_rml_model" class="flex flex-col h-full">
+<body id="gui_log_viewer_rml-widget">
+	<div id="widget-container" data-model="gui_log_viewer_rml_model" class="flex flex-col h-full">
 		<!-- Header bar -->
 		<div class="console-header flex items-center justify-between relative">
 			<!-- Drag handle: absolute overlay -->
-			<handle move_target="gui_console_rml-widget" class="console-handle"></handle>
+			<handle move_target="gui_log_viewer_rml-widget" class="console-handle"></handle>
 
 			<!-- Title: in flow, above handle -->
-			<span class="z-50 pe-none text-sm text-light pl-1">RML Console <span id="copied-text" class="text-success">{{copiedAgo}}</span></span>
+			<span class="z-50 pe-none text-sm text-light pl-1">Log Viewer <span id="copied-text" class="text-success">{{copiedAgo}}</span></span>
 
 			<!-- Action buttons: in flow, above handle -->
 			<div class="flex items-center gap-0-5 pr-0-5 z-50">
@@ -35,6 +35,9 @@
 				<button data-attr-class="my.headerBtn + ' bg-dark-alpha-hover text-medium'" data-event-click="clearConsole()">
 					<svg src="../svg/bin_icon.svg" data-attr-class="my.svgStyles"></svg>
 				</button>
+				<button data-attr-class="my.headerBtn + ' bg-danger-hover text-medium'" data-event-click="close()" title="Close console">
+					×
+				</button>
 			</div>
 		</div>
 
@@ -44,18 +47,8 @@
 			<div id="scroll-anchor"></div>
 		</div>
 
-		<!-- Command input row -->
-		<div class="console-input-row">
-			<span class="console-prompt">&gt;</span>
-			<input id="console-command-input" type="text" class="console-command-input"
-				data-value="commandText"
-				placeholder="type 'help' for commands, or any Spring command (luaui reload, pause, ...)"
-				onfocus="widget:OnInputFocus()"
-				onblur="widget:OnInputBlur()"/>
-		</div>
-
 		<!-- Resize handle: bottom-right corner -->
-		<handle size_target="gui_console_rml-widget" class="resize-handle"></handle>
+		<handle size_target="gui_log_viewer_rml-widget" class="resize-handle"></handle>
 	</div>
 </body>
 </rml>

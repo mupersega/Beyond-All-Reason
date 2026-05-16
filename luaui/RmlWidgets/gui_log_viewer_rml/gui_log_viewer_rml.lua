@@ -8,8 +8,8 @@ include("keysym.h.lua")
 
 function widget:GetInfo()
 	return {
-		name = "Console (RML)",
-		desc = "Scrollable, selectable console log",
+		name = "Log Viewer (RML)",
+		desc = "Scrollable, selectable read-only log viewer",
 		author = "mupersega",
 		date = "2025",
 		license = "GNU GPL, v2 or later",
@@ -19,9 +19,9 @@ function widget:GetInfo()
 end
 
 -- Constants
-local WIDGET_ID = "gui_console_rml"
-local MODEL_NAME = "gui_console_rml_model"
-local RML_PATH = "luaui/RmlWidgets/gui_console_rml/gui_console_rml.rml"
+local WIDGET_ID = "gui_log_viewer_rml"
+local MODEL_NAME = "gui_log_viewer_rml_model"
+local RML_PATH = "luaui/RmlWidgets/gui_log_viewer_rml/gui_log_viewer_rml.rml"
 
 local MAX_LINES = 500
 local TRIM_COUNT = 100
@@ -41,13 +41,6 @@ local autoScroll = true
 local copiedTimer
 local copiedLineIndex
 local copiedTextElement
-local inputElement
-local inputHasFocus = false
-
--- Command history (source of truth is this local table; dm_handle.commandText is the live buffer)
-local commandHistory = {}
-local historyIndex = 0 -- 0 = composing new command, 1..#commandHistory = browsing
-local HISTORY_MAX = 50
 
 local L_DEPRECATED = LOG.DEPRECATED
 local L_ERROR = LOG.ERROR
@@ -175,117 +168,14 @@ local function toggleShow(newState)
 	show = newState
 	if show then
 		document:Show()
-		-- Try to auto-focus the input so the user can start typing immediately.
-		-- pcall-guarded because :Focus() is not used elsewhere in BAR's RML
-		-- widgets and we don't want a binding quirk to break opening the console.
-		if inputElement then
-			pcall(function() inputElement:Focus() end)
-		end
 	else
 		document:Hide()
-		inputHasFocus = false
 	end
-end
-
--- Push a line directly into the console log
-local function echo(text, cls)
-	lines[#lines + 1] = { text = text, cls = cls or "" }
-	dirty = true
-	autoScroll = true
-end
-
--- Local commands are intercepted before Spring.SendCommands. Use for things
--- the engine doesn't know about (help text, client-side helpers, etc).
-local localCommands = {}
-
-localCommands.help = function()
-	echo("  luaui reload              reload all luaui widgets", " console-debug")
-	echo("  luaui disable <name>      disable a widget by name", " console-debug")
-	echo("  luaui enable  <name>      enable a widget by name", " console-debug")
-	echo("  luarules reload           reload all gadgets", " console-debug")
-	echo("  console_rml               toggle this console", " console-debug")
-	echo("  widgetselector            toggle widget selector", " console-debug")
-	echo("  pause / togglelos         game toggles", " console-debug")
-	echo("  cheat / give <unit>       dev commands (cheats required)", " console-debug")
-	echo("  bind <key> <action>       rebind a key", " console-debug")
-	echo("  Up / Down arrows          recall command history", " console-debug")
-	echo("  Any other Spring engine command also works.", " console-debug")
-end
-localCommands["?"] = localCommands.help
-
--- Dispatch the current input's contents as a Spring command, echo it, and clear
-local function submitCommand()
-	if not dm_handle then return end
-	local text = dm_handle.commandText or ""
-	-- trim whitespace
-	text = text:gsub("^%s+", ""):gsub("%s+$", "")
-	if text == "" then return end
-
-	-- strip optional leading slash (user may paste from chat-style docs)
-	local cmd = text:sub(1, 1) == "/" and text:sub(2) or text
-	if cmd == "" then
-		dm_handle.commandText = ""
-		return
-	end
-
-	-- add to history with consecutive-dedupe
-	if commandHistory[#commandHistory] ~= cmd then
-		commandHistory[#commandHistory + 1] = cmd
-		if #commandHistory > HISTORY_MAX then
-			table.remove(commandHistory, 1)
-		end
-	end
-	historyIndex = 0
-
-	-- echo the command the user submitted
-	echo("> " .. cmd, " console-command")
-
-	-- Intercept local commands (help, etc.) before handing off to the engine
-	local firstWord = cmd:match("^(%S+)")
-	local handler = firstWord and localCommands[firstWord:lower()]
-	if handler then
-		handler(cmd)
-	else
-		Spring.SendCommands(cmd)
-	end
-
-	dm_handle.commandText = ""
-end
-
--- Walk command history; direction = -1 (older) or +1 (newer)
-local function recallHistory(direction)
-	if not dm_handle then return end
-	local n = #commandHistory
-	if n == 0 then return end
-
-	if direction < 0 then
-		-- older
-		if historyIndex == 0 then
-			historyIndex = n
-		elseif historyIndex > 1 then
-			historyIndex = historyIndex - 1
-		end
-	else
-		-- newer
-		if historyIndex == 0 then
-			return -- already at fresh composition
-		elseif historyIndex < n then
-			historyIndex = historyIndex + 1
-		else
-			-- stepping past newest clears the input
-			historyIndex = 0
-			dm_handle.commandText = ""
-			return
-		end
-	end
-
-	dm_handle.commandText = commandHistory[historyIndex] or ""
 end
 
 local function initModel()
 	return {
 		copiedAgo = "",
-		commandText = "",
 
 		my = {
 			svgStyles = "h-2-5 w-2-5",
@@ -300,6 +190,12 @@ local function initModel()
 		scrollToBottom = function()
 			autoScroll = true
 			scrollToBottom()
+		end,
+
+		-- Close button: route the view-state change through the model.
+		-- toggleShow(false) uses the documented document:Hide() path.
+		close = function()
+			toggleShow(false)
 		end,
 	}
 end
@@ -324,39 +220,36 @@ function widget:Initialize()
 	consoleElement = document:GetElementById("console-text")
 	scrollAnchor = document:GetElementById("scroll-anchor")
 	copiedTextElement = document:GetElementById("copied-text")
-	inputElement = document:GetElementById("console-command-input")
 
 	-- utils.initializeRmlWidget auto-calls document:Show(); start hidden.
 	document:Hide()
 	show = false
 
-	WG['console_rml'] = {
+	WG['log_viewer_rml'] = {
 		toggle = function(state) toggleShow(state) end,
 		isVisible = function() return show end,
 	}
 
-	-- /console_rml slash-command and rebindable action entry point.
-	widgetHandler:AddAction("console_rml", function() toggleShow() end, nil, 't')
+	-- /log_viewer_rml slash-command and rebindable action entry point.
+	widgetHandler:AddAction("log_viewer_rml", function() toggleShow() end, nil, 't')
 
 	return true
 end
 
 function widget:Shutdown()
-	widgetHandler:RemoveAction("console_rml")
+	widgetHandler:RemoveAction("log_viewer_rml")
 
 	utils.shutdownRmlWidget(self, {
 		widgetId = WIDGET_ID,
 		modelName = MODEL_NAME,
 	}, document, dm_handle)
 
-	WG['console_rml'] = nil
+	WG['log_viewer_rml'] = nil
 	document = nil
 	dm_handle = nil
 	consoleElement = nil
 	scrollAnchor = nil
 	copiedTextElement = nil
-	inputElement = nil
-	inputHasFocus = false
 	copiedLineIndex = nil
 	lines = {}
 end
@@ -444,17 +337,6 @@ function widget:Update()
 	end
 end
 
--- Focus tracking: onfocus/onblur on the <input> element update this flag.
--- Using a plain Lua bool sidesteps RmlUi userdata-comparison quirks that
--- would occur if we checked document.context.focus_element directly.
-function widget:OnInputFocus()
-	inputHasFocus = true
-end
-
-function widget:OnInputBlur()
-	inputHasFocus = false
-end
-
 function widget:KeyPress(key, mods, isRepeat)
 	if key == KEYSYMS.BACKQUOTE and not isRepeat
 	   and not (mods.alt or mods.ctrl or mods.meta or mods.shift) then
@@ -464,21 +346,6 @@ function widget:KeyPress(key, mods, isRepeat)
 	if show and key == KEYSYMS.ESCAPE then
 		toggleShow(false)
 		return true
-	end
-	-- Command input keys: only active when the input has focus, so these
-	-- don't steal Enter/Up/Down from the rest of the game when the user
-	-- clicks elsewhere in the console.
-	if show and inputHasFocus then
-		if key == KEYSYMS.RETURN or key == KEYSYMS.KP_ENTER then
-			submitCommand()
-			return true
-		elseif key == KEYSYMS.UP and not isRepeat then
-			recallHistory(-1)
-			return true
-		elseif key == KEYSYMS.DOWN and not isRepeat then
-			recallHistory(1)
-			return true
-		end
 	end
 	return false
 end
