@@ -1,12 +1,17 @@
 #!/bin/bash
 
-# RML Widget Generator Script
+# RML Widget Generator
 # Usage: ./generate-widget.sh --name widget_name
+#
+# Scaffolds a new RML widget (.lua/.rml/.rcss) using the canonical BAR
+# patterns: block layout (no nested flex-column), raw utility classes
+# (no CCG), debug buttons gated behind the RML Debug Controls dev flag,
+# and a change-gated widget:Update (no per-frame polling).
 
-# Default values
+set -euo pipefail
+
 WIDGET_NAME=""
 
-# Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
         --name)
@@ -19,7 +24,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 --name widget_name"
             echo ""
             echo "Required:"
-            echo "  --name NAME        Widget name (alphanumeric and underscores only)"
+            echo "  --name NAME        Widget name (letters, numbers, _ and - ; must start with a letter)"
             echo ""
             echo "Options:"
             echo "  -h, --help         Show this help message"
@@ -27,14 +32,13 @@ while [[ $# -gt 0 ]]; do
             echo "Examples:"
             echo "  $0 --name my_widget"
             echo "  $0 --name build_menu"
-            echo "  $0 --name unit_stats"
             echo ""
-            echo "Generated widgets use standard size (300x400) and position (top-left)."
-            echo "Customize size and position in the generated .rcss file as needed."
+            echo "Generated widgets use a 300x400dp box at top-left."
+            echo "Customize size/position in the generated .rcss file."
             exit 0
             ;;
         *)
-            # Support legacy positional argument for backward compatibility
+            # Legacy positional argument
             if [[ -z "$WIDGET_NAME" ]]; then
                 WIDGET_NAME="$1"
                 shift
@@ -46,47 +50,94 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate widget name
 if [[ -z "$WIDGET_NAME" ]]; then
     echo "Error: Widget name is required!"
-    echo "Usage: $0 --name widget_name"
-    echo "Use --help for more information"
+    echo "Usage: $0 --name widget_name   (use --help for more)"
     exit 1
 fi
 
-# Validate widget name format
 if [[ ! "$WIDGET_NAME" =~ ^[a-zA-Z][a-zA-Z0-9_-]*$ ]]; then
     echo "Error: Widget name must start with a letter and contain only letters, numbers, underscores, and hyphens"
     exit 1
 fi
 
-WIDGET_DIR="../${WIDGET_NAME}"
+# Resolve paths relative to THIS script, so it works from any CWD.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WIDGET_DIR="$SCRIPT_DIR/../${WIDGET_NAME}"
 
-# Check if widget directory already exists
 if [ -d "$WIDGET_DIR" ]; then
-    echo "Error: Widget directory '$WIDGET_DIR' already exists!"
+    echo "Error: Widget directory already exists: $WIDGET_DIR"
     exit 1
 fi
 
 echo "Generating RML widget: $WIDGET_NAME"
-echo "Creating directory: $WIDGET_DIR"
-
-# Create widget directory
 mkdir "$WIDGET_DIR"
 
-# Generate the Lua file
-cat > "$WIDGET_DIR/${WIDGET_NAME}.lua" << 'EOF'
+# ---------------------------------------------------------------------------
+# Lua — logic, model factory, gated debug, change-only Update
+# ---------------------------------------------------------------------------
+cat > "$WIDGET_DIR/${WIDGET_NAME}.lua" << EOF
+-- ${WIDGET_NAME} — RML widget
+--
+-- THE MODEL IS KING. Change the view by mutating dm_handle fields and
+-- letting data binding update it. Do NOT use GetElementById / QuerySelector
+-- / SetClass / SetAttribute / .inner_rml / AppendChild to drive UI state.
+-- The only sanctioned DOM manipulation is rare (documented data-binding
+-- bug, SVG injection, measured perf hot path) and MUST carry a marker:
+--   -- rml-dom-escape: <one-line technical reason>
+-- See luaui/RmlWidgets/CLAUDE.md — "The model is king".
+
 if not RmlUi then
     return
 end
 
 local widget = widget ---@type Widget
 local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
-local ccg = VFS.Include("luaui/Include/rml_utilities/common_class_groups.lua") -- already in model but useful here too for custom class groups
+
+local WIDGET_ID = "${WIDGET_NAME}"
+local MODEL_NAME = "${WIDGET_NAME}_model"
+local RML_PATH = "luaui/RmlWidgets/${WIDGET_NAME}/${WIDGET_NAME}.rml"
+
+local document
+local dm_handle
+
+-- Cache the last-seen dev-flag value so widget:Update only writes on change.
+local lastRmlDebug = nil
+
+-- Factory: a fresh model table every init (avoids stale references).
+-- Every key the widget will ever use MUST be declared here; you cannot
+-- add new model keys after the document loads.
+local function initModel()
+    return {
+        message = "Hello from ${WIDGET_NAME}!",
+        status = "Ready",
+        debugMode = false,
+
+        -- Toggled by the "RML Debug Controls" option (Options > Dev > Debug).
+        -- Gates the reload/debug buttons so end users never see them.
+        rmlDebugControls = false,
+
+        -- Bundle repeated utility-class combinations here, then use
+        -- my.<name> in the .rml. Prefer utility classes over CCG.
+        my = {
+            -- card = "bg-darker rounded p-3 border border-dark",
+        },
+
+        handleConfirm = function()
+            dm_handle.status = "Confirmed"
+            dm_handle.message = "Action confirmed!"
+        end,
+
+        handleCancel = function()
+            dm_handle.status = "Cancelled"
+            dm_handle.message = "Action cancelled"
+        end,
+    }
+end
 
 function widget:GetInfo()
     return {
-        name = "WIDGET_NAME_PLACEHOLDER",
+        name = "${WIDGET_NAME}",
         desc = "Generated RML widget template",
         author = "Generated from rml_starter/generate-widget.sh",
         date = "2025",
@@ -96,89 +147,47 @@ function widget:GetInfo()
     }
 end
 
--- Constants
-local WIDGET_ID = "WIDGET_NAME_PLACEHOLDER"
-local MODEL_NAME = "WIDGET_NAME_PLACEHOLDER_model"
-local RML_PATH = "luaui/RmlWidgets/WIDGET_NAME_PLACEHOLDER/WIDGET_NAME_PLACEHOLDER.rml"
-
--- Widget state
-local document
-local dm_handle
-
--- Create a new data model every time to avoid reference oddities even with dm_handle
-local function initModel()
-    return {
-        message = "Hello from WIDGET_NAME_PLACEHOLDER!",
-        currentTime = os.date("%H:%M:%S"),
-        debugMode = false,
-        status = "Ready",
-        
-        -- Custom class groups for this widget (add your own here)
-        my = {
-            -- Example: custom button style
-            -- customButton = ccg.definitions.button.default .. " custom-additions"
-        },
-        
-        handleConfirm = function()
-            dm_handle.status = "Confirmed"
-            dm_handle.message = "Action confirmed!"
-            Spring.Echo(WIDGET_ID .. ": User confirmed action")
-        end,
-
-        handleCancel = function()
-            dm_handle.status = "Cancelled"
-            dm_handle.message = "Action cancelled"
-            Spring.Echo(WIDGET_ID .. ": User cancelled action")
-        end,
-    }
-end
-
 function widget:Initialize()
     local result = utils.initializeRmlWidget(self, {
         widgetId = WIDGET_ID,
         modelName = MODEL_NAME,
         rmlPath = RML_PATH,
-        initModel = initModel(), -- Use fresh model every time
-        useCommonClassGroups = true,
+        initModel = initModel(),
+        -- CCG is intentionally not enabled: new widgets style with raw
+        -- utility classes. Enable the rml_style_guide widget to browse them.
     })
     if not result then
         return false
     end
-    
     document = result.document
     dm_handle = result.dm_handle
-    
-    Spring.Echo(WIDGET_ID .. ": Widget initialized successfully")
     return true
 end
 
 function widget:Shutdown()
-    Spring.Echo(WIDGET_ID .. ": Shutting down widget...")
-    
-    -- Use the modern utility function to shutdown
-    local shutdownParams = {
+    utils.shutdownRmlWidget(self, {
         widgetId = WIDGET_ID,
-        modelName = MODEL_NAME
-    }
-    
-    utils.shutdownRmlWidget(self, shutdownParams, document, dm_handle)
-    
-    -- Clear references
+        modelName = MODEL_NAME,
+    }, document, dm_handle)
     document = nil
     dm_handle = nil
-    
-    Spring.Echo(WIDGET_ID .. ": Shutdown complete")
 end
 
+-- Only syncs the dev flag, and only when it changes. Do NOT poll game
+-- state here every frame — express UI state with data binding instead.
 function widget:Update()
     if dm_handle then
-        dm_handle.currentTime = os.date("%H:%M:%S")
+        local rmlDebug = utils.isRmlDebugEnabled()
+        if rmlDebug ~= lastRmlDebug then
+            lastRmlDebug = rmlDebug
+            dm_handle.rmlDebugControls = rmlDebug
+        end
     end
 end
 
--- Widget functions callable from RML
+-- Dev helpers. The Lua methods stay callable from anywhere; the UI
+-- buttons that invoke them are gated by data-if="rmlDebugControls".
 function widget:Reload()
-    Spring.Echo(WIDGET_ID .. ": Reloading widget...")
     widget:Shutdown()
     widget:Initialize()
 end
@@ -186,25 +195,20 @@ end
 function widget:ToggleDebugger()
     if dm_handle then
         dm_handle.debugMode = not dm_handle.debugMode
-        
-        if dm_handle.debugMode then
-            RmlUi.SetDebugContext('shared')
-            Spring.Echo(WIDGET_ID .. ": RmlUi debugger enabled")
-        else
-            RmlUi.SetDebugContext(nil)
-            Spring.Echo(WIDGET_ID .. ": RmlUi debugger disabled")
-        end
+        RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
     end
 end
 EOF
 
-# Generate the RML file
-cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << 'EOF'
+# ---------------------------------------------------------------------------
+# RML — block layout, utility classes, gated debug controls
+# ---------------------------------------------------------------------------
+cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << EOF
 <rml>
 <head>
-    <title>WIDGET_NAME_PLACEHOLDER Widget</title>
+    <title>${WIDGET_NAME} Widget</title>
 
-    <!-- External stylesheets - order matters for cascading -->
+    <!-- Stylesheet order matters (do not reorder) -->
     <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
@@ -214,132 +218,124 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << 'EOF'
     <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
     <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
 
-    <link rel="stylesheet" href="WIDGET_NAME_PLACEHOLDER.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="${WIDGET_NAME}.rcss" type="text/rcss" />
 </head>
-<body id="WIDGET_NAME_PLACEHOLDER-widget" class="widget-shadow rounded-lg">
-    <div id="widget-container" data-model="WIDGET_NAME_PLACEHOLDER_model" data-attr-class="ccg.sheet.general.container + ' flex flex-col h-full justify-between'">
-        <!-- Small floating debug buttons -->
-        <div class="debug-controls absolute top right pr-2 pt-2">
-            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()" title="Reload Widget">
-                <span>reload</span> 
-            </button>
-            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">
-                <span>debug</span>
-            </button>
-        </div>
-        <div data-attr-class="ccg.sheet.general.title + ' flex flex-col justify-between items-center relative min-h-8'">
-            <span>
-                WIDGET_NAME_PLACEHOLDER
-            </span>
+<body id="${WIDGET_NAME}-widget" class="widget-shadow rounded-lg">
+    <!-- Single wrapper with data-model. Block layout: children stack
+         top-to-bottom in one layout pass. Never use flex-direction:
+         column here — it is the #1 layout-perf killer in this engine. -->
+    <div id="widget-container" data-model="${WIDGET_NAME}_model" class="bg-darker rounded-lg">
+
+        <!-- Dev-only: gated behind the RML Debug Controls option -->
+        <div class="debug-controls" data-if="rmlDebugControls">
+            <button class="debug-btn text-warning px-1" onclick="widget:Reload()" title="Reload Widget">reload</button>
+            <button class="debug-btn text-warning px-1" onclick="widget:ToggleDebugger()" title="Toggle Debugger">debug</button>
         </div>
 
-        <div data-attr-class="ccg.sheet.general.content">
-            <h1 data-attr-class="ccg.heading.h4">{{message}}</h1>
-            
-            <div class="flex flex-col gap-4">
-                <p data-attr-class="ccg.text.body">This is a generated RML widget template using modern patterns.</p>
-                
-                
-                <!-- Example with basic state -->
-                <div class="flex flex-col gap-3">
-                    <p data-attr-class="ccg.text.body">Status: <span data-attr-class="ccg.text.body">{{status}}</span></p>
-                </div>
-                
-                
-                <p data-attr-class="ccg.text.caption">Time: {{currentTime}}</p>
-            </div>
+        <div class="starter-title text-primary font-bold">${WIDGET_NAME}</div>
+
+        <div class="starter-section">
+            <h1 class="text-light font-bold">{{message}}</h1>
+            <p class="text-medium text-sm">A generated RML widget: block layout, utility classes, no per-frame polling.</p>
         </div>
-        <div data-attr-class="ccg.panel.info + ' p-3 m-3'">
-            <p data-attr-class="ccg.text.warning">Remember!</p>
-            <p data-attr-class="ccg.text.body">Enable the <strong>rml_style_guide</strong> widget to explore all available styling components. Press F11 and search "style guide"</p>
+
+        <div class="starter-section">
+            <p class="text-medium text-sm">Status: <span class="text-light">{{status}}</span></p>
         </div>
-        
-        <div data-attr-class="ccg.sheet.general.footer">            
-            <div class="flex flex-row justify-end gap-2">
-                <button data-attr-class="ccg.button.danger + ' px-2 py-1'" data-event-click="handleCancel()">cancel</button>
-                <button data-attr-class="ccg.button.success + ' px-2 py-1'" data-event-click="handleConfirm()">confirm</button>
-            </div>
+
+        <div class="starter-hint bg-warning-alpha rounded">
+            <p class="text-warning text-sm font-bold">Tip</p>
+            <p class="text-medium text-sm">Enable the <strong>rml_style_guide</strong> widget (press F11, search "style guide") to browse every utility class and component.</p>
+        </div>
+
+        <div class="starter-actions flex justify-end gap-2">
+            <button class="px-2 py-1 rounded text-light bg-danger bg-danger-hover cursor-pointer" data-event-click="handleCancel()">cancel</button>
+            <button class="px-2 py-1 rounded text-light bg-success bg-success-hover cursor-pointer" data-event-click="handleConfirm()">confirm</button>
         </div>
     </div>
 </body>
 </rml>
 EOF
 
-# Generate the RCSS file
+# ---------------------------------------------------------------------------
+# RCSS — block-first; component visuals defined locally (no CCG dependency)
+# ---------------------------------------------------------------------------
 cat > "$WIDGET_DIR/${WIDGET_NAME}.rcss" << EOF
-/* WIDGET_NAME_PLACEHOLDER Widget Styles */
-#WIDGET_NAME_PLACEHOLDER-widget {
-    /* Standard positioning and sizing - customize as needed */
-    display: flex;
+/* ${WIDGET_NAME} widget styles */
+
+#${WIDGET_NAME}-widget {
     position: absolute;
     left: 50dp;
     top: 100dp;
     width: 300dp;
     height: 400dp;
+    display: block;
 }
 
+/* Block layout = single layout pass. Do NOT switch this to
+   display: flex; flex-direction: column — see ../CLAUDE.md perf rules. */
 #widget-container {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
+    display: block;
+    position: relative;
+    height: 100%;
+    padding: 12dp;
 }
 
-/* Debug controls */
+.starter-title {
+    height: 22dp;
+    margin-bottom: 10dp;
+}
+
+.starter-section {
+    margin-bottom: 10dp;
+}
+
+/* Colors come from utility classes (bg-warning-alpha / bg-danger /
+   bg-success) in the .rml. Never hard-code colors in widget RCSS —
+   this RCSS is layout only. */
+.starter-hint {
+    margin-bottom: 10dp;
+    padding: 8dp;
+}
+
+.starter-actions {
+    margin-top: 10dp;
+}
+
+/* Dev-only debug buttons. data-if needs an explicit display value
+   (other than none) on its target or it stays hidden regardless. */
 .debug-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 3dp;
+    display: block;
+    position: absolute;
+    top: 4dp;
+    right: 6dp;
     z-index: 50;
+}
+
+.debug-btn {
+    cursor: pointer;
 }
 
 .debug-btn:hover {
     filter: brightness(1.2);
 }
-
-.debug-btn:hover>span {
-    transform: translateY(-1dp);
-}
-
-/* Custom widget styles go here */
-
 EOF
 
-# Replace placeholders in all files
-sed -i "s/WIDGET_NAME_PLACEHOLDER/$WIDGET_NAME/g" "$WIDGET_DIR/${WIDGET_NAME}.lua"
-sed -i "s/WIDGET_NAME_PLACEHOLDER/$WIDGET_NAME/g" "$WIDGET_DIR/${WIDGET_NAME}.rml"
-sed -i "s/WIDGET_NAME_PLACEHOLDER/$WIDGET_NAME/g" "$WIDGET_DIR/${WIDGET_NAME}.rcss"
-
 echo ""
-echo "✅ RML Widget '$WIDGET_NAME' generated successfully!"
+echo "RML Widget '$WIDGET_NAME' generated."
 echo ""
-echo "Configuration:"
-echo "  📐 Size: 300x400dp (customize in .rcss file)"
-echo "  📍 Position: top-left (customize in .rcss file)"
-echo "  🔧 Enabled: false (change to true in GetInfo() when ready)"
+echo "Files:"
+echo "  $WIDGET_DIR/${WIDGET_NAME}.lua"
+echo "  $WIDGET_DIR/${WIDGET_NAME}.rml"
+echo "  $WIDGET_DIR/${WIDGET_NAME}.rcss"
 echo ""
-echo "Files created:"
-echo "  📁 $WIDGET_DIR/"
-echo "  📄 $WIDGET_DIR/${WIDGET_NAME}.lua"
-echo "  📄 $WIDGET_DIR/${WIDGET_NAME}.rml"
-echo "  📄 $WIDGET_DIR/${WIDGET_NAME}.rcss"
-echo ""
-echo "The widget includes:"
-echo "  • Modern utils.initializeRmlWidget() and utils.shutdownRmlWidget() patterns"
-echo "  • Common Class Groups (CCG) integration for consistent styling"
-echo "  • Theme utilities for proper theme support"
-echo "  • Clean starter template with basic data model"
-echo "  • Debugger and Reload functions"
-echo ""
-echo "To use Common Class Groups in your templates:"
-echo "  • Use data-attr-class=\"ccg.button.default\" for standard buttons"
-echo "  • Use data-attr-class=\"ccg.text.body\" for body text"
-echo "  • Use data-attr-class=\"ccg.heading.h4\" for headings"
-echo "  • Extend with: data-attr-class=\"ccg.button.default + ' custom-class'\""
+echo "Defaults baked in (the canonical patterns — keep them):"
+echo "  - Block layout, no nested flex-column"
+echo "  - Raw utility classes for styling (no CCG)"
+echo "  - Reload/debug buttons gated behind the RML Debug Controls dev option"
+echo "  - widget:Update only syncs on change (no per-frame polling)"
 echo ""
 echo "Next steps:"
-echo "  1. Set enabled = true in the GetInfo() function"
-echo "  2. Customize size and position in the .rcss file"
-echo "  3. Enable the rml_style_guide widget to explore styling options"
-echo ""
-echo "Ready to customize your widget!"
+echo "  1. Set enabled = true in GetInfo() when ready"
+echo "  2. Adjust size/position in ${WIDGET_NAME}.rcss"
+echo "  3. Enable the rml_style_guide widget to explore styling"

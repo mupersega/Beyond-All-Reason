@@ -2,3 +2,6 @@
 *.lua text eol=crlf
 *.txt text eol=crlf
 *.tdf text eol=crlf
+
+# Shell scripts must stay LF or they break bash on macOS/Linux.
+*.sh text eol=lf

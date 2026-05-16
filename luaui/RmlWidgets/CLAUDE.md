@@ -2,6 +2,29 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when building RML widgets in Beyond All Reason.
 
+## The model is king (read this first)
+
+This is the single most important rule in this codebase. **To change the view, you change the data model — never the DOM directly.** Data binding (`{{}}`, `data-if`, `data-visible`, `data-for`, `data-attr-*`, `data-event-*`) is the only sanctioned way the UI updates: you mutate `dm_handle` fields and RmlUi updates the elements.
+
+**Do not** write JS/jQuery-style DOM code — `GetElementById`, `QuerySelector(All)`, `:SetClass`, `:SetAttribute`, `:SetProperty`, `.inner_rml`, `AppendChild`/`RemoveChild`/`InsertBefore` — to drive ordinary UI state. A widget that reaches for these to show/hide/update things is built wrong; rebuild it around the model. This matters more than any styling rule.
+
+### The escape hatch (rare — and it must justify itself)
+
+DOM manipulation is permitted only when genuinely unavoidable. Today that means exactly three cases:
+
+1. **A documented RmlUi data-binding bug** — e.g. the proven toggle pattern (direct class swap because `data-checked` inside `data-for` is broken). *Temporary*: drop the escape if the bug is fixed upstream.
+2. **SVG injection** — building or patching inline SVG. ***Permanent and structural***: RmlUi cannot data-bind SVG attributes, so SVG-driven widgets (e.g. `svg_test`) have no choice but to construct/patch markup via the DOM. This is expected and correct — not tech debt, never a migration target. It must still carry the marker.
+3. **A measured perf hot path** where data binding is proven too slow.
+
+Every such call **must carry a justification marker** on the call line or the line directly above it, so exceptions stay explicit, greppable, and reviewable:
+
+```lua
+-- rml-dom-escape: data-checked broken inside data-for (toggle pattern)
+row:SetClass("enabled", state.enabled)
+```
+
+No marker, no DOM call. "It was easier" is not a reason. If you can't write a one-line technical reason matching one of the three cases, the change belongs in the model. Full API and guidance: **Direct DOM Manipulation** near the end of this doc.
+
 ## Widget File Structure
 
 Each RML widget lives in its own directory under `luaui/RmlWidgets/`:
@@ -13,7 +36,15 @@ luaui/RmlWidgets/widget_name/
     widget_name.rcss    # Widget-specific styles (CSS-like)
 ```
 
-A generator script exists at `rml_starter/generate-widget.sh --name widget_name` that scaffolds all three files with the canonical patterns.
+A generator script exists at `rml_starter/generate-widget.sh --name widget_name` that scaffolds all three files with the canonical patterns. **Use it to start every new widget** — its output already embodies every rule in this document.
+
+## Styling: utility classes first
+
+**New widgets style with raw utility classes only** (`flex`, `p-3`, `bg-darker`, `text-primary`, `rounded`, …) plus widget-specific RCSS for layout. Browse the full set live by enabling the **rml_style_guide** widget (F11 → "style guide").
+
+**Common Class Groups (CCG) is legacy.** It is still used by older production widgets (`gui_options_rml`, `rml_style_guide`) and remains functional, but **do not use `ccg.*` or `useCommonClassGroups` in new widgets**. The CCG section below is reference for reading and maintaining those existing widgets — not a pattern to copy.
+
+**Never hard-code colors** (`rgba()`/hex) in widget RCSS — use the color utility classes. Widget RCSS is for layout only.
 
 ## Lua Initialization Pattern
 
@@ -39,9 +70,9 @@ local function initModel()
     return {
         someValue = "initial",
 
-        -- Widget-specific class group shortcuts
+        -- Widget-specific utility-class bundles (reused class combos)
         my = {
-            customStyle = "flex flex-col p-3 bg-darker rounded",
+            customStyle = "p-3 bg-darker rounded",
         },
 
         handleAction = function(event, arg)
@@ -68,7 +99,8 @@ function widget:Initialize()
         modelName = MODEL_NAME,
         rmlPath = RML_PATH,
         initModel = initModel(),
-        useCommonClassGroups = true,  -- injects CCG as model.ccg.*
+        -- New widgets do NOT enable CCG. (Legacy widgets pass
+        -- useCommonClassGroups = true to inject model.ccg.* — don't copy that.)
     })
     if not result then return false end
     document = result.document
@@ -184,7 +216,7 @@ Conventions:
 | `data-if="expr"` | Conditional display (removes from layout) | `<div data-if="expanded">...</div>` |
 | `data-visible="expr"` | Conditional visibility (keeps layout space) | `<div data-visible="showStar">...</div>` |
 | `data-for="item : array"` | Array iteration | `<div data-for="tab : tabs">{{tab.label}}</div>` |
-| `data-attr-class="expr"` | Dynamic class binding | `data-attr-class="ccg.button.primary + ' w-full'"` |
+| `data-attr-class="expr"` | Dynamic class binding | `data-attr-class="'btn w-full ' + (active ? 'bg-primary' : 'bg-darker')"` |
 | `data-attrif-name="bool"` | Set attribute when true, remove when false | `<button data-attrif-disabled="!canSubmit">` |
 | `data-class-name="bool"` | Toggle a single CSS class | `data-class-loading="isLoading"` |
 | `data-style-prop="expr"` | Dynamic CSS property | `data-style-width="progress + '%'"` |
@@ -195,9 +227,9 @@ Conventions:
 | `data-event-mousedown="fn()"` | Any DOM event (`mousedown`, `change`, `mouseover`, ...) | `data-event-mousedown="setTab(tab.id)"` |
 | `onclick="widget:Method()"` | Call widget Lua method directly | `onclick="widget:Reload()"` |
 
-Conditional class example:
+Conditional class example (utility classes):
 ```rml
-<button data-attr-class="(active ? ccg.themeButton.primary : ccg.themeButton.ghost) + ' tab-btn'">
+<button data-attr-class="'tab-btn px-3 py-1 rounded ' + (active ? 'bg-primary text-light' : 'bg-darker text-medium')">
     {{tab.label}}
 </button>
 ```
@@ -222,9 +254,15 @@ Data binding expressions (in `data-if`, `data-for`, `data-attr-*`, `data-event-*
 - **Don't shadow globals with iterator names.** `data-for="tab : tabs"` is fine; `data-for="widget : widgets"` shadows the global `widget`.
 - **`{{` and `}}` are reserved anywhere in RML** — they're always parsed as data bindings, even inside comments or script blocks.
 
-## Common Class Groups (CCG)
+## Common Class Groups (CCG) — LEGACY
 
-When `useCommonClassGroups = true`, all CCG definitions are available in RML as `ccg.component.variant`. These are predefined bundles of utility classes for consistent styling.
+> **CCG is legacy. Do not use it in new widgets** — no `ccg.*`, no
+> `useCommonClassGroups`. This section exists so you can read and
+> maintain the existing widgets that still depend on it (`gui_options_rml`,
+> `rml_style_guide`). For new work use utility
+> classes — see "Styling: utility classes first" near the top of this doc.
+
+When a legacy widget passes `useCommonClassGroups = true`, all CCG definitions are available in RML as `ccg.component.variant` — predefined bundles of utility classes.
 
 Source: `luaui/Include/rml_utilities/common_class_groups.lua`
 
@@ -282,12 +320,14 @@ For repeated class combinations within a widget, define them in the model under 
 
 ```lua
 my = {
-    codeBlock = "flex flex-col p-3 bg-darker rounded border border-dark-alpha text-sm",
+    codeBlock = "p-3 bg-darker rounded border border-dark-alpha text-sm",
     svgIcon = "h-2-5 w-2-5 mx-1",
 },
 ```
 
 Then use in RML: `data-attr-class="my.codeBlock + ' mt-4'"`
+
+The `my` bundle pattern uses **plain utility classes** — it is *not* CCG and *is* the recommended way to share class combos in new widgets. (The generator scaffolds an empty `my = {}` for this.)
 
 ## Styling Conventions
 
@@ -297,6 +337,9 @@ Then use in RML: `data-attr-class="my.codeBlock + ' mt-4'"`
 - **`rem`** — relative to base font size. Available for text sizing (`text-sm-rem`).
 
 ### Widget positioning (in RCSS)
+
+Block layout by default (see the Performance section). The widget box has a
+definite size, so the container does not need flex to fill it.
 ```rcss
 #widget_name-widget {
     position: absolute;
@@ -304,13 +347,14 @@ Then use in RML: `data-attr-class="my.codeBlock + ' mt-4'"`
     left: 50dp;
     width: 300dp;
     height: 400dp;
-    display: flex;
+    display: block;
 }
 
 #widget-container {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
+    display: block;
+    position: relative;   /* anchor for absolutely-positioned children */
+    height: 100%;
+    padding: 12dp;
 }
 ```
 
@@ -398,16 +442,18 @@ Current theme is stored in Spring config: `Spring.GetConfigString("rml_theme", "
 | `palette-standard-global.rcss` | Global color palette (fixed colors, shadows, gradients, textures) |
 | `themes/theme-*.rcss` | Per-theme color overrides (`@media (theme: name)`) |
 | `svg/` | Shared SVG assets (pin, filter, bin, copy icons) |
+| `rml_tooltip_layer/` | Shared global tooltip overlay widget (always enabled). API: `WG['rml_tooltip'].Show(text, x, y[, title])` / `.Hide()` |
 
 ## Reference Widgets
 
-**Primary references** (learn patterns here first):
-- **rml_starter** — tutorial widget demonstrating all the core patterns: tabs, data binding, collapse, reload, debug. Start here when learning the framework.
-- **rml_style_guide** — interactive component library showing every CCG variant and utility class. The fastest way to see what's available.
+**Start here**:
+- **`rml_starter/generate-widget.sh`** — run it to scaffold a new widget. Its output *is* the canonical pattern (block layout, utility classes, gated debug, no per-frame polling). Copy generated widgets, not legacy ones.
+- **rml_style_guide** — interactive library of every utility class and component; the fastest way to see what's available. (Also shows legacy CCG variants.)
+- **rml_starter** — tutorial widget demonstrating core data-binding patterns: tabs, collapse, reload, debug.
 
 **Production examples**:
-- **widget_controller** — non-trivial production widget managing all widgets (pinning, filtering, toggling).
-- **gui_options_rml** — active work-in-progress; the canonical reference for the block-layout performance patterns described below.
+- **gui_options_rml** — the canonical reference for the block-layout performance patterns described below.
+- **rml_tooltip_layer** — shared tooltip overlay, always enabled. Don't build your own hover tooltips — call `WG['rml_tooltip'].Show(text, x, y[, title])` / `.Hide()` (see the shared-elements performance rule).
 
 ## Performance in a Game Context
 
@@ -435,6 +481,8 @@ RmlUi layout runs on the engine's render thread. Every element added to the DOM 
 
 This applies to any pattern where information varies per-item but only one is visible at a time (tooltips, detail panels, previews). Updating a model string is far cheaper than maintaining N hidden elements with CSS hover rules.
 
+**For tooltips, don't even build the shared element — one already exists.** The always-enabled `rml_tooltip_layer` widget provides a single global overlay. From any widget, on hover call `WG['rml_tooltip'].Show(text, springX, springY)` and on mouse-out call `WG['rml_tooltip'].Hide()` (pass an optional 4th `title` argument for a titled tooltip). This is the canonical, perf-correct way to do tooltips in BAR RML — see `rml_style_guide` for the hover→`Show` / mouseout→`Hide` pattern. Never place per-row tooltip elements inside a `data-for`.
+
 ### Prefer `display: block` — avoid flex wherever possible
 
 Block layout is **single-pass**: children flow top-to-bottom, each sized independently, the parent never measures children to know their positions. Flex layout — especially `flex-direction: column` with content-sized children — is **multi-pass**, and nested flex-column compounds exponentially (a 4-level deep content-sized flex hierarchy can trigger 16+ layout passes per frame). In a game UI at 60+ FPS this is directly felt as input lag and frame drops.
@@ -460,7 +508,7 @@ Block layout is **single-pass**: children flow top-to-bottom, each sized indepen
 ```
 
 **The only cases where flex is justified:**
-1. A container that needs a child to fill remaining space via `flex: 1` (e.g., a scroll area inside a fixed-height widget). The top-level `#widget-container` pattern earlier in this doc is one such case.
+1. A container that needs a child to fill remaining space via `flex: 1` (e.g., a scroll area that must consume the leftover height inside a fixed-height widget).
 2. Horizontal column splits using `flex-direction: row` with `flex: <number>` children. The children themselves must be `display: block` — never nest flex-column inside flex-column.
 
 **When you do use flex, these rules still apply:**
@@ -487,18 +535,21 @@ Full rules, the ideal layout hierarchy, and the options widget case study: conte
 - Default to `display: block`; only use flex for the two cases above (fill-remaining-space and horizontal column splits)
 - Hard-code heights on any element that appears repeatedly (list rows, cards) — skip content measurement
 
-## Direct DOM Manipulation
+## Direct DOM Manipulation (escape hatch — see "The model is king")
 
-For performance-critical cases (animations, frequent updates), you can bypass data binding:
+DOM manipulation is **not a normal tool here.** It is the escape hatch defined at the top of this document — allowed only for the three sanctioned cases (documented data-binding bug, SVG injection, measured perf hot path) and only with a `-- rml-dom-escape: <reason>` marker on or directly above the call.
+
+When it is genuinely warranted, the API is:
 
 ```lua
+-- rml-dom-escape: <one-line technical reason matching a sanctioned case>
 local element = document:GetElementById("my-element")
-element:SetAttribute("style", "width: 50%")
 element:SetClass("active", true)
-element.inner_rml = "new content"
 ```
 
-Use data binding by default; only use direct DOM manipulation when data binding causes performance issues.
+Before writing any of this, ask: *can a model field plus data binding express this?* It almost always can — and then you must do that instead. Reaching for the DOM to drive ordinary UI state is the most common way RML widgets in this codebase go wrong.
+
+> Note: ~250 such call sites exist today. The bulk is `svg_test` and other SVG-driven code — that is the *sanctioned, permanent* SVG-injection case (RmlUi can't data-bind SVG), so it should carry a `-- rml-dom-escape: SVG injection` marker, **not** be migrated. The remainder is a known baseline, not a license to add more. New and changed code follows the rule above.
 
 ## Decoration Patterns
 
@@ -520,7 +571,7 @@ visual decoration (tapers, chamfers, diagonal edges, notches):
 3. **Hybrid SVG + overhang clip** — SVG shape sized to its intended
    visible dimensions, positioned with small negative offsets so the
    parent clips the viewBox boundary cleanly. Sub-pixel edge cleanup
-   trick, niche. Reference: `widget_controller.rcss:72-87`.
+   trick, niche. In-repo example: `svg_test.lua` → `buildAngleDecoratorSVG`.
 
 **Trade-off in one line**: pick Approach 2 when the angle must stay
 stable across variable container sizes; pick Approach 1 when you need
