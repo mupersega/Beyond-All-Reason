@@ -51,7 +51,7 @@
 <body id="rml_toggle_test-widget" class="widget-shadow rounded-lg">
     <div id="widget-container" data-model="rml_toggle_test_model">
 
-        <div data-attr-class="ccg.sheet.modal.title + ' flex items-center justify-between relative min-h-3'">
+        <div class="text-upper text-xl font-bold bg-darkest-semi-alpha p-3 bg-gradient-darker-alpha text-outline-darkest-lg border-bottom border-darkest flex items-center justify-between relative min-h-3">
             <span class="z-50 pe-none text-lg pl-2 text-outline-darkest-xl font-bold">
                 Options Prototype
             </span>

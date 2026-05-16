@@ -43,12 +43,12 @@
 			</div>
 		</div>
 
-		<!-- Main content area: full-height. Uses ccg.sheet.general.container
-		     for hazards-135 + bg-darkest treatment. Header section carries
-		     the "Changelog" h1 + active-month h3 subheading + drag handle;
-		     body section below holds the actual entries. Pattern mirrors
-		     rml_starter's welcome tab (rml_starter.rml:60-80). -->
-		<div data-attr-class="ccg.sheet.general.container + ' main-pane'">
+		<!-- Main content area: full-height. hazards-135 + bg-darkest panel
+		     treatment (was ccg.sheet.general.container — now flat utilities,
+		     since CCG groups are flat with no sub-components). Header section
+		     carries the "Changelog" h1 + active-month h3 subheading + drag
+		     handle; body section below holds the actual entries. -->
+		<div class="hazards-135 bg-darkest main-pane">
 			<div data-attr-class="ccg.card.general + ' main-header'">
 				<h1 data-attr-class="ccg.heading.h1 + ' main-heading pe-none'">{{titleText}}</h1>
 				<span class="divider-horizontal-primary w-40 pe-none"></span>

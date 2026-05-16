@@ -375,6 +375,11 @@ local function initModel()
         my = {
             codeBlock = "flex flex-col p-3 bg-darker rounded border border-dark-alpha code-green text-sm",
             tabsNavigationStyles = "font-bold bg-darkest-semi-alpha bg-gradient-darker-alpha radial-focus-start text-outline-darkest-lg border-bottom border-darkest",
+            -- Flat replacements for the removed nested ccg.sheet.* group
+            -- (CCG groups are flat now — no sub-components; layout via utilities).
+            sheet = "hazards-135 bg-darkest",
+            sheetTitle = "text-upper hazards-construction-textured text-xl font-bold bg-warning p-3 text-outline-darkest-lg border-bottom border-warning-alpha flex items-center justify-between",
+            sheetContent = "p-4",
         },
 
         -- Data binding demo variables

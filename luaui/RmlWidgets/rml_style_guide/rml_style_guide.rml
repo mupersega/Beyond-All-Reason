@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="rml_style_guide.rcss" type="text/rcss" />
 </head>
 <body id="rml_style_guide-widget" class="widget-shadow rounded-lg">
-    <div id="widget-container" data-model="rml_style_guide_model" data-attr-class="ccg.sheet.general.container">
+    <div id="widget-container" data-model="rml_style_guide_model" class="hazards-135 bg-darkest">
         <!--
             There is an issue in RMLUI where a click event is not registered if the element triggering mousedown is not the same as the one triggering mouseup.
             The hacky solution is to add pointer-events: none to all child elements of the clickable container. This way the click event always registers on the parent.
@@ -42,7 +42,7 @@
                 <span data-class-expanded="expanded" class="chevron pe-none"></span>
             </button>
         </div>
-        <div data-if="expanded" data-attr-class="ccg.sheet.general.title + ' flex flex-col justify-between items-center relative min-h-14'">
+        <div data-if="expanded" class="text-upper text-2xl font-bold bg-darkest-semi-alpha p-3 bg-gradient-darker-alpha radial-focus-start text-outline-darkest-lg border-bottom border-darkest flex flex-col justify-between items-center relative min-h-14">
             <span>
                 RMLUI STYLE GUIDE
             </span>

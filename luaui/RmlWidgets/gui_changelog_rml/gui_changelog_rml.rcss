@@ -159,10 +159,10 @@
 
 /* ===========================================
 	MAIN PANE
-	Uses ccg.sheet.general.container for hazards-135 + bg-darkest. Flex
-	column layout: header on top (with "Changelog" h1 + month subheading
-	+ drag handle), entries body fills the rest. Mirrors rml_starter's
-	welcome tab structure (rml_starter.rml:60-80).
+	hazards-135 + bg-darkest panel treatment (flat utilities; the old
+	nested ccg.sheet group was removed). Flex column layout: header on
+	top (with "Changelog" h1 + month subheading + drag handle), entries
+	body fills the rest.
 =========================================== */
 
 .main-pane {

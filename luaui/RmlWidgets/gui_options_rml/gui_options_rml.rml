@@ -41,7 +41,7 @@
              child of the title bar so it anchors to the title bar's
              position: relative (from svg-decorator-host) and drops down
              below it via top: 100% in .search-results. -->
-        <div data-attr-class="ccg.sheet.modal.title + ' flex items-center justify-between relative min-h-7 svg-decorator-host'">
+        <div class="text-upper text-xl font-bold bg-darkest-semi-alpha p-3 bg-gradient-darker-alpha text-outline-darkest-lg border-bottom border-darkest flex items-center justify-between relative min-h-7 svg-decorator-host">
             <div class="title-bar-right-wedge">
                 <div class="title-bar-right-wedge-angle bg-darkest-alpha"></div>
             </div>
@@ -61,8 +61,8 @@
                     <input id="options-search-input" type="text"
                         class="flex-1 p-1 text-sm"
                         data-value="searchQuery"
-                        data-event-change="onSearchChange()"
-                        data-event-keydown="onSearchKeyDown(ev.key_identifier)"></input>
+                        data-event-keydown="onSearchKeyDown(ev.key_identifier)"
+                        data-event-keyup="onSearchInput(ev.key_identifier)"></input>
                 </form>
                 <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()">
                     <span>reload</span>

@@ -117,10 +117,10 @@ local function initModel()
         -- Gates the reload/debug buttons so end users never see them.
         rmlDebugControls = false,
 
-        -- Bundle repeated utility-class combinations here, then use
-        -- my.<name> in the .rml. Prefer utility classes over CCG.
+        -- Bundle repeated *layout* utility combos here, then use
+        -- my.<name> in the .rml. (Components use ccg.* directly.)
         my = {
-            -- card = "bg-darker rounded p-3 border border-dark",
+            -- rowLayout = "flex items-center justify-between p-2",
         },
 
         handleConfirm = function()
@@ -153,8 +153,7 @@ function widget:Initialize()
         modelName = MODEL_NAME,
         rmlPath = RML_PATH,
         initModel = initModel(),
-        -- CCG is intentionally not enabled: new widgets style with raw
-        -- utility classes. Enable the rml_style_guide widget to browse them.
+        useCommonClassGroups = true,  -- ccg.* for components (see ../CLAUDE.md)
     })
     if not result then
         return false
@@ -201,7 +200,7 @@ end
 EOF
 
 # ---------------------------------------------------------------------------
-# RML — block layout, utility classes, gated debug controls
+# RML — block layout, utilities by default (CCG for heavy repeats), gated debug
 # ---------------------------------------------------------------------------
 cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << EOF
 <rml>
@@ -224,7 +223,11 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << EOF
     <!-- Single wrapper with data-model. Block layout: children stack
          top-to-bottom in one layout pass. Never use flex-direction:
          column here — it is the #1 layout-perf killer in this engine. -->
-    <div id="widget-container" data-model="${WIDGET_NAME}_model" class="bg-darker rounded-lg">
+    <!-- Container uses ccg.panel.general — a heavy, frequently-repeated
+         aggregation, which is exactly what CCG is for. Everything else
+         below is plain utility classes (the default). Buttons use
+         ccg.button.* for the same reason. -->
+    <div id="widget-container" data-model="${WIDGET_NAME}_model" data-attr-class="ccg.panel.general">
 
         <!-- Dev-only: gated behind the RML Debug Controls option -->
         <div class="debug-controls" data-if="rmlDebugControls">
@@ -232,25 +235,25 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << EOF
             <button class="debug-btn text-warning px-1" onclick="widget:ToggleDebugger()" title="Toggle Debugger">debug</button>
         </div>
 
-        <div class="starter-title text-primary font-bold">${WIDGET_NAME}</div>
+        <div class="starter-title text-lg font-bold text-primary">${WIDGET_NAME}</div>
 
         <div class="starter-section">
-            <h1 class="text-light font-bold">{{message}}</h1>
-            <p class="text-medium text-sm">A generated RML widget: block layout, utility classes, no per-frame polling.</p>
+            <h1 class="text-xl font-bold text-light">{{message}}</h1>
+            <p class="text-sm text-medium">A generated RML widget: utilities by default, CCG for heavy repeats, block layout, no per-frame polling.</p>
         </div>
 
         <div class="starter-section">
-            <p class="text-medium text-sm">Status: <span class="text-light">{{status}}</span></p>
+            <p class="text-sm text-medium">Status: <span class="text-sm font-bold text-light">{{status}}</span></p>
         </div>
 
         <div class="starter-hint bg-warning-alpha rounded">
-            <p class="text-warning text-sm font-bold">Tip</p>
-            <p class="text-medium text-sm">Enable the <strong>rml_style_guide</strong> widget (press F11, search "style guide") to browse every utility class and component.</p>
+            <p class="text-sm font-bold text-warning">Tip</p>
+            <p class="text-sm text-medium">Enable the <strong>rml_style_guide</strong> widget (press F11, search "style guide") to browse every utility class and CCG group.</p>
         </div>
 
         <div class="starter-actions flex justify-end gap-2">
-            <button class="px-2 py-1 rounded text-light bg-danger bg-danger-hover cursor-pointer" data-event-click="handleCancel()">cancel</button>
-            <button class="px-2 py-1 rounded text-light bg-success bg-success-hover cursor-pointer" data-event-click="handleConfirm()">confirm</button>
+            <button data-attr-class="ccg.button.danger + ' px-2 py-1'" data-event-click="handleCancel()">cancel</button>
+            <button data-attr-class="ccg.button.success + ' px-2 py-1'" data-event-click="handleConfirm()">confirm</button>
         </div>
     </div>
 </body>
@@ -258,7 +261,7 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << EOF
 EOF
 
 # ---------------------------------------------------------------------------
-# RCSS — block-first; component visuals defined locally (no CCG dependency)
+# RCSS — block-first; layout only (colours via utilities / CCG in .rml)
 # ---------------------------------------------------------------------------
 cat > "$WIDGET_DIR/${WIDGET_NAME}.rcss" << EOF
 /* ${WIDGET_NAME} widget styles */
@@ -290,9 +293,8 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rcss" << EOF
     margin-bottom: 10dp;
 }
 
-/* Colors come from utility classes (bg-warning-alpha / bg-danger /
-   bg-success) in the .rml. Never hard-code colors in widget RCSS —
-   this RCSS is layout only. */
+/* Colours come from utility classes (and CCG for the panel/buttons) in
+   the .rml. Never hard-code colours in widget RCSS — layout only. */
 .starter-hint {
     margin-bottom: 10dp;
     padding: 8dp;
@@ -331,7 +333,7 @@ echo "  $WIDGET_DIR/${WIDGET_NAME}.rcss"
 echo ""
 echo "Defaults baked in (the canonical patterns — keep them):"
 echo "  - Block layout, no nested flex-column"
-echo "  - Raw utility classes for styling (no CCG)"
+echo "  - Utility classes by default; CCG (ccg.*) only for heavy repeats (panel, buttons)"
 echo "  - Reload/debug buttons gated behind the RML Debug Controls dev option"
 echo "  - widget:Update only syncs on change (no per-frame polling)"
 echo ""

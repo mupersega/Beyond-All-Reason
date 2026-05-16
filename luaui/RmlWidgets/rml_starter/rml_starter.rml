@@ -55,7 +55,7 @@
             </div>
         </div>
         <!-- Main content area with tab panels -->
-        <div data-visible="expanded" data-attr-class="ccg.sheet.general.container + ' flex w-full'">
+        <div data-visible="expanded" data-attr-class="my.sheet + ' flex w-full'">
             <!-- Main content area -->
             <div id="landing" data-if="activeTab == 'landing'">
                 <div class="flex flex-col items-center justify-center p-6 h-full gap-3 text-center">
@@ -83,14 +83,14 @@
             </div>
 
             <!-- Getting Started Tab Panel -->
-            <div id="getting-started" data-attr-class="ccg.sheet.general.container + ' clip overflow-scroll relative'" data-if="activeTab == 'getting-started'">
-                <div data-attr-class="ccg.sheet.construction.title + ' flex flex-col items-center fixed top-0 z-1 w-full'">
+            <div id="getting-started" data-attr-class="my.sheet + ' clip overflow-scroll relative'" data-if="activeTab == 'getting-started'">
+                <div data-attr-class="my.sheetTitle + ' flex flex-col items-center fixed top-0 z-1 w-full'">
                     <h1 data-attr-class="ccg.heading.h1">Getting Started</h1>
                 </div>
                 <div class="fixed-header-spacer h-24">you can't see me</div>
                 <p data-attr-class="ccg.text.body + ' px-6'">Essential information before creating your first RmlUi widget, for the sake of the following example lets call it <span class="font-bold">my_widget.</span></p>
                 
-                <div data-attr-class="ccg.sheet.general.content + ' flex flex-col gap-3'">
+                <div data-attr-class="my.sheetContent + ' flex flex-col gap-3'">
                     <div data-attr-class="ccg.panel.general + ' p-4 box-shadow-none'">
                         <h2 data-attr-class="ccg.heading.h2">Structure</h2>
                         <div class="pl-2">
@@ -198,13 +198,13 @@
             </div>
 
             <!-- Base Widget Conventions Tab Panel -->
-            <div id="base-widget-conventions" data-attr-class="ccg.sheet.general.container + ' clip overflow-scroll relative'" data-if="activeTab == 'base-widget-conventions'">
-                <div data-attr-class="ccg.sheet.construction.title + ' flex flex-col items-center fixed top-0 z-1 w-full'">
+            <div id="base-widget-conventions" data-attr-class="my.sheet + ' clip overflow-scroll relative'" data-if="activeTab == 'base-widget-conventions'">
+                <div data-attr-class="my.sheetTitle + ' flex flex-col items-center fixed top-0 z-1 w-full'">
                     <h1 data-attr-class="ccg.heading.h1">Base Widget Conventions</h1>
                 </div>
                 <div class="fixed-header-spacer h-24">you can't see me</div>
                 <p data-attr-class="ccg.text.body + ' px-6'">Fundamental concepts that form the basis of an RmlUi widget. Understanding these will help you create more effective and maintainable widgets.</p>
-                <div data-attr-class="ccg.sheet.general.content + ' flex flex-col gap-3'">
+                <div data-attr-class="my.sheetContent + ' flex flex-col gap-3'">
                     <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h2 data-attr-class="ccg.heading.h2">Logic Layer (.lua)</h2>
                         <p data-attr-class="ccg.text.body">The core of your widget's logic is handled in the <span data-attr-class="ccg.badge.info">.lua</span> file. It must contain the following functions:</p>
@@ -423,13 +423,13 @@
                 </div>
             </div>
             <!-- Widget Positioning Tab Panel -->
-            <div id="widget-positioning" data-attr-class="ccg.sheet.general.container + ' clip overflow-scroll relative'" data-if="activeTab == 'widget-positioning'">
-                <div data-attr-class="ccg.sheet.construction.title + ' flex flex-col items-center fixed top-0 z-50 w-full'">
+            <div id="widget-positioning" data-attr-class="my.sheet + ' clip overflow-scroll relative'" data-if="activeTab == 'widget-positioning'">
+                <div data-attr-class="my.sheetTitle + ' flex flex-col items-center fixed top-0 z-50 w-full'">
                     <h1 data-attr-class="ccg.heading.h1">Widget Positioning</h1>
                 </div>
                 <div class="fixed-header-spacer h-24">you can't see me</div>
                 <p data-attr-class="ccg.text.body + ' px-6'">Understanding how widgets are positioned within the RmlUi 'shared' context is essential for proper widget placement and sizing.</p>
-                <div data-attr-class="ccg.sheet.general.content + ' flex flex-col gap-3'">
+                <div data-attr-class="my.sheetContent + ' flex flex-col gap-3'">
                     <div data-attr-class="ccg.panel.general + ' p-4 box-shadow-none'">
                         <h2 data-attr-class="ccg.heading.h2">CSS Positioning</h2>
                         
@@ -651,14 +651,14 @@
             </div>
             
             <!-- Data Binding Tab Panel -->
-            <div id="data-binding" data-attr-class="ccg.sheet.general.container + ' clip overflow-scroll relative'" data-if="activeTab == 'data-binding'">
-                <div data-attr-class="ccg.sheet.construction.title + ' flex flex-col items-center fixed top-0 z-1 w-full'">
+            <div id="data-binding" data-attr-class="my.sheet + ' clip overflow-scroll relative'" data-if="activeTab == 'data-binding'">
+                <div data-attr-class="my.sheetTitle + ' flex flex-col items-center fixed top-0 z-1 w-full'">
                     <h1 data-attr-class="ccg.heading.h1">Data Binding</h1>
                 </div>
                 <div class="fixed-header-spacer h-24">you can't see me</div>
                 <p data-attr-class="ccg.text.body + ' px-6'">Data binding automatically updates your UI when data changes. Think of it like React or Vue's reactive variables, the UI updates instantly once they are changed and ideally only re-renders those elements affected.</p>
                     
-                <div data-attr-class="ccg.sheet.general.content + ' flex flex-col gap-3'">
+                <div data-attr-class="my.sheetContent + ' flex flex-col gap-3'">
                     <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h3 data-attr-class="ccg.heading.h5">How It Works</h3>
                         <p data-attr-class="ccg.text.body">Modern RML widgets use utilities to set up data models with a clean, standardized approach:</p>
@@ -897,14 +897,14 @@
                 </div>
             </div>
             <!-- Tools Tab Panel -->
-            <div id="tools" data-attr-class="ccg.sheet.general.container + ' clip overflow-scroll relative w-full'" data-if="activeTab == 'tools'">
-                <div data-attr-class="ccg.sheet.construction.title + ' flex flex-col items-center fixed top-0 z-1 w-full'">
+            <div id="tools" data-attr-class="my.sheet + ' clip overflow-scroll relative w-full'" data-if="activeTab == 'tools'">
+                <div data-attr-class="my.sheetTitle + ' flex flex-col items-center fixed top-0 z-1 w-full'">
                     <h1 data-attr-class="ccg.heading.h1">Tools</h1>
                 </div>
                 <div class="fixed-header-spacer h-24">you can't see me</div>
                 <p data-attr-class="ccg.text.body + ' px-6'">Development tools and utilities for efficient RML widget creation and styling.</p>
                 
-                <div data-attr-class="ccg.sheet.general.content + ' flex flex-col gap-3'">                
+                <div data-attr-class="my.sheetContent + ' flex flex-col gap-3'">                
                     <div data-attr-class="ccg.panel.general + ' p-4'">
                         <h2 data-attr-class="ccg.heading.h2">Widget Generator Script</h2>
                         <p data-attr-class="ccg.text.body">Use the automated script to quickly scaffold new widgets with modern best practices:</p>
@@ -987,14 +987,14 @@
             </div>
 
             <!-- SVG Tab Panel -->
-            <div id="svg" data-attr-class="ccg.sheet.general.container + ' clip overflow-scroll relative'" data-if="activeTab == 'svg'">
-                <div data-attr-class="ccg.sheet.construction.title + ' flex flex-col items-center fixed top-0 z-1 w-full'">
+            <div id="svg" data-attr-class="my.sheet + ' clip overflow-scroll relative'" data-if="activeTab == 'svg'">
+                <div data-attr-class="my.sheetTitle + ' flex flex-col items-center fixed top-0 z-1 w-full'">
                     <h1 data-attr-class="ccg.heading.h1">SVG</h1>
                 </div>
                 <div class="fixed-header-spacer h-24">you can't see me</div>
                 <p data-attr-class="ccg.text.body + ' px-6'">Dynamic SVG generation and injection using EzSVG and SetAttribute.</p>
 
-                <div data-attr-class="ccg.sheet.general.content + ' flex flex-col gap-3'">
+                <div data-attr-class="my.sheetContent + ' flex flex-col gap-3'">
 
                     <!-- Pattern overview -->
                     <div data-attr-class="ccg.panel.general + ' p-4'">

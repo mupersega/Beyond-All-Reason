@@ -38,13 +38,15 @@ luaui/RmlWidgets/widget_name/
 
 A generator script exists at `rml_starter/generate-widget.sh --name widget_name` that scaffolds all three files with the canonical patterns. **Use it to start every new widget** — its output already embodies every rule in this document.
 
-## Styling: utility classes first
+## Styling: utility classes by default, CCG for heavy repeats
 
-**New widgets style with raw utility classes only** (`flex`, `p-3`, `bg-darker`, `text-primary`, `rounded`, …) plus widget-specific RCSS for layout. Browse the full set live by enabling the **rml_style_guide** widget (F11 → "style guide").
+**Utility classes are the default tool for everything** — colour, text, spacing, layout, positioning. Reach for them first. Browse them (and the CCG set) live via the **rml_style_guide** widget (F11 → "style guide").
 
-**Common Class Groups (CCG) is legacy.** It is still used by older production widgets (`gui_options_rml`, `rml_style_guide`) and remains functional, but **do not use `ccg.*` or `useCommonClassGroups` in new widgets**. The CCG section below is reference for reading and maintaining those existing widgets — not a pattern to copy.
+**CCG (Common Class Groups) is a small, curated set of shorthands** for the few utility bundles that are (1) used often *and* (2) an aggregation of *many* utilities — so one semantic name removes real repetition. `ccg.button.success` (8+ utilities on every button) earns its place; a would-be group of 2–3 utilities, or one used rarely, does **not** — just write the utilities. CCG is a DRY shorthand, not a parallel "component system" and not the opposite of layout. Enable with `useCommonClassGroups = true` to get `ccg.*` in the model.
 
-**Never hard-code colors** (`rgba()`/hex) in widget RCSS — use the color utility classes. Widget RCSS is for layout only.
+**CCG groups are flat — one semantic name → one class string. No nested sub-components.** `ccg.button.success` is good; a group with a hidden multi-part structure (the old `ccg.sheet.<v>.container/.title/.content/.footer`) is the anti-pattern — it forces an implicit layout contract on the user. `sheet` and `container.text` were removed for exactly this reason. Any new group must be flat `component.variant → string`, and must clear the "frequent AND heavy" bar. For repeated combos *within one widget*, use the model's `my = { … }` bundle instead of adding a global CCG entry.
+
+**Never hard-code colors** (`rgba()`/hex) in widget RCSS — use the color utility classes.
 
 ## Lua Initialization Pattern
 
@@ -99,8 +101,7 @@ function widget:Initialize()
         modelName = MODEL_NAME,
         rmlPath = RML_PATH,
         initModel = initModel(),
-        -- New widgets do NOT enable CCG. (Legacy widgets pass
-        -- useCommonClassGroups = true to inject model.ccg.* — don't copy that.)
+        useCommonClassGroups = true,  -- injects model.ccg.* (heavy-repeat shorthands)
     })
     if not result then return false end
     document = result.document
@@ -254,61 +255,42 @@ Data binding expressions (in `data-if`, `data-for`, `data-attr-*`, `data-event-*
 - **Don't shadow globals with iterator names.** `data-for="tab : tabs"` is fine; `data-for="widget : widgets"` shadows the global `widget`.
 - **`{{` and `}}` are reserved anywhere in RML** — they're always parsed as data bindings, even inside comments or script blocks.
 
-## Common Class Groups (CCG) — LEGACY
+## Common Class Groups (CCG)
 
-> **CCG is legacy. Do not use it in new widgets** — no `ccg.*`, no
-> `useCommonClassGroups`. This section exists so you can read and
-> maintain the existing widgets that still depend on it (`gui_options_rml`,
-> `rml_style_guide`). For new work use utility
-> classes — see "Styling: utility classes first" near the top of this doc.
+CCG is a **curated DRY shorthand** for the few utility bundles that are used often *and* aggregate many utilities (see "Styling: utility classes by default, CCG for heavy repeats" near the top). It is not a component framework and not a default — utilities are the default; CCG just spares you re-typing a heavy, frequently-repeated bundle.
 
-When a legacy widget passes `useCommonClassGroups = true`, all CCG definitions are available in RML as `ccg.component.variant` — predefined bundles of utility classes.
+With `useCommonClassGroups = true`, all CCG definitions are available in RML as `ccg.component.variant` — predefined bundles of utility classes. **Every group is flat** (`component.variant → string`); there are deliberately no nested sub-component groups (that was the `sheet`/`container.text` anti-pattern — removed). The inventory below is intentionally small; new entries must clear the "frequent AND heavy" bar or they don't belong here.
 
 Source: `luaui/Include/rml_utilities/common_class_groups.lua`
 
 ### Component inventory
 
-**text** — success, warning, tooltip, body, info, caption, emphasis, danger
+Intentionally small — every entry is here because it's frequently used *and* a heavy aggregation. Speculative/unused variants were pruned; **do not re-add a variant without a real consumer** (see "Styling" at the top — a CCG must justify its existence).
 
-**themeText** — badge, pill, label, value, caption, highlight, heading, subheading
+**text** — success, warning, tooltip, body, info, caption, description, emphasis, danger
 
-**badge** — primary, success, warning, danger, info, construction, ghost, surface, general
+**themeText** — pill, value, caption, highlight, heading, subheading
 
-**pill** — same variants as badge (uses `rounded-full` instead of `rounded`)
+**badge** — primary, success, warning, info, construction
 
-**circle** — general, primary, success, warning, danger, info, ghost, surface
+**heading** — h1, h2, h3, h4, h5, h6
 
-**heading** — h1, h2, h3, h4, h5, h6, title, subtitle, section
+**button** — general, primary, success, danger, ghost
 
-**button** — general, success, warning, danger, ghost
+**themeButton** — primary, ghost
 
-**themeButton** — primary, ghost, surface, secondary
+**panel** — general, danger, info. Built dynamically from user style-mode options (depth/radius/border/texture); the *result* is still a flat string. Use it for full panel backgrounds; use utilities for simple containers.
 
-**nav** — container
+**toggle** — panel, success, danger, offSuccess, offDanger (segmented toggle component; styles in `components.rcss`)
 
-**panel** — general, primary, construction, danger, info, success, warning
-
-**sheet** (nested: `ccg.sheet.variant.part`) — Each variant has `container`, `title`, `content`, `footer`:
-- general, primary, construction, modal, surface
-
-**toggle** — panel, success, warning, danger, offSuccess, offWarning, offDanger (segmented toggle component; styles in `components.rcss`)
-
-**card** — general, primary, primaryAlpha, light, lightAlpha, dark, accent, accentAlpha, surface, ghost, glass
-
-**container.text** (nested) — main, header, footer
+**card** — general, primary, surface
 
 ### Usage in RML
 
 ```rml
-<!-- Direct -->
+<!-- Component via CCG -->
 <div data-attr-class="ccg.panel.general + ' p-3'">...</div>
-
-<!-- Sheet (nested) -->
-<div data-attr-class="ccg.sheet.modal.container + ' flex flex-col'">
-    <div data-attr-class="ccg.sheet.modal.title">Title</div>
-    <div data-attr-class="ccg.sheet.modal.content">Content</div>
-    <div data-attr-class="ccg.sheet.modal.footer">Footer</div>
-</div>
+<button data-attr-class="ccg.button.success + ' px-3 py-1'">Confirm</button>
 
 <!-- Conditional -->
 <span data-attr-class="(ok ? ccg.text.success : ccg.text.danger)">{{status}}</span>
@@ -447,8 +429,8 @@ Current theme is stored in Spring config: `Spring.GetConfigString("rml_theme", "
 ## Reference Widgets
 
 **Start here**:
-- **`rml_starter/generate-widget.sh`** — run it to scaffold a new widget. Its output *is* the canonical pattern (block layout, utility classes, gated debug, no per-frame polling). Copy generated widgets, not legacy ones.
-- **rml_style_guide** — interactive library of every utility class and component; the fastest way to see what's available. (Also shows legacy CCG variants.)
+- **`rml_starter/generate-widget.sh`** — run it to scaffold a new widget. Its output *is* the canonical pattern (block layout, utility classes by default + CCG only for heavy repeats, gated debug, no per-frame polling).
+- **rml_style_guide** — interactive library of every CCG component and utility class; the fastest way to see what's available.
 - **rml_starter** — tutorial widget demonstrating core data-binding patterns: tabs, collapse, reload, debug.
 
 **Production examples**:
