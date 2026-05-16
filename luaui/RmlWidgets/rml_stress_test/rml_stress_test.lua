@@ -153,12 +153,11 @@ local WIDGET_SUITE_SCENARIOS = {}
 -- extracted from each widget's .lua. `id` is a short identifier used
 -- in data-model keys and result spans.
 local WIDGET_TESTS = {
-    { id = "wc",     label = "widget_controller",   name = "widget_controller" },
     { id = "opts",   label = "Options RML",         name = "Options RML" },
     { id = "starter",label = "RML Starter",         name = "RML Starter" },
     { id = "style",  label = "rml_style_guide",     name = "rml_style_guide" },
     { id = "chg",    label = "Changelog (RML)",     name = "Changelog (RML)" },
-    { id = "cons",   label = "Console (RML)",       name = "Console (RML)" },
+    { id = "log",    label = "Log Viewer (RML)",    name = "Log Viewer (RML)" },
     { id = "tool",   label = "rml_tooltip_layer",   name = "rml_tooltip_layer" },
     { id = "svg",    label = "SVG Test",            name = "SVG Test" },
     { id = "quick",  label = "Quick Start UI",      name = "Quick Start UI" },
@@ -199,9 +198,9 @@ local function unloadStressTestDocuments()
 end
 
 -- Force all documents in the stressTest context to be visible. Many BAR
--- widgets start hidden (e.g. widget_controller calls document:Hide() at
--- the end of its Initialize, shown only on F11). For measurement we want
--- to see them actually render, so override after enable.
+-- widgets start hidden (calling document:Hide() at the end of their
+-- Initialize, shown only on demand). For measurement we want to see them
+-- actually render, so override after enable.
 local function showAllStressTestDocuments()
     local ctx = RmlUi.GetContext(STRESS_CONTEXT_NAME)
     if not ctx then return end
@@ -803,8 +802,7 @@ local function setStageVisible(visible)
 end
 
 -- BAR's widgetHandler uses ToggleWidget (no separate Enable/Disable).
--- State check via `knownWidgets[name].active` mirrors the pattern
--- widget_controller uses internally.
+-- State check via `knownWidgets[name].active`.
 local function isWidgetActive(widgetName)
     if not widgetHandler.knownWidgets then return false end
     local info = widgetHandler.knownWidgets[widgetName]
@@ -831,13 +829,6 @@ local function mountWidgetTest(widgetName)
         Spring.Echo("rml_stress_test: widget '" .. tostring(widgetName)
                     .. "' already active in shared context — measuring as-is, won't disable after test")
     else
-        -- widget_controller (RML) has an opt-in guard in its Initialize.
-        -- Flip the flag on so the guard passes for this test; flag is
-        -- reset in disableWidgetsEnabledByTest after the widget is gone.
-        if widgetName == "widget_controller" then
-            Spring.SetConfigInt("rml_widget_controller_enabled", 1)
-        end
-
         -- Redirect the target widget's initializeRmlWidget call to our
         -- stressTest context. Clear the override immediately after the
         -- toggle returns so no unrelated widget init gets caught in the
@@ -900,10 +891,6 @@ local function mountWidgetStack(which)
         local item = WIDGET_TESTS[i]
         local widgetName = item.name
         if not isWidgetActive(widgetName) then
-            -- See mountWidgetTest: flip opt-in for widget_controller.
-            if widgetName == "widget_controller" then
-                Spring.SetConfigInt("rml_widget_controller_enabled", 1)
-            end
             WG.rml_testContextOverride = STRESS_CONTEXT_NAME
             local ok = pcall(function() widgetHandler:ToggleWidget(widgetName) end)
             WG.rml_testContextOverride = nil
@@ -943,9 +930,6 @@ disableWidgetsEnabledByTest = function()
     -- behind in the stressTest context (shouldn't be any after a clean
     -- widget:Shutdown, but costs nothing to verify).
     unloadStressTestDocuments()
-    -- Reset the RML widget_controller opt-in flag so F11 stays with the
-    -- classic Widget Selector once the test session ends.
-    Spring.SetConfigInt("rml_widget_controller_enabled", 0)
     tracy.ZoneEnd()
 end
 

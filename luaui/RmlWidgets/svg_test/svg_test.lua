@@ -8,10 +8,11 @@ local EzSVG = VFS.Include("luaui/Include/rml_utilities/EzSVG.lua")
 local svgShapes = VFS.Include("luaui/Include/rml_utilities/svg_shapes.lua")
 
 -- Title-bar angle decorator: a small tapered dark block that sits behind the
--- debug-controls buttons at top-right of the header. Same pattern used by
--- widget_controller — SVG for crisp angled edges, element size matches the
--- visible content, slight negative top/right so stroke pixels at the viewBox
--- boundary get clipped by the parent edge instead of bleeding through.
+-- debug-controls buttons at top-right of the header. Hybrid SVG + overhang
+-- clip (decoration Approach 3): SVG for crisp angled edges, element size
+-- matches the visible content, slight negative top/right so stroke pixels at
+-- the viewBox boundary get clipped by the parent edge instead of bleeding
+-- through.
 local function buildAngleDecoratorSVG()
 	return svgShapes.taper({
 		side = "left",

@@ -19,8 +19,7 @@
 	<div id="widget-container" data-model="gui_changelog_rml_model">
 
 		<!-- Debug controls (reload/debug) — top-right absolute overlay on the
-		     widget container, gated behind the "RML Debug Controls" dev flag.
-		     Pattern from widget_controller.rml:69. -->
+		     widget container, gated behind the "RML Debug Controls" dev flag. -->
 		<div data-if="rmlDebugControls" class="debug-controls absolute top right pr-2 pt-2 z-50">
 			<button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()" title="Reload Widget">
 				<span class="pe-none">reload</span>

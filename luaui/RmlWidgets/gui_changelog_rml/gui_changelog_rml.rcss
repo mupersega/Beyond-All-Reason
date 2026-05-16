@@ -34,8 +34,7 @@
 
 /* Debug controls (reload/debug buttons) — absolute top-right overlay,
    gated behind the RML Debug Controls dev flag via `data-if="rmlDebugControls"`.
-   Pattern from widget_controller.rcss:37-46. z-50 via utility class keeps
-   them above the main pane content. */
+   z-50 via utility class keeps them above the main pane content. */
 .debug-controls {
 	display: flex;
 	gap: 4dp;
