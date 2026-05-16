@@ -112,6 +112,7 @@ local function initModel()
         message = "Hello from ${WIDGET_NAME}!",
         status = "Ready",
         debugMode = false,
+        reloadRequested = false,
 
         -- Toggled by the "RML Debug Controls" option (Options > Dev > Debug).
         -- Gates the reload/debug buttons so end users never see them.
@@ -131,6 +132,19 @@ local function initModel()
         handleCancel = function()
             dm_handle.status = "Cancelled"
             dm_handle.message = "Action cancelled"
+        end,
+
+        -- Dev-only, gated by data-if="rmlDebugControls" in the .rml.
+        -- requestReload only sets a flag — widget:Update performs the
+        -- actual teardown, so the model is not destroyed from inside
+        -- its own data-event dispatch (that would be a use-after-free).
+        requestReload = function()
+            dm_handle.reloadRequested = true
+        end,
+
+        toggleDebugger = function()
+            dm_handle.debugMode = not dm_handle.debugMode
+            RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
         end,
     }
 end
@@ -172,29 +186,23 @@ function widget:Shutdown()
     dm_handle = nil
 end
 
--- Only syncs the dev flag, and only when it changes. Do NOT poll game
--- state here every frame — express UI state with data binding instead.
+-- Update does two things only: the deferred reload, and a change-gated
+-- sync of the dev flag. Do NOT poll game state here — express UI state
+-- with data binding instead.
 function widget:Update()
-    if dm_handle then
-        local rmlDebug = utils.isRmlDebugEnabled()
-        if rmlDebug ~= lastRmlDebug then
-            lastRmlDebug = rmlDebug
-            dm_handle.rmlDebugControls = rmlDebug
-        end
+    if not dm_handle then return end
+    if dm_handle.reloadRequested then
+        -- Deferred reload: tear down + rebuild OUTSIDE the data-event
+        -- dispatch that requested it. Calling Shutdown from inside a
+        -- model fn destroys the model mid-dispatch (use-after-free).
+        widget:Shutdown()
+        widget:Initialize()
+        return
     end
-end
-
--- Dev helpers. The Lua methods stay callable from anywhere; the UI
--- buttons that invoke them are gated by data-if="rmlDebugControls".
-function widget:Reload()
-    widget:Shutdown()
-    widget:Initialize()
-end
-
-function widget:ToggleDebugger()
-    if dm_handle then
-        dm_handle.debugMode = not dm_handle.debugMode
-        RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
+    local rmlDebug = utils.isRmlDebugEnabled()
+    if rmlDebug ~= lastRmlDebug then
+        lastRmlDebug = rmlDebug
+        dm_handle.rmlDebugControls = rmlDebug
     end
 end
 EOF
@@ -231,8 +239,8 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << EOF
 
         <!-- Dev-only: gated behind the RML Debug Controls option -->
         <div class="debug-controls" data-if="rmlDebugControls">
-            <button class="debug-btn text-warning px-1" onclick="widget:Reload()" title="Reload Widget">reload</button>
-            <button class="debug-btn text-warning px-1" onclick="widget:ToggleDebugger()" title="Toggle Debugger">debug</button>
+            <button class="debug-btn text-warning px-1" data-event-click="requestReload()" title="Reload Widget">reload</button>
+            <button class="debug-btn text-warning px-1" data-event-click="toggleDebugger()" title="Toggle Debugger">debug</button>
         </div>
 
         <div class="starter-title text-lg font-bold text-primary">${WIDGET_NAME}</div>

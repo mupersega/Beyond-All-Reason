@@ -140,56 +140,61 @@ function widget:Shutdown()
 end
 
 function widget:Update()
-    if dm_handle then
-        -- Update dynamic model properties here
+    if not dm_handle then return end
+    if dm_handle.reloadRequested then
+        -- Deferred reload: tear down + rebuild OUTSIDE the data-event
+        -- dispatch that requested it. Calling Shutdown from inside a
+        -- model fn destroys the model mid-dispatch (use-after-free).
+        widget:Shutdown()
+        widget:Initialize()
+        return
+    end
+    -- Change-gated dev-flag sync (see gating section). Never poll game
+    -- state here every frame — express UI state with data binding.
+    local rmlDebug = utils.isRmlDebugEnabled()
+    if rmlDebug ~= lastRmlDebug then
+        lastRmlDebug = rmlDebug
+        dm_handle.rmlDebugControls = rmlDebug
     end
 end
-
--- Dev helpers (call from RML via onclick="widget:Reload()").
--- The Lua methods are always callable. The UI buttons that invoke them
--- should be gated behind the "RML Debug Controls" dev option — poll
--- utils.isRmlDebugEnabled() in widget:Update, push to dm_handle.rmlDebugControls,
--- then wrap the buttons with data-if="rmlDebugControls" in the .rml. See the
--- "Gating reload/debug buttons behind the dev flag" section below.
-function widget:Reload()
-    widget:Shutdown()
-    widget:Initialize()
-end
-
-function widget:ToggleDebugger()
-    if dm_handle then
-        dm_handle.debugMode = not dm_handle.debugMode
-        RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
-    end
-end
+-- Reload/debug are MODEL functions (requestReload / toggleDebugger in
+-- initModel) invoked via data-event-click — NOT widget: methods. See
+-- "The model is king" and the gating section below.
 ```
 
 ### Gating reload/debug buttons behind the dev flag
 
-Reload and debug buttons in RML widgets should not be visible to end users.
-They're gated behind the **RML Debug Controls** option in
-**Options > Dev > Debug** (Spring config key `RMLDebugControls`). Add gating
-to any widget that exposes these buttons:
+Reload/debug buttons must not be visible to end users. They are gated behind the **RML Debug Controls** option (**Options > Dev > Debug**, Spring config key `RMLDebugControls`). And — per "The model is king" — they are **model functions invoked via `data-event-*`, never `widget:` methods on inline handlers**.
 
-1. Add `rmlDebugControls = false` to the widget's model (in `initModel()`).
-2. Add a file-local `lastRmlDebug = nil` upvalue to cache the last-seen value.
-3. In `widget:Update()`, poll and sync only on change:
+1. In `initModel()` add the flag and the two model functions:
    ```lua
-   if dm_handle then
-       local rmlDebug = utils.isRmlDebugEnabled()
-       if rmlDebug ~= lastRmlDebug then
-           lastRmlDebug = rmlDebug
-           dm_handle.rmlDebugControls = rmlDebug
-       end
-   end
-   ```
-4. In the `.rml`, wrap the reload/debug buttons (or their container) with
-   `data-if="rmlDebugControls"`. If the container also holds non-dev controls
-   (e.g., an expand/collapse chevron), apply `data-if` to the individual
-   reload and debug buttons instead — never hide the whole wrapper.
+   reloadRequested  = false,
+   debugMode        = false,
+   rmlDebugControls = false,
 
-The Lua methods themselves (`widget:Reload`, `widget:ToggleDebugger`) stay
-callable from anywhere; only the UI buttons that invoke them are gated.
+   -- requestReload only sets a flag; the teardown happens in
+   -- widget:Update so the model is not destroyed from inside its
+   -- own data-event dispatch (use-after-free).
+   requestReload = function()
+       dm_handle.reloadRequested = true
+   end,
+   toggleDebugger = function()
+       dm_handle.debugMode = not dm_handle.debugMode
+       RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
+   end,
+   ```
+2. Add a file-local `lastRmlDebug = nil` upvalue.
+3. `widget:Update()` (see the skeleton above): perform the deferred reload when `dm_handle.reloadRequested`, then change-gated-sync `utils.isRmlDebugEnabled()` into `dm_handle.rmlDebugControls`.
+4. In the `.rml`, the buttons use `data-event-click` and are gated with `data-if="rmlDebugControls"`:
+   ```rml
+   <div class="debug-controls" data-if="rmlDebugControls">
+       <button data-event-click="requestReload()">reload</button>
+       <button data-event-click="toggleDebugger()">debug</button>
+   </div>
+   ```
+   If the container also holds non-dev controls (e.g. an expand chevron), put `data-if` on the individual buttons instead — never hide the whole wrapper.
+
+`widget:Shutdown` / `widget:Initialize` stay `widget:` methods — they are the engine lifecycle API, not UI-behaviour handlers, so they are *not* the anti-pattern. Only the button wiring lives in the model.
 
 Key rules:
 - Always use `initModel()` as a factory (fresh table each init) to avoid stale references
@@ -247,7 +252,7 @@ Conventions:
 | `data-checked="var"` | Two-way checkbox/radio binding | `<input type="checkbox" data-checked="enabled" />` |
 | `data-event-click="fn()"` | Call model function on event | `data-event-click="handleAction(item.id)"` |
 | `data-event-mousedown="fn()"` | Any DOM event (`mousedown`, `change`, `mouseover`, ...) | `data-event-mousedown="setTab(tab.id)"` |
-| `onclick="widget:Method()"` | Call widget Lua method directly | `onclick="widget:Reload()"` |
+| ~~`onclick="widget:Method()"`~~ | **Anti-pattern — do not use.** Put the function in the model, invoke via `data-event-*` (see "The model is king"). Found only in legacy widgets. | — |
 
 Conditional class example (utility classes):
 ```rml
