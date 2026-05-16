@@ -27,7 +27,6 @@ local RML_PATH = "luaui/rmlwidgets/rml_starter/rml_starter.rml"
 -- Widget state
 local document
 local dm_handle
-local lastRmlDebug = nil  -- cache for the "RML Debug Controls" dev flag
 
 -- ── SVG demo state ──
 local svgGraphEl
@@ -357,7 +356,6 @@ local function initModel()
         -- Main widget states
         expanded = true,
         debugMode = false,
-        rmlDebugControls = false,
         reloadRequested = false,  -- set by requestReload(); acted on in widget:Update
         activeTab = "landing",
 
@@ -625,14 +623,6 @@ function widget:Update(dt)
     end
     if dm_handle then
         dm_handle.currentTime = os.date("%H:%M:%S")
-
-        -- Sync the "RML Debug Controls" dev flag so reload/debug buttons
-        -- in the top bar reflect the option state without needing a reload.
-        local rmlDebug = utils.isRmlDebugEnabled()
-        if rmlDebug ~= lastRmlDebug then
-            lastRmlDebug = rmlDebug
-            dm_handle.rmlDebugControls = rmlDebug
-        end
     end
 
     if svgSweepRunning and svgGraphData and svgGraphEl then

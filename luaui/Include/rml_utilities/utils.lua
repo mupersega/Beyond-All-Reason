@@ -163,15 +163,4 @@ function utils.shutdownRmlWidget(widget, shutdownParams, document, dm_handle)
     widget.rmlContext = nil
 end
 
--- Returns true when the central RML debug option is enabled.
--- Widgets exposing reload/debug UI buttons should gate them behind this
--- (typically by polling this in widget:Update and pushing the value into
--- dm_handle.rmlDebugControls, then using data-if="rmlDebugControls" in RML).
--- The central toggle lives in gui_options_rml > Dev > Debug > "RML Debugger"
--- and ALSO opens/closes the RmlUi debugger overlay via RmlUi.SetDebugContext.
--- The underlying storage is the Spring config key "RMLDebugControls" (0 or 1).
-function utils.isRmlDebugEnabled()
-    return Spring.GetConfigInt("RMLDebugControls", 0) == 1
-end
-
 return utils

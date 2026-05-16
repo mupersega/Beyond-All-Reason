@@ -160,26 +160,14 @@ local RML_PATH = "luaui/RmlWidgets/rml_style_guide/rml_style_guide.rml"
 -- Widget state
 local document
 local dm_handle
-local lastRmlDebug = nil  -- cache for the "RML Debug Controls" dev flag
-
 -- Create a fresh model table for each init
 local function initModel()
     return {
         message = "Hello from rml_style_guide!",
-        debugMode = false,
-        rmlDebugControls = false,
-        reloadRequested = false,  -- set by requestReload(); acted on in widget:Update
         expanded = true,
 
         -- No widget: methods — model fns via data-event-* (see CLAUDE.md
         -- "The model is king"). The bound element is ev.current_element.
-        requestReload = function()
-            dm_handle.reloadRequested = true
-        end,
-        toggleDebugger = function()
-            dm_handle.debugMode = not dm_handle.debugMode
-            RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
-        end,
         copyToClipboard = function(ev)
             local element = ev and ev.current_element
             if not element then return end
@@ -374,23 +362,6 @@ function widget:Shutdown()
 end
 
 function widget:Update()
-    if dm_handle and dm_handle.reloadRequested then
-        -- Deferred reload: tear down OUTSIDE the data-event dispatch that
-        -- requested it (Shutdown from inside a model fn = use-after-free).
-        widget:Shutdown()
-        widget:Initialize()
-        return
-    end
-    -- Sync the "RML Debug Controls" dev flag so reload/debug buttons in the
-    -- top-right reflect the option state. Cached so we only write on change.
-    if dm_handle then
-        local rmlDebug = utils.isRmlDebugEnabled()
-        if rmlDebug ~= lastRmlDebug then
-            lastRmlDebug = rmlDebug
-            dm_handle.rmlDebugControls = rmlDebug
-        end
-    end
-
     -- Drive tooltip per-frame for copy button hovers
     if activeTooltipText and WG['rml_tooltip'] then
         local mx, my = Spring.GetMouseState()

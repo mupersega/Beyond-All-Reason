@@ -4991,9 +4991,8 @@ function init()
 		{ id = "label_dev_debug", group = "dev", name = Spring.I18N('ui.settings.option.label_debug'), category = types.dev },
 		{ id = "label_dev_debug_spacer", group = "dev", category = types.dev },
 
-		{ id = "rml_debugger", group = "dev", category = types.dev, name = widgetOptionColor .. "  " .. "RmlUi Debugger", type = "bool", value = (Spring.GetConfigInt("RMLDebugControls", 0) == 1), description = "Reveal RML widgets' reload/debug buttons and toggle the RmlUi debugger overlay.",
+		{ id = "rml_debugger", group = "dev", category = types.dev, name = widgetOptionColor .. "  " .. "RmlUi Debugger", type = "bool", value = false, description = "Toggle the RmlUi debugger overlay (developer tool).",
 		  onchange = function(_, value)
-			  Spring.SetConfigInt("RMLDebugControls", (value and 1 or 0))
 			  if RmlUi then
 				  RmlUi.SetDebugContext(value and 'shared' or nil)
 			  end

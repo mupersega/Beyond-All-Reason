@@ -21,7 +21,6 @@
 /* ===========================================
 	WIDGET CONTAINER - row layout (matches rml_starter)
 	Nav column on the left (full height), main pane on the right.
-	Debug controls float as an absolute overlay at top-right.
 =========================================== */
 
 #widget-container {
@@ -30,14 +29,6 @@
 	width: 100%;
 	height: 100%;
 	position: relative;
-}
-
-/* Debug controls (reload/debug buttons) — absolute top-right overlay,
-   gated behind the RML Debug Controls dev flag via `data-if="rmlDebugControls"`.
-   z-50 via utility class keeps them above the main pane content. */
-.debug-controls {
-	display: flex;
-	gap: 4dp;
 }
 
 /* ===========================================

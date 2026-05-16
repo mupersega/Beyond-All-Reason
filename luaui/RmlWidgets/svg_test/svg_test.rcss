@@ -14,23 +14,6 @@
     flex: 1;
 }
 
-/* Debug controls */
-.debug-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 3dp;
-    z-index: 50;
-}
-
-.debug-btn:hover {
-    filter: brightness(1.2);
-}
-
-.debug-btn:hover>span {
-    transform: translateY(-1dp);
-}
-
 /* Draggable handle styles */
 .handle {
     height: 100%;
@@ -68,9 +51,9 @@
 }
 
 .angle-decorator {
-    /* Small angled backdrop sitting behind the debug-controls buttons at the
-       top-right of the header. Shape is a taper drawn in SVG (see
-       svg_test.lua) so the angled edges stay crisp.
+    /* Small angled backdrop at the top-right of the header. Shape is a
+       taper drawn in SVG (see svg_test.lua buildAngleDecoratorSVG) so the
+       angled edges stay crisp.
 
        Slight negative top/right so the element overhangs the title bar edges
        by 2dp on both axes — lets the parent's edge cleanly clip any stroke

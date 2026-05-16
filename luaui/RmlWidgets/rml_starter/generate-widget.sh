@@ -4,9 +4,9 @@
 # Usage: ./generate-widget.sh --name widget_name
 #
 # Scaffolds a new RML widget (.lua/.rml/.rcss) using the canonical BAR
-# patterns: block layout (no nested flex-column), raw utility classes
-# (no CCG), debug buttons gated behind the RML Debug Controls dev flag,
-# and a change-gated widget:Update (no per-frame polling).
+# patterns: model-is-king (no widget: methods), block layout (no nested
+# flex-column), CCG for components + utility classes for layout. No debug
+# buttons — only rml_starter has those. See ../CLAUDE.md.
 
 set -euo pipefail
 
@@ -101,9 +101,6 @@ local RML_PATH = "luaui/RmlWidgets/${WIDGET_NAME}/${WIDGET_NAME}.rml"
 local document
 local dm_handle
 
--- Cache the last-seen dev-flag value so widget:Update only writes on change.
-local lastRmlDebug = nil
-
 -- Factory: a fresh model table every init (avoids stale references).
 -- Every key the widget will ever use MUST be declared here; you cannot
 -- add new model keys after the document loads.
@@ -111,12 +108,6 @@ local function initModel()
     return {
         message = "Hello from ${WIDGET_NAME}!",
         status = "Ready",
-        debugMode = false,
-        reloadRequested = false,
-
-        -- Toggled by the "RML Debug Controls" option (Options > Dev > Debug).
-        -- Gates the reload/debug buttons so end users never see them.
-        rmlDebugControls = false,
 
         -- Bundle repeated *layout* utility combos here, then use
         -- my.<name> in the .rml. (Components use ccg.* directly.)
@@ -132,19 +123,6 @@ local function initModel()
         handleCancel = function()
             dm_handle.status = "Cancelled"
             dm_handle.message = "Action cancelled"
-        end,
-
-        -- Dev-only, gated by data-if="rmlDebugControls" in the .rml.
-        -- requestReload only sets a flag — widget:Update performs the
-        -- actual teardown, so the model is not destroyed from inside
-        -- its own data-event dispatch (that would be a use-after-free).
-        requestReload = function()
-            dm_handle.reloadRequested = true
-        end,
-
-        toggleDebugger = function()
-            dm_handle.debugMode = not dm_handle.debugMode
-            RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
         end,
     }
 end
@@ -185,26 +163,6 @@ function widget:Shutdown()
     document = nil
     dm_handle = nil
 end
-
--- Update does two things only: the deferred reload, and a change-gated
--- sync of the dev flag. Do NOT poll game state here — express UI state
--- with data binding instead.
-function widget:Update()
-    if not dm_handle then return end
-    if dm_handle.reloadRequested then
-        -- Deferred reload: tear down + rebuild OUTSIDE the data-event
-        -- dispatch that requested it. Calling Shutdown from inside a
-        -- model fn destroys the model mid-dispatch (use-after-free).
-        widget:Shutdown()
-        widget:Initialize()
-        return
-    end
-    local rmlDebug = utils.isRmlDebugEnabled()
-    if rmlDebug ~= lastRmlDebug then
-        lastRmlDebug = rmlDebug
-        dm_handle.rmlDebugControls = rmlDebug
-    end
-end
 EOF
 
 # ---------------------------------------------------------------------------
@@ -236,12 +194,6 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << EOF
          below is plain utility classes (the default). Buttons use
          ccg.button.* for the same reason. -->
     <div id="widget-container" data-model="${WIDGET_NAME}_model" data-attr-class="ccg.panel.general">
-
-        <!-- Dev-only: gated behind the RML Debug Controls option -->
-        <div class="debug-controls" data-if="rmlDebugControls">
-            <button class="debug-btn text-warning px-1" data-event-click="requestReload()" title="Reload Widget">reload</button>
-            <button class="debug-btn text-warning px-1" data-event-click="toggleDebugger()" title="Toggle Debugger">debug</button>
-        </div>
 
         <div class="starter-title text-lg font-bold text-primary">${WIDGET_NAME}</div>
 
@@ -311,24 +263,6 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rcss" << EOF
 .starter-actions {
     margin-top: 10dp;
 }
-
-/* Dev-only debug buttons. data-if needs an explicit display value
-   (other than none) on its target or it stays hidden regardless. */
-.debug-controls {
-    display: block;
-    position: absolute;
-    top: 4dp;
-    right: 6dp;
-    z-index: 50;
-}
-
-.debug-btn {
-    cursor: pointer;
-}
-
-.debug-btn:hover {
-    filter: brightness(1.2);
-}
 EOF
 
 echo ""
@@ -342,8 +276,7 @@ echo ""
 echo "Defaults baked in (the canonical patterns — keep them):"
 echo "  - Block layout, no nested flex-column"
 echo "  - Utility classes by default; CCG (ccg.*) only for heavy repeats (panel, buttons)"
-echo "  - Reload/debug buttons gated behind the RML Debug Controls dev option"
-echo "  - widget:Update only syncs on change (no per-frame polling)"
+echo "  - No debug buttons (only rml_starter has those); no per-frame polling"
 echo ""
 echo "Next steps:"
 echo "  1. Set enabled = true in GetInfo() when ready"

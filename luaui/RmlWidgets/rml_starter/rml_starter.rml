@@ -37,10 +37,10 @@
             <button data-attr-class="ccg.text.warning + ' toggle-expand-container border rounded border-darkest-alpha bg-dark-alpha p-0-5'" data-event-click="toggleExpand()">
                 <span data-class-expanded="expanded" class="chevron pe-none"></span>
             </button>
-            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="requestReload()" title="Reload Widget">
+            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="requestReload()" title="Reload Widget">
                 <span>reload</span>
             </button>
-            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="toggleDebugger()" title="Toggle Debugger">
+            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="toggleDebugger()" title="Toggle Debugger">
                 <span>debug</span>
             </button>
         </div>

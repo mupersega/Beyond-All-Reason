@@ -29,7 +29,6 @@ local RML_PATH = "luaui/RmlWidgets/gui_options_rml/gui_options_rml.rml"
 local document
 local dm_handle
 local show = false
-local lastRmlDebug = nil
 
 -- Search feature state
 local searchIndex = {}          -- flat list built at content-init, source of truth for search
@@ -657,9 +656,6 @@ local function initModel()
 	buildPathLabelLookup(tabs, gfxSubTabs, interfaceSubTabs)
 
 	return {
-		debugMode = false,
-		rmlDebugControls = false,
-
 		my = {
 			panelHeading = "panel-heading-abs text-lg font-bold text-primary",
 			-- Per-option wrapper. Previously used ccg.card.general, which
@@ -1092,12 +1088,6 @@ function widget:Update()
 		end
 	end
 
-	local rmlDebug = utils.isRmlDebugEnabled()
-	if rmlDebug ~= lastRmlDebug then
-		lastRmlDebug = rmlDebug
-		dm_handle.rmlDebugControls = rmlDebug
-	end
-
 	-- Deferred scroll: two-stage pipeline.
 	-- Stage 1 (pendingScrollElement == nil): find the element in the DOM.
 	--   Record it but DON'T scroll yet — RmlUi hasn't computed its layout
@@ -1138,18 +1128,3 @@ function widget:Update()
 	end
 end
 
------------------------------------------------------------------------
--- Dev helpers
------------------------------------------------------------------------
-
-function widget:Reload()
-	widget:Shutdown()
-	widget:Initialize()
-end
-
-function widget:ToggleDebugger()
-	if dm_handle then
-		dm_handle.debugMode = not dm_handle.debugMode
-		RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
-	end
-end

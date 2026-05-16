@@ -187,8 +187,6 @@ end
 
 local function initModel()
 	return {
-		rmlDebugControls = false,
-
 		my = {
 			titledTitle = "font-bold",
 			titledDesc = "text-xs text-medium mt-1",

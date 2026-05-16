@@ -360,23 +360,6 @@
 	padding: 0dp;
 }
 
-/* Debug controls */
-.debug-controls {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	gap: 3dp;
-	z-index: 50;
-}
-
-.debug-btn:hover {
-	filter: brightness(1.2);
-}
-
-.debug-btn:hover > span {
-	transform: translateY(-1dp);
-}
-
 /* Dev tab — construction hazard-stripe treatment. Applied to the rail
    button by the RML data-attr-class ternary. The dev tab deliberately
    does NOT swap to ccg.themeButton.primary when active — switching to

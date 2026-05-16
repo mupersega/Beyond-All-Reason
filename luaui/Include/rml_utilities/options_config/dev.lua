@@ -55,17 +55,14 @@ return function(deps)
 		---------------------------------------------------------------
 		{ id = "heading_debug", name = Spring.I18N('ui.settings.option.label_debug') or "Debug", type = "heading" },
 
-		-- Central RML debug toggle. Persists to Spring config "RMLDebugControls"
-		-- (the same key RML widgets already poll via utils.isRmlDebugEnabled()
-		-- to show/hide their per-widget reload buttons), AND opens/closes the
-		-- RmlUi debugger overlay directly. Replaces the per-widget "debug"
-		-- button — those can be removed in a later cleanup pass.
+		-- Toggles the RmlUi debugger overlay (developer tool). Per-widget
+		-- reload/debug buttons no longer exist (only rml_starter has them,
+		-- ungated), so this just drives RmlUi.SetDebugContext.
 		{ id = "rml_debug", name = "RML Debugger",
 		  type = "bool", min = 0, max = 1, step = 1, value = false,
-		  desc = "Opens the RmlUi debugger overlay and shows per-widget reload buttons across all RML widgets.",
-		  onLoad = function() return Spring.GetConfigInt("RMLDebugControls", 0) == 1 end,
+		  desc = "Toggle the RmlUi debugger overlay (developer tool).",
+		  onLoad = function() return false end,
 		  onChange = function(v)
-			  Spring.SetConfigInt("RMLDebugControls", v and 1 or 0)
 			  if RmlUi and RmlUi.SetDebugContext then
 				  RmlUi.SetDebugContext(v and 'shared' or nil)
 			  end

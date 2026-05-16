@@ -18,16 +18,6 @@
 <body id="gui_changelog_rml-widget" class="widget-shadow rounded-lg">
 	<div id="widget-container" data-model="gui_changelog_rml_model">
 
-		<!-- Debug controls (reload/debug) — top-right absolute overlay on the
-		     widget container, gated behind the "RML Debug Controls" dev flag. -->
-		<div data-if="rmlDebugControls" class="debug-controls absolute top right pr-2 pt-2 z-50">
-			<button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="requestReload()" title="Reload Widget">
-				<span class="pe-none">reload</span>
-			</button>
-			<button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="toggleDebugger()" title="Toggle Debugger">
-				<span class="pe-none">debug</span>
-			</button>
-		</div>
 
 		<!-- Nav column: full-height scrollable month list. No header — the
 		     "Changelog" title lives in the main pane as a proper h1 heading.

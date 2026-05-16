@@ -15,15 +15,6 @@
 </head>
 <body id="svg_test-widget">
     <div id="widget-container" data-model="svg_test_model" class="hazards-135 bg-darkest-alpha rounded-lg border border-dark clip box-shadow-md flex flex-col border-radius-none">
-        <!-- Debug controls (gated by Options > Dev > Debug > RML Debug Controls) -->
-        <div data-if="rmlDebugControls" class="debug-controls absolute top right pr-2 pt-2">
-            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="requestReload()">
-                <span>reload</span>
-            </button>
-            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="toggleDebugger()">
-                <span>debug</span>
-            </button>
-        </div>
 
         <!-- Title bar with drag handle -->
         <div class="text-upper text-2xl font-bold bg-darkest-semi-alpha p-3 bg-gradient-darker-alpha radial-focus-start text-outline-darkest-lg border-bottom border-darkest flex flex-col justify-center items-start relative min-h-3 hazards-construction-textured bg-warning">

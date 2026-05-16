@@ -33,14 +33,6 @@
     z-index: 50;
 }
 
-.debug-btn:hover {
-    filter: brightness(1.2);
-}
-
-.debug-btn:hover>span {
-    transform: translateY(-1dp);
-}
-
 .code-green {
     color: #2cfd79;
 }

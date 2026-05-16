@@ -32,12 +32,6 @@
              Reload and debug are gated by Options > Dev > Debug > RML Debug
              Controls; the expand/collapse chevron is always visible. -->
         <div data-visible="expanded" class="debug-controls absolute top right pr-2 pt-2">
-            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="requestReload()" title="Reload Widget">
-                <span>reload</span>
-            </button>
-            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="toggleDebugger()" title="Toggle Debugger">
-                <span>debug</span>
-            </button>
             <button data-attr-class="ccg.text.warning + ' toggle-expand-container border rounded border-darkest-alpha bg-dark-alpha p-0-5'" data-event-click="toggleExpand()">
                 <span data-class-expanded="expanded" class="chevron pe-none"></span>
             </button>

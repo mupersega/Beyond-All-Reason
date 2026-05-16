@@ -140,61 +140,24 @@ function widget:Shutdown()
 end
 
 function widget:Update()
+    -- Most widgets don't need this — the generator omits it. Add it only
+    -- for genuine per-frame work, and never poll game state here: express
+    -- UI state through the model + data binding (see "The model is king").
     if not dm_handle then return end
-    if dm_handle.reloadRequested then
-        -- Deferred reload: tear down + rebuild OUTSIDE the data-event
-        -- dispatch that requested it. Calling Shutdown from inside a
-        -- model fn destroys the model mid-dispatch (use-after-free).
-        widget:Shutdown()
-        widget:Initialize()
-        return
-    end
-    -- Change-gated dev-flag sync (see gating section). Never poll game
-    -- state here every frame — express UI state with data binding.
-    local rmlDebug = utils.isRmlDebugEnabled()
-    if rmlDebug ~= lastRmlDebug then
-        lastRmlDebug = rmlDebug
-        dm_handle.rmlDebugControls = rmlDebug
-    end
 end
--- Reload/debug are MODEL functions (requestReload / toggleDebugger in
--- initModel) invoked via data-event-click — NOT widget: methods. See
--- "The model is king" and the gating section below.
 ```
 
-### Gating reload/debug buttons behind the dev flag
+### Reload/debug buttons: rml_starter only
 
-Reload/debug buttons must not be visible to end users. They are gated behind the **RML Debug Controls** option (**Options > Dev > Debug**, Spring config key `RMLDebugControls`). And — per "The model is king" — they are **model functions invoked via `data-event-*`, never `widget:` methods on inline handlers**.
+New and generated widgets have **no reload/debug buttons** — the generator emits none, and they were removed from every widget but one. **`rml_starter` is the sole widget with always-visible `reload` / `debug` buttons** (ungated), as a dev convenience for the reference widget. Do **not** add reload/debug buttons, `rmlDebugControls`, or `isRmlDebugEnabled` gating to a new widget.
 
-1. In `initModel()` add the flag and the two model functions:
-   ```lua
-   reloadRequested  = false,
-   debugMode        = false,
-   rmlDebugControls = false,
+To reload or debug during development:
+- `/luaui reload` (reloads all widgets), or the `reload` button on **rml_starter**.
+- The RmlUi debugger overlay: **Options > Dev > Debug > "RmlUi Debugger"** (or rml_starter's `debug` button) — it calls `RmlUi.SetDebugContext`.
 
-   -- requestReload only sets a flag; the teardown happens in
-   -- widget:Update so the model is not destroyed from inside its
-   -- own data-event dispatch (use-after-free).
-   requestReload = function()
-       dm_handle.reloadRequested = true
-   end,
-   toggleDebugger = function()
-       dm_handle.debugMode = not dm_handle.debugMode
-       RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
-   end,
-   ```
-2. Add a file-local `lastRmlDebug = nil` upvalue.
-3. `widget:Update()` (see the skeleton above): perform the deferred reload when `dm_handle.reloadRequested`, then change-gated-sync `utils.isRmlDebugEnabled()` into `dm_handle.rmlDebugControls`.
-4. In the `.rml`, the buttons use `data-event-click` and are gated with `data-if="rmlDebugControls"`:
-   ```rml
-   <div class="debug-controls" data-if="rmlDebugControls">
-       <button data-event-click="requestReload()">reload</button>
-       <button data-event-click="toggleDebugger()">debug</button>
-   </div>
-   ```
-   If the container also holds non-dev controls (e.g. an expand chevron), put `data-if` on the individual buttons instead — never hide the whole wrapper.
+If you ever genuinely need a manual reload triggered from a model fn, the safe pattern (see rml_starter for the reference implementation) is a `reloadRequested` flag the model fn sets, acted on in `widget:Update` — deferred so the model is not torn down inside its own data-event dispatch (use-after-free).
 
-`widget:Shutdown` / `widget:Initialize` stay `widget:` methods — they are the engine lifecycle API, not UI-behaviour handlers, so they are *not* the anti-pattern. Only the button wiring lives in the model.
+`widget:Shutdown` / `widget:Initialize` stay `widget:` methods — they are the engine lifecycle API, not UI-behaviour handlers, so they are *not* the anti-pattern.
 
 Key rules:
 - Always use `initModel()` as a factory (fresh table each init) to avoid stale references

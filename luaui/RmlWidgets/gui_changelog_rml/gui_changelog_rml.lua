@@ -30,7 +30,6 @@ local document
 local dm_handle
 local isVisible = false
 local ownsWgChangelog = false
-local lastRmlDebug = nil  -- cache for the "RML Debug Controls" dev flag
 
 -- Unread-hash tracking (ported from gui_changelog_info.lua lines 26-32, 495-509)
 local changelogFileHash         = 0
@@ -181,20 +180,6 @@ local function initModel()
 	return {
 		-- Panel state
 		visible          = false,
-		debugMode        = false,
-		rmlDebugControls = false,  -- driven by utils.isRmlDebugEnabled() in Update
-		reloadRequested  = false,  -- set by requestReload(); acted on in widget:Update
-
-		-- Dev-only model fns (gated by data-if="rmlDebugControls"). No
-		-- widget: methods — see CLAUDE.md "The model is king". requestReload
-		-- defers teardown to Update so the model isn't destroyed mid-dispatch.
-		requestReload = function()
-			dm_handle.reloadRequested = true
-		end,
-		toggleDebugger = function()
-			dm_handle.debugMode = not dm_handle.debugMode
-			RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
-		end,
 
 		-- Localised header label (overwritten in Initialize with Spring.I18N).
 		titleText = "Changelog",
@@ -327,23 +312,6 @@ function widget:KeyPress(key, mods, isRepeat)
 		return true
 	end
 	return false
-end
-
-function widget:Update()
-	if not dm_handle then return end
-	if dm_handle.reloadRequested then
-		-- Deferred reload: tear down OUTSIDE the data-event dispatch that
-		-- requested it (Shutdown from inside a model fn = use-after-free).
-		widget:Shutdown()
-		widget:Initialize()
-		return
-	end
-	-- change-gated dev-flag sync; no per-frame polling. See CLAUDE.md.
-	local rmlDebug = utils.isRmlDebugEnabled()
-	if rmlDebug ~= lastRmlDebug then
-		lastRmlDebug = rmlDebug
-		dm_handle.rmlDebugControls = rmlDebug
-	end
 end
 
 -- -------------------------------------------------------------------------

@@ -64,12 +64,6 @@
                         data-event-keydown="onSearchKeyDown(ev.key_identifier)"
                         data-event-keyup="onSearchInput(ev.key_identifier)"></input>
                 </form>
-                <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()">
-                    <span>reload</span>
-                </button>
-                <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()">
-                    <span>debug</span>
-                </button>
             </div>
 
             <!-- Floating results panel — anchored to the title bar's

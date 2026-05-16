@@ -7,9 +7,9 @@ local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
 local EzSVG = VFS.Include("luaui/Include/rml_utilities/EzSVG.lua")
 local svgShapes = VFS.Include("luaui/Include/rml_utilities/svg_shapes.lua")
 
--- Title-bar angle decorator: a small tapered dark block that sits behind the
--- debug-controls buttons at top-right of the header. Hybrid SVG + overhang
--- clip (decoration Approach 3): SVG for crisp angled edges, element size
+-- Title-bar angle decorator: a small tapered dark block at the top-right
+-- of the header. Hybrid SVG + overhang clip (decoration Approach 3):
+-- the canonical in-repo example. SVG for crisp angled edges, element size
 -- matches the visible content, slight negative top/right so stroke pixels at
 -- the viewBox boundary get clipped by the parent edge instead of bleeding
 -- through.
@@ -61,9 +61,6 @@ local initTimer
 -- Animation state
 local animRunning = false
 local animSkip = 1
-
--- Cached value of the "RML Debug Controls" dev flag
-local lastRmlDebug = nil
 
 -- Graph state
 local CONFIG_SMOOTH = "svg_test_smooth_graphs"
@@ -553,18 +550,7 @@ local function initModel()
 		sweepEasing = "easeInOutCubic",
 		sweepInfo = "",
 		playerList = {},
-		rmlDebugControls = false,
-		debugMode = false,
-		reloadRequested = false,  -- set by requestReload(); acted on in widget:Update
-
 		-- No widget: methods — see CLAUDE.md "The model is king".
-		requestReload = function()
-			dm_handle.reloadRequested = true
-		end,
-		toggleDebugger = function()
-			dm_handle.debugMode = not dm_handle.debugMode
-			RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
-		end,
 		toggleColorTest = function()
 			-- rml-dom-escape: SVG src swap (sanctioned SVG injection — this
 			-- is the svg_test escape-hatch widget; no data binding for SVG).
@@ -944,22 +930,6 @@ function widget:Shutdown()
 end
 
 function widget:Update(dt)
-	if dm_handle and dm_handle.reloadRequested then
-		-- Deferred reload: tear down OUTSIDE the data-event dispatch that
-		-- requested it (Shutdown from inside a model fn = use-after-free).
-		widget:Shutdown()
-		widget:Initialize()
-		return
-	end
-	-- Sync "RML Debug Controls" dev flag so reload/debug buttons reflect state
-	if dm_handle then
-		local rmlDebug = utils.isRmlDebugEnabled()
-		if rmlDebug ~= lastRmlDebug then
-			lastRmlDebug = rmlDebug
-			dm_handle.rmlDebugControls = rmlDebug
-		end
-	end
-
 	if animRunning and dynamicSvgEl and initTimer then
 		animFrameCount = animFrameCount + 1
 		if animFrameCount % animSkip == 0 then
