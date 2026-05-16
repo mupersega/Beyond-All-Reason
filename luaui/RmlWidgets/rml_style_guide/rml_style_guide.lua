@@ -166,7 +166,6 @@ local lastRmlDebug = nil  -- cache for the "RML Debug Controls" dev flag
 local function initModel()
     return {
         message = "Hello from rml_style_guide!",
-        currentTime = os.date("%H:%M:%S"),
         debugMode = false,
         rmlDebugControls = false,
         reloadRequested = false,  -- set by requestReload(); acted on in widget:Update

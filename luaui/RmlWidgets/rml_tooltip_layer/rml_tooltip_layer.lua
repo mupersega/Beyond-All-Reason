@@ -264,8 +264,3 @@ function widget:Update(dt)
 		end
 	end
 end
-
-function widget:Reload()
-	widget:Shutdown()
-	widget:Initialize()
-end

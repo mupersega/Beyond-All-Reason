@@ -219,16 +219,6 @@
                 <div class="stress-ccg-grid">
                     <button data-for="v : ccgBadgeVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
                 </div>
-
-                <div class="stress-section">pill @ 500</div>
-                <div class="stress-ccg-grid">
-                    <button data-for="v : ccgPillVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
-                </div>
-
-                <div class="stress-section">circle @ 500</div>
-                <div class="stress-ccg-grid">
-                    <button data-for="v : ccgCircleVariants" class="stress-btn stress-btn-ccg" data-event-click="scenario('flat', v.count, v.key)">{{v.label}}<span class="btn-result">{{v.result}}</span></button>
-                </div>
             </div>
 
             <!-- UTIL TAB -->

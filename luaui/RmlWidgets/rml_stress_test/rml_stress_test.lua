@@ -31,7 +31,7 @@ local CCG_CLASSES = {
 -- button rows in the CCG sections. On test completion, the entry for the
 -- just-completed variant gets its `result` updated and the whole family
 -- array is re-pushed to dm_handle so data-for re-renders.
-local CCG_FAMILIES = { "card", "panel", "button", "themeButton", "badge", "pill", "circle" }
+local CCG_FAMILIES = { "card", "panel", "button", "themeButton", "badge" }
 
 -- Utility-class families — raw utility classes from rml-utility-classes.rcss
 -- and palette-standard-global.rcss, grouped by concern. Tested at 500 flat
@@ -123,8 +123,6 @@ local CCG_MODEL_KEY = {
     button       = "ccgButtonVariants",
     themeButton  = "ccgThemeButtonVariants",
     badge        = "ccgBadgeVariants",
-    pill         = "ccgPillVariants",
-    circle       = "ccgCircleVariants",
     -- Utility families
     utilGradient = "utilGradientVariants",
     utilTexture  = "utilTextureVariants",
@@ -1111,8 +1109,6 @@ local function initModel()
         ccgButtonVariants      = ccgFamilyEntries.button,
         ccgThemeButtonVariants = ccgFamilyEntries.themeButton,
         ccgBadgeVariants       = ccgFamilyEntries.badge,
-        ccgPillVariants        = ccgFamilyEntries.pill,
-        ccgCircleVariants      = ccgFamilyEntries.circle,
 
         -- Utility-class variants — raw utilities tested individually.
         utilGradientVariants   = ccgFamilyEntries.utilGradient,
