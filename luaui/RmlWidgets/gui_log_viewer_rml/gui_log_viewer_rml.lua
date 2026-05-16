@@ -197,6 +197,22 @@ local function initModel()
 		close = function()
 			toggleShow(false)
 		end,
+
+		copyAll = function()
+			local textParts = {}
+			for i, entry in ipairs(lines) do
+				textParts[i] = entry.text
+			end
+			local text = table.concat(textParts, "\n")
+			if text ~= "" then
+				Spring.SetClipboard(text)
+				copiedTimer = spGetTimer()
+			end
+		end,
+
+		onScroll = function()
+			autoScroll = false
+		end,
 	}
 end
 
@@ -263,24 +279,6 @@ function widget:CopyLine(index)
 		copiedLineIndex = index
 		dirty = true
 	end
-end
-
--- Copy all button
-function widget:CopyAll()
-	local textParts = {}
-	for i, entry in ipairs(lines) do
-		textParts[i] = entry.text
-	end
-	local text = table.concat(textParts, "\n")
-	if text ~= "" then
-		Spring.SetClipboard(text)
-		copiedTimer = spGetTimer()
-	end
-end
-
--- User scrolled manually — disable auto-scroll
-function widget:OnScroll()
-	autoScroll = false
 end
 
 function widget:AddConsoleLine(msg, priority)

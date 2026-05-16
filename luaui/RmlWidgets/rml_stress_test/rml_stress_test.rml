@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="rml_stress_test.rcss" type="text/rcss" />
 </head>
 <body id="rml_stress_test-widget">
-    <button class="stress-close" onclick="widget:Close()">×</button>
+    <button class="stress-close" data-event-click="close()">×</button>
     <div id="widget-container" data-model="rml_stress_test_model">
         <div class="stress-sidebar">
             <div class="stress-title">Stress Test</div>
@@ -186,7 +186,7 @@
                 </div>
 
                 <div class="stress-section">Dev</div>
-                <button class="stress-btn" onclick="widget:Reload()">Reload widget</button>
+                <button class="stress-btn" data-event-click="requestReload()">Reload widget</button>
             </div>
 
             <!-- CCG TAB -->

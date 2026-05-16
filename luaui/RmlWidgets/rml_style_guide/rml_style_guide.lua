@@ -169,7 +169,26 @@ local function initModel()
         currentTime = os.date("%H:%M:%S"),
         debugMode = false,
         rmlDebugControls = false,
+        reloadRequested = false,  -- set by requestReload(); acted on in widget:Update
         expanded = true,
+
+        -- No widget: methods — model fns via data-event-* (see CLAUDE.md
+        -- "The model is king"). The bound element is ev.current_element.
+        requestReload = function()
+            dm_handle.reloadRequested = true
+        end,
+        toggleDebugger = function()
+            dm_handle.debugMode = not dm_handle.debugMode
+            RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
+        end,
+        copyToClipboard = function(ev)
+            local element = ev and ev.current_element
+            if not element then return end
+            local tt = element:QuerySelector(".tooltip")
+            local text = tt and tt.inner_rml or ""
+            if text == "" then return end
+            Spring.SetClipboard(widget:ParseToRml(text))
+        end,
         tabs = {
             { id = "about", label = "About" },
             { id = "buttons", label = "Buttons" },
@@ -356,6 +375,13 @@ function widget:Shutdown()
 end
 
 function widget:Update()
+    if dm_handle and dm_handle.reloadRequested then
+        -- Deferred reload: tear down OUTSIDE the data-event dispatch that
+        -- requested it (Shutdown from inside a model fn = use-after-free).
+        widget:Shutdown()
+        widget:Initialize()
+        return
+    end
     -- Sync the "RML Debug Controls" dev flag so reload/debug buttons in the
     -- top-right reflect the option state. Cached so we only write on change.
     if dm_handle then
@@ -375,27 +401,9 @@ function widget:Update()
     end
 end
 
--- Widget functions callable from RML
-function widget:Reload()
-    Spring.Echo(WIDGET_ID .. ": Reloading widget...")
-    widget:Shutdown()
-    widget:Initialize()
-end
-
-function widget:ToggleDebugger()
-    if dm_handle then
-        dm_handle.debugMode = not dm_handle.debugMode
-        
-        if dm_handle.debugMode then
-            RmlUi.SetDebugContext('shared')
-            Spring.Echo(WIDGET_ID .. ": RmlUi debugger enabled")
-        else
-            RmlUi.SetDebugContext(nil)
-            Spring.Echo(WIDGET_ID .. ": RmlUi debugger disabled")
-        end
-    end
-end
-
+-- Internal text helper (not RML-wired). Used by the copyToClipboard
+-- model fn. Kept as a widget: method only because it's a plain helper,
+-- not an inline-handler control path.
 function widget:ParseToRml(escapedtring)
     -- parse something like this back to usable rml  &lt;button data-attr-class=&quot;cg.button.danger&quot;&gt;danger&lt;/button&gt; -- just replace things like &lt;
     local rmlString = escapedtring
@@ -404,23 +412,4 @@ function widget:ParseToRml(escapedtring)
     rmlString = rmlString:gsub("&quot;", "\"")
     rmlString = rmlString:gsub("&amp;", "&")
     return rmlString
-end
-
-function widget:CopyToClipboard(element)
-    Spring.Echo(WIDGET_ID .. ": Copying text to clipboard..." .. (tostring(element) or "nil"))
-    if not element then
-        Spring.Echo(WIDGET_ID .. ": No element provided to copy from")
-        return
-    end
-
-    local tt = element:QuerySelector(".tooltip")
-    local text = tt.inner_rml or ""
-    if text == "" then
-        Spring.Echo(WIDGET_ID .. ": No text found in tooltip to copy")
-        return
-    end
-
-    local rmlText = widget:ParseToRml(text)
-    Spring.SetClipboard(rmlText)
-    Spring.Echo(WIDGET_ID .. ": Copied" .. rmlText .. " to clipboard")
 end

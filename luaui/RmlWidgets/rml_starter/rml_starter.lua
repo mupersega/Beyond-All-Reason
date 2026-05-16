@@ -358,7 +358,26 @@ local function initModel()
         expanded = true,
         debugMode = false,
         rmlDebugControls = false,
+        reloadRequested = false,  -- set by requestReload(); acted on in widget:Update
         activeTab = "landing",
+
+        -- No widget: methods — model fns + data-event-* (see CLAUDE.md
+        -- "The model is king"). requestReload defers teardown to Update
+        -- so the model isn't destroyed inside its own dispatch.
+        requestReload = function()
+            dm_handle.reloadRequested = true
+        end,
+        toggleDebugger = function()
+            dm_handle.debugMode = not dm_handle.debugMode
+            RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
+        end,
+        copyPlayCode = function()
+            local code = getPlayCode()
+            if code and code ~= "" then
+                Spring.SetClipboard(code)
+                Spring.Echo(WIDGET_ID .. ": Copied decorator code to clipboard")
+            end
+        end,
 
         -- All tabs
         tabs = {
@@ -597,6 +616,13 @@ function widget:Shutdown()
 end
 
 function widget:Update(dt)
+    if dm_handle and dm_handle.reloadRequested then
+        -- Deferred reload: tear down OUTSIDE the data-event dispatch that
+        -- requested it (Shutdown from inside a model fn = use-after-free).
+        widget:Shutdown()
+        widget:Initialize()
+        return
+    end
     if dm_handle then
         dm_handle.currentTime = os.date("%H:%M:%S")
 
@@ -623,37 +649,6 @@ function widget:Update(dt)
         elseif svgSweepAccum >= SVG_RENDER_INTERVAL then
             svgSweepAccum = svgSweepAccum - SVG_RENDER_INTERVAL
             renderSvgGraph()
-        end
-    end
-end
-
--- Development helper function for hot reloading
-function widget:CopyPlayCode()
-	local code = getPlayCode()
-	if code and code ~= "" then
-		Spring.SetClipboard(code)
-		Spring.Echo(WIDGET_ID .. ": Copied decorator code to clipboard")
-	end
-end
-
-function widget:Reload()
-    Spring.Echo(WIDGET_ID .. ": Reloading widget...")
-    widget:Shutdown()
-    widget:Initialize()
-end
-
-
--- Toggle RmlUi debugger - simple toggle function
-function widget:ToggleDebugger()
-    if dm_handle then
-        dm_handle.debugMode = not dm_handle.debugMode
-        
-        if dm_handle.debugMode then
-            RmlUi.SetDebugContext('shared')
-            Spring.Echo(WIDGET_ID .. ": RmlUi debugger enabled")
-        else
-            RmlUi.SetDebugContext(nil)
-            Spring.Echo(WIDGET_ID .. ": RmlUi debugger disabled")
         end
     end
 end

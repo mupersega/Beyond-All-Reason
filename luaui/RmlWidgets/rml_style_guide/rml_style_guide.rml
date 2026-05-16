@@ -32,10 +32,10 @@
              Reload and debug are gated by Options > Dev > Debug > RML Debug
              Controls; the expand/collapse chevron is always visible. -->
         <div data-visible="expanded" class="debug-controls absolute top right pr-2 pt-2">
-            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()" title="Reload Widget">
+            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="requestReload()" title="Reload Widget">
                 <span>reload</span>
             </button>
-            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">
+            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="toggleDebugger()" title="Toggle Debugger">
                 <span>debug</span>
             </button>
             <button data-attr-class="ccg.text.warning + ' toggle-expand-container border rounded border-darkest-alpha bg-dark-alpha p-0-5'" data-event-click="toggleExpand()">
@@ -347,7 +347,7 @@
                             <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ button.class }}</h3>
                             <span data-attr-class="my.groupCard.classInfo + ' flex-2'">{{ button.styles }}</span>
                         </div>
-                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)"
+                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()"
                                 data-event-mouseover="showCopyTooltip(button.class, button.name)"
                                 data-event-mouseout="hideCopyTooltip()">
                             <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
@@ -367,7 +367,7 @@
                             <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ button.class }}</h3>
                             <span data-attr-class="my.groupCard.classInfo + ' flex-2'">{{ button.styles }}</span>
                         </div>
-                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)"
+                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()"
                                 data-event-mouseover="showCopyTooltip(button.class, button.name)"
                                 data-event-mouseout="hideCopyTooltip()">
                             <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
@@ -397,7 +397,7 @@
                                 <span data-attr-class="my.groupCard.classInfo + ' flex-1'">{{ textStyle.styles }}</span>
                             </div>
                         </div>
-                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                             <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                             COPY
                             <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;span data-attr-class=&quot;{{ textStyle.class }}&quot;&gt;{{ textStyle.example }}&lt;/span&gt;</div>
@@ -422,7 +422,7 @@
                                 <span data-attr-class="my.groupCard.classInfo + ' flex-1'">{{ themeTextStyle.styles }}</span>
                             </div>
                         </div>
-                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                             <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                             COPY
                             <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;span data-attr-class=&quot;{{ themeTextStyle.class }}&quot;&gt;{{ themeTextStyle.example }}&lt;/span&gt;</div>
@@ -450,7 +450,7 @@
                                 <span data-attr-class="my.groupCard.classInfo + ' flex-1'">{{ badge.styles }}</span>
                             </div>
                         </div>
-                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                             <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                             COPY
                             <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;span data-attr-class=&quot;{{ badge.class }}&quot;&gt;{{ badge.example }}&lt;/span&gt;</div>
@@ -475,7 +475,7 @@
                                 <span data-attr-class="my.groupCard.classInfo + ' flex-1'">{{ pill.styles }}</span>
                             </div>
                         </div>
-                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                             <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                             COPY
                             <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;span data-attr-class=&quot;{{ pill.class }}&quot;&gt;{{ pill.example }}&lt;/span&gt;</div>
@@ -504,7 +504,7 @@
                                 <span data-attr-class="my.groupCard.classInfo + ' flex-1'">{{ circle.styles }}</span>
                             </div>
                         </div>
-                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                             <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                             COPY
                             <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;span data-attr-class=&quot;{{ circle.class }}&quot;&gt;{{ circle.example }}&lt;/span&gt;</div>
@@ -540,7 +540,7 @@
                         <div class="flex-1 flex flex-col border-left border-primary-dark-alpha pl-4 justify-between">
                             <!-- Class Name -->
                             <div class="flex flex-col gap-2">
-                                <div class="border border-dark-alpha copy-button p-2" onclick="widget:CopyToClipboard(element)">
+                                <div class="border border-dark-alpha copy-button p-2" data-event-click="copyToClipboard()">
                                     <div data-attr-class="ccg.text.tooltip + ' tooltip'" >
                                         &lt;div data-attr-class=&quot;{{ sheet.class }}.container&quot;&gt;...&lt;/div&gt;
                                     </div>
@@ -550,7 +550,7 @@
                                     </div>
                                     <span class="p-2">{{ sheet.class }}.container</span>
                                 </div>
-                                <div class="border border-dark-alpha copy-button p-2" onclick="widget:CopyToClipboard(element)">
+                                <div class="border border-dark-alpha copy-button p-2" data-event-click="copyToClipboard()">
                                     <div data-attr-class="ccg.text.tooltip + ' tooltip'" >
                                         &lt;div data-attr-class=&quot;{{ sheet.class }}.title&quot;&gt;...&lt;/div&gt;
                                     </div>
@@ -560,7 +560,7 @@
                                     </div>
                                     <span class="p-2">{{ sheet.class }}.title</span>
                                 </div>
-                                <div class="border border-dark-alpha copy-button p-2" onclick="widget:CopyToClipboard(element)">
+                                <div class="border border-dark-alpha copy-button p-2" data-event-click="copyToClipboard()">
                                     <div data-attr-class="ccg.text.tooltip + ' tooltip'" >
                                         &lt;div data-attr-class=&quot;{{ sheet.class }}.content&quot;&gt;...&lt;/div&gt;
                                     </div>
@@ -570,7 +570,7 @@
                                     </div>
                                     <span class="p-2">{{ sheet.class }}.content</span>
                                 </div>
-                                <div class="border border-dark-alpha copy-button p-2" onclick="widget:CopyToClipboard(element)">
+                                <div class="border border-dark-alpha copy-button p-2" data-event-click="copyToClipboard()">
                                     <div data-attr-class="ccg.text.tooltip + ' tooltip'" >
                                         &lt;div data-attr-class=&quot;{{ sheet.class }}.footer&quot;&gt;...&lt;/div&gt;
                                     </div>
@@ -585,7 +585,7 @@
                             <div>
                                 <div class="divider-horizontal-primary"></div>
                                 <div class="flex justify-center">
-                                    <button data-attr-class="' copy-button text-center font-bold p-1 flex gap-2 items-center'" onclick="widget:CopyToClipboard(element)">
+                                    <button data-attr-class="' copy-button text-center font-bold p-1 flex gap-2 items-center'" data-event-click="copyToClipboard()">
                                         <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                                         <span>COPY FULL STRUCTURE</span>
                                         <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;div data-attr-class=&quot;{{ sheet.class }}.container&quot;&gt;&#10;  &lt;div data-attr-class=&quot;{{ sheet.class }}.title&quot;&gt;Title&lt;/div&gt;&#10;  &lt;div data-attr-class=&quot;{{ sheet.class }}.content&quot;&gt;Content&lt;/div&gt;&#10;  &lt;div data-attr-class=&quot;{{ sheet.class }}.footer&quot;&gt;Footer&lt;/div&gt;&#10;&lt;/div&gt;</div>
@@ -615,7 +615,7 @@
                             <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ card.class }}</h3>
                             <span data-attr-class="my.groupCard.description + ' flex-1'">{{ card.styles }}</span>
                         </div>
-                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                             <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                             COPY
                             <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;div data-attr-class=&quot;{{ card.class }}&quot;&gt;content&lt;/div&gt;</div>
@@ -639,7 +639,7 @@
                             <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ heading.class }}</h3>
                             <span data-attr-class="my.groupCard.classInfo + ' flex-2'">{{ heading.styles }}</span>
                         </div>
-                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                             <svg src="../svg/copy_icon.svg" class="h-3 w-3 ml-2"></svg>
                             COPY
                             <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;h1 data-attr-class=&quot;{{ heading.class }}&quot;&gt;{{ heading.name }} Heading&lt;/h1&gt;</div>
@@ -665,7 +665,7 @@
                             <h3 data-attr-class="my.groupCard.title + ' flex-1'">Class group: {{ panel.class }}</h3>
                             <span data-attr-class="my.groupCard.classInfo + ' flex-2'">{{ panel.styles }}</span>
                         </div>
-                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                        <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                             <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                             COPY
                             <div data-attr-class="ccg.text.tooltip + ' tooltip'">&lt;div data-attr-class=&quot;{{ panel.class }}&quot;&gt;content&lt;/div&gt;</div>
@@ -704,7 +704,7 @@
                                 <svg id="dec-notched-corner-tr" class="dec-shape" />
                                 <span class="text-xs text-medium">TR</span>
                             </div>
-                            <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                            <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                                 <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                                 COPY
                                 <div data-attr-class="ccg.text.tooltip + ' tooltip'">svgShapes.notchedCorner({ corner = "bl", sizeX = 45, sizeY = 30, fill = "rgb(38,38,42)" })</div>
@@ -733,7 +733,7 @@
                                 <svg id="dec-taper-l-harsh" class="dec-shape" />
                                 <span class="text-xs text-medium">Harsh</span>
                             </div>
-                            <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                            <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                                 <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                                 COPY
                                 <div data-attr-class="ccg.text.tooltip + ' tooltip'">svgShapes.taper({ side = "left", depth = "subtle", fill = "rgb(38,38,42)" })</div>
@@ -762,7 +762,7 @@
                                 <svg id="dec-taper-r-harsh" class="dec-shape" />
                                 <span class="text-xs text-medium">Harsh</span>
                             </div>
-                            <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                            <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                                 <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                                 COPY
                                 <div data-attr-class="ccg.text.tooltip + ' tooltip'">svgShapes.taper({ side = "right", depth = 30, fill = "rgb(38,38,42)" })</div>
@@ -791,7 +791,7 @@
                                 <svg id="dec-chevron-harsh" class="dec-shape" />
                                 <span class="text-xs text-medium">Harsh</span>
                             </div>
-                            <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" onclick="widget:CopyToClipboard(element)">
+                            <button data-attr-class="ccg.button.ghost + ' copy-button text-center font-bold p-1'" data-event-click="copyToClipboard()">
                                 <svg src="../svg/copy_icon.svg" data-attr-class="my.copySvgStyles"></svg>
                                 COPY
                                 <div data-attr-class="ccg.text.tooltip + ' tooltip'">svgShapes.chevron({ depth = "medium", fill = "rgb(38,38,42)" })</div>

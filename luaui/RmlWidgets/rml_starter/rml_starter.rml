@@ -37,10 +37,10 @@
             <button data-attr-class="ccg.text.warning + ' toggle-expand-container border rounded border-darkest-alpha bg-dark-alpha p-0-5'" data-event-click="toggleExpand()">
                 <span data-class-expanded="expanded" class="chevron pe-none"></span>
             </button>
-            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()" title="Reload Widget">
+            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="requestReload()" title="Reload Widget">
                 <span>reload</span>
             </button>
-            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">
+            <button data-if="rmlDebugControls" data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="toggleDebugger()" title="Toggle Debugger">
                 <span>debug</span>
             </button>
         </div>
@@ -828,7 +828,7 @@
                                     <div class="pl-4">Debug mode is disabled</div>
                                     <div>&lt;/div&gt;</div>
                                 </div>
-                                <p data-attr-class="ccg.themeText.caption + ' mt-2 text-center'">Hit the <button data-attr-class="ccg.text.warning + ' debug-btn'" onclick="widget:ToggleDebugger()">debug</button> button to see a change.</p>
+                                <p data-attr-class="ccg.themeText.caption + ' mt-2 text-center'">Hit the <button data-attr-class="ccg.text.warning + ' debug-btn'" data-event-click="toggleDebugger()">debug</button> button to see a change.</p>
                             </div>
                         </div>
                     </div>
@@ -1155,7 +1155,7 @@
                                 <span class="text-xs text-medium mb-1">Generated call:</span>
                                 <div class="flex items-center gap-2">
                                     <div class="code-green text-xs p-2 bg-darker rounded flex-1">{{playCode}}</div>
-                                    <button data-attr-class="ccg.button.ghost + ' px-2 py-1 text-xs cursor-pointer font-bold'" onclick="widget:CopyPlayCode()">
+                                    <button data-attr-class="ccg.button.ghost + ' px-2 py-1 text-xs cursor-pointer font-bold'" data-event-click="copyPlayCode()">
                                         <svg src="../svg/copy_icon.svg" class="h-2-5 w-2-5"></svg>
                                         COPY
                                     </button>

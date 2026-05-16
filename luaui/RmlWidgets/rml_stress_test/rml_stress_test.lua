@@ -1084,6 +1084,16 @@ end
 
 local function initModel()
     return {
+        reloadRequested = false,  -- set by requestReload(); acted on in widget:Update
+
+        -- No widget: methods — see CLAUDE.md "The model is king".
+        close = function()
+            widgetHandler:RemoveWidget(widget)
+        end,
+        requestReload = function()
+            dm_handle.reloadRequested = true
+        end,
+
         timedStatus = "off",
         suiteStatus = "idle",
         durationStatus = tostring(testDuration) .. "s",
@@ -1249,10 +1259,6 @@ function widget:Initialize()
     return true
 end
 
-function widget:Close()
-    widgetHandler:RemoveWidget(self)
-end
-
 function widget:Shutdown()
     -- If any widget tests were mid-flight, disable the targets so we
     -- don't leave BAR in a weird state, then wipe the stressTest context.
@@ -1273,6 +1279,13 @@ function widget:Shutdown()
 end
 
 function widget:Update(dt)
+    if dm_handle and dm_handle.reloadRequested then
+        -- Deferred reload: tear down OUTSIDE the data-event dispatch that
+        -- requested it (Shutdown from inside a model fn = use-after-free).
+        widget:Shutdown()
+        widget:Initialize()
+        return
+    end
     if reactiveMode and #reactiveRefs > 0 then
         tracy.ZoneBeginN("StressTest.ReactiveTick." .. reactiveMode)
         reactiveCounter = reactiveCounter + 1
@@ -1320,9 +1333,4 @@ function widget:Update(dt)
             end
         end
     end
-end
-
-function widget:Reload()
-    widget:Shutdown()
-    widget:Initialize()
 end

@@ -264,7 +264,10 @@ local toggleState = {}
 ---------------------------------------------------------------
 
 -- Bool toggle: state in toggleState, visual via DOM, side effect via onChange
-function widget:OnToggle(element)
+-- Impl functions (file-local, not widget: methods). Invoked from model
+-- fns in initModel via data-event-*. DOM swaps below are sanctioned
+-- escapes (proven toggle pattern / slider readback) — see CLAUDE.md.
+local function onToggleImpl(element)
 	local id = (element:GetAttribute("id") or ""):gsub("^cfg%-", "")
 	local entry = optionById[id]
 	if not entry then return end
@@ -314,7 +317,7 @@ local function formatValue(value, step)
 end
 
 -- Slider: read from element (RmlUi#668), call side effect, update readback via DOM
-function widget:OnSlider(element)
+local function onSliderImpl(element)
 	local id = (element:GetAttribute("id") or ""):gsub("^cfg%-", "")
 	local entry = optionById[id]
 	if not entry then return end
@@ -333,7 +336,7 @@ function widget:OnSlider(element)
 end
 
 -- Action: just call onClick
-function widget:OnAction(element)
+local function onActionImpl(element)
 	local id = (element:GetAttribute("id") or ""):gsub("^cfg%-", "")
 	local entry = optionById[id]
 	if entry and entry.onClick then
@@ -343,7 +346,7 @@ function widget:OnAction(element)
 end
 
 -- Select: read from element, call side effect
-function widget:OnSelect(element)
+local function onSelectImpl(element)
 	local id = (element:GetAttribute("id") or ""):gsub("^cfg%-", "")
 	local entry = optionById[id]
 	if not entry then return end
@@ -365,6 +368,15 @@ local function initModel()
 		my = {
 			panelHeading = "panel-heading-abs text-lg font-bold text-primary",
 		},
+
+		-- No widget: methods — model fns via data-event-*. The bound
+		-- element is ev.current_element (NOT target_element, which is the
+		-- click origin / a possible child). current_element matches the
+		-- element the old onclick="widget:Fn(element)" inline syntax gave.
+		onToggle = function(ev) local e = ev and ev.current_element; if e then onToggleImpl(e) end end,
+		onSlider = function(ev) local e = ev and ev.current_element; if e then onSliderImpl(e) end end,
+		onSelect = function(ev) local e = ev and ev.current_element; if e then onSelectImpl(e) end end,
+		onAction = function(ev) local e = ev and ev.current_element; if e then onActionImpl(e) end end,
 	}
 end
 

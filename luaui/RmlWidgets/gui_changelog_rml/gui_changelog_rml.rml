@@ -21,10 +21,10 @@
 		<!-- Debug controls (reload/debug) — top-right absolute overlay on the
 		     widget container, gated behind the "RML Debug Controls" dev flag. -->
 		<div data-if="rmlDebugControls" class="debug-controls absolute top right pr-2 pt-2 z-50">
-			<button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()" title="Reload Widget">
+			<button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="requestReload()" title="Reload Widget">
 				<span class="pe-none">reload</span>
 			</button>
-			<button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()" title="Toggle Debugger">
+			<button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="toggleDebugger()" title="Toggle Debugger">
 				<span class="pe-none">debug</span>
 			</button>
 		</div>

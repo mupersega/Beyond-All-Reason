@@ -17,10 +17,10 @@
     <div id="widget-container" data-model="svg_test_model" class="hazards-135 bg-darkest-alpha rounded-lg border border-dark clip box-shadow-md flex flex-col border-radius-none">
         <!-- Debug controls (gated by Options > Dev > Debug > RML Debug Controls) -->
         <div data-if="rmlDebugControls" class="debug-controls absolute top right pr-2 pt-2">
-            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:Reload()">
+            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="requestReload()">
                 <span>reload</span>
             </button>
-            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" onclick="widget:ToggleDebugger()">
+            <button data-attr-class="ccg.text.warning + ' px-1 debug-btn'" data-event-click="toggleDebugger()">
                 <span>debug</span>
             </button>
         </div>
@@ -145,7 +145,7 @@
                     <!-- Test C: Pre-cached swap (click to toggle) -->
                     <div class="flex flex-col items-center gap-1">
                         <span class="text-xs text-medium">C: Swap</span>
-                        <div class="shape-box-wide cursor-pointer" onclick="widget:ToggleColorTest()">
+                        <div class="shape-box-wide cursor-pointer" data-event-click="toggleColorTest()">
                             <svg id="color-test-c" class="shape-fill" />
                         </div>
                     </div>

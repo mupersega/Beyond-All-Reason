@@ -699,7 +699,7 @@ local function initModel()
 			end
 			-- Read the value from the ELEMENT, not the model: data-value
 			-- commits AFTER the event (RmlUi #668). keyup => per-keystroke.
-			local el = ev and ev.target_element
+			local el = ev and ev.current_element  -- the bound input (see CLAUDE.md)
 			local q = (el and el:GetAttribute("value")) or ""
 			if q == lastSearchValue then return end
 			lastSearchValue = q

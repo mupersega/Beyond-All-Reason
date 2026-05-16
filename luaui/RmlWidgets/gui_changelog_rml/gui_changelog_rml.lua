@@ -183,6 +183,18 @@ local function initModel()
 		visible          = false,
 		debugMode        = false,
 		rmlDebugControls = false,  -- driven by utils.isRmlDebugEnabled() in Update
+		reloadRequested  = false,  -- set by requestReload(); acted on in widget:Update
+
+		-- Dev-only model fns (gated by data-if="rmlDebugControls"). No
+		-- widget: methods — see CLAUDE.md "The model is king". requestReload
+		-- defers teardown to Update so the model isn't destroyed mid-dispatch.
+		requestReload = function()
+			dm_handle.reloadRequested = true
+		end,
+		toggleDebugger = function()
+			dm_handle.debugMode = not dm_handle.debugMode
+			RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
+		end,
 
 		-- Localised header label (overwritten in Initialize with Spring.I18N).
 		titleText = "Changelog",
@@ -318,14 +330,19 @@ function widget:KeyPress(key, mods, isRepeat)
 end
 
 function widget:Update()
-	-- Poll the RML Debug Controls dev flag and push any change to the model
-	-- so the reload/debug buttons show/hide accordingly. See CLAUDE.md.
-	if dm_handle then
-		local rmlDebug = utils.isRmlDebugEnabled()
-		if rmlDebug ~= lastRmlDebug then
-			lastRmlDebug = rmlDebug
-			dm_handle.rmlDebugControls = rmlDebug
-		end
+	if not dm_handle then return end
+	if dm_handle.reloadRequested then
+		-- Deferred reload: tear down OUTSIDE the data-event dispatch that
+		-- requested it (Shutdown from inside a model fn = use-after-free).
+		widget:Shutdown()
+		widget:Initialize()
+		return
+	end
+	-- change-gated dev-flag sync; no per-frame polling. See CLAUDE.md.
+	local rmlDebug = utils.isRmlDebugEnabled()
+	if rmlDebug ~= lastRmlDebug then
+		lastRmlDebug = rmlDebug
+		dm_handle.rmlDebugControls = rmlDebug
 	end
 end
 
@@ -347,27 +364,6 @@ function widget:SetConfigData(data)
 		end
 		if data.lastviewedChangelogLength ~= nil then
 			lastviewedChangelogLength = data.lastviewedChangelogLength
-		end
-	end
-end
-
--- -------------------------------------------------------------------------
--- dev helpers (rml_starter convention)
--- -------------------------------------------------------------------------
-
-function widget:Reload()
-	Spring.Echo(WIDGET_ID .. ": Reloading widget...")
-	widget:Shutdown()
-	widget:Initialize()
-end
-
-function widget:ToggleDebugger()
-	if dm_handle then
-		dm_handle.debugMode = not dm_handle.debugMode
-		if dm_handle.debugMode then
-			RmlUi.SetDebugContext('shared')
-		else
-			RmlUi.SetDebugContext(nil)
 		end
 	end
 end

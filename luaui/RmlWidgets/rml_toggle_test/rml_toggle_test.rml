@@ -76,7 +76,7 @@
                     <!-- Parent: bool toggle -->
                     <div data-if="group.parent.type == 'bool'" class="setting-row clickable"
                          data-attr-id="'cfg-' + group.parent.id"
-                         onclick="widget:OnToggle(element)">
+                         data-event-click="onToggle()">
                         <div class="setting-control">
                             <span class="option-label pe-none font-bold">{{group.parent.name}}</span>
                             <div data-attr-class="ccg.toggle.panel + ' pe-none'">
@@ -98,7 +98,7 @@
                                        data-attr-max="group.parent.max"
                                        data-attr-step="group.parent.step"
                                        data-attr-value="group.parent.value"
-                                       onchange="widget:OnSlider(element)" />
+                                       data-event-change="onSlider()" />
                                 <span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span>
                             </div>
                         </div>
@@ -110,7 +110,7 @@
                         <div class="setting-control">
                             <span class="option-label font-bold">{{group.parent.name}}</span>
                             <select data-attr-id="'cfg-' + group.parent.id"
-                                    onchange="widget:OnSelect(element)">
+                                    data-event-change="onSelect()">
                                 <option data-for="choice : group.parent.selectOptions"
                                         data-attr-value="choice.value"
                                         data-attr-selected="choice.value == group.parent.value">
@@ -124,7 +124,7 @@
                     <!-- Parent: action -->
                     <div data-if="group.parent.type == 'action'" class="setting-row clickable"
                          data-attr-id="'cfg-' + group.parent.id"
-                         onclick="widget:OnAction(element)">
+                         data-event-click="onAction()">
                         <div class="setting-control">
                             <span data-attr-class="group.parent.labelClass + ' pe-none'">{{group.parent.name}}</span>
                         </div>
@@ -144,7 +144,7 @@
                             <!-- Child: bool -->
                             <div data-if="child.type == 'bool'" class="setting-row clickable"
                                  data-attr-id="'cfg-' + child.id"
-                                 onclick="widget:OnToggle(element)">
+                                 data-event-click="onToggle()">
                                 <div class="setting-control">
                                     <span class="option-label pe-none">{{child.name}}</span>
                                     <div data-attr-class="ccg.toggle.panel + ' pe-none'">
@@ -166,7 +166,7 @@
                                                data-attr-max="child.max"
                                                data-attr-step="child.step"
                                                data-attr-value="child.value"
-                                               onchange="widget:OnSlider(element)" />
+                                               data-event-change="onSlider()" />
                                         <span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + child.id">{{child.value}}</span>
                                     </div>
                                 </div>

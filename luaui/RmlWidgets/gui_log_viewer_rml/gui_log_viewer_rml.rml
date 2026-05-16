@@ -29,7 +29,7 @@
 				<button data-attr-class="my.headerBtn + ' bg-dark-alpha-hover text-medium'" data-event-click="scrollToBottom()">
 					Bottom
 				</button>
-				<button data-attr-class="my.headerBtn + ' bg-dark-alpha-hover text-medium'" onclick="widget:CopyAll()">
+				<button data-attr-class="my.headerBtn + ' bg-dark-alpha-hover text-medium'" data-event-click="copyAll()">
 					<svg src="../svg/copy_icon.svg" data-attr-class="my.svgStyles"></svg>
 				</button>
 				<button data-attr-class="my.headerBtn + ' bg-dark-alpha-hover text-medium'" data-event-click="clearConsole()">
@@ -42,7 +42,7 @@
 		</div>
 
 		<!-- Scrollable console area -->
-		<div id="console-scroll" class="console-scroll" onscroll="widget:OnScroll()">
+		<div id="console-scroll" class="console-scroll" data-event-scroll="onScroll()">
 			<div id="console-text"></div>
 			<div id="scroll-anchor"></div>
 		</div>

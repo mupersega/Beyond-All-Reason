@@ -45,6 +45,10 @@ local GENERATED_SVG_PATH = "luaui/RmlWidgets/svg_test/generated_test.svg"
 local document
 local dm_handle
 
+-- Forward-declared so the toggleColorTest model fn (in initModel) can
+-- upvalue them; assigned further down where the SVG variants are built.
+local colorTestCActive, colorTestCGreen, colorTestCRed
+
 local dynamicSvgEl
 local graphSvgEl
 local animTime = 0
@@ -550,6 +554,25 @@ local function initModel()
 		sweepInfo = "",
 		playerList = {},
 		rmlDebugControls = false,
+		debugMode = false,
+		reloadRequested = false,  -- set by requestReload(); acted on in widget:Update
+
+		-- No widget: methods — see CLAUDE.md "The model is king".
+		requestReload = function()
+			dm_handle.reloadRequested = true
+		end,
+		toggleDebugger = function()
+			dm_handle.debugMode = not dm_handle.debugMode
+			RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
+		end,
+		toggleColorTest = function()
+			-- rml-dom-escape: SVG src swap (sanctioned SVG injection — this
+			-- is the svg_test escape-hatch widget; no data binding for SVG).
+			local el = document:GetElementById("color-test-c")
+			if not el then return end
+			colorTestCActive = not colorTestCActive
+			el:SetAttribute("src", colorTestCActive and colorTestCGreen or colorTestCRed)
+		end,
 		windRunning = false,
 
 		my = {
@@ -921,6 +944,13 @@ function widget:Shutdown()
 end
 
 function widget:Update(dt)
+	if dm_handle and dm_handle.reloadRequested then
+		-- Deferred reload: tear down OUTSIDE the data-event dispatch that
+		-- requested it (Shutdown from inside a model fn = use-after-free).
+		widget:Shutdown()
+		widget:Initialize()
+		return
+	end
 	-- Sync "RML Debug Controls" dev flag so reload/debug buttons reflect state
 	if dm_handle then
 		local rmlDebug = utils.isRmlDebugEnabled()
@@ -1197,27 +1227,7 @@ function widget:BuildPanels()
 	log("Shape panels built.")
 end
 
--- Pre-cache color variants for test C
-local colorTestCGreen = svgShapes.parallelogram({ skew = 8, fill = "rgb(34, 197, 94)" })
-local colorTestCRed = svgShapes.parallelogram({ skew = 8, fill = "rgb(239, 68, 68)" })
-local colorTestCActive = true
-
-function widget:ToggleColorTest()
-	local el = document:GetElementById("color-test-c")
-	if not el then return end
-	colorTestCActive = not colorTestCActive
-	el:SetAttribute("src", colorTestCActive and colorTestCGreen or colorTestCRed)
-end
-
-function widget:Reload()
-	Spring.Echo(WIDGET_ID .. ": Reloading...")
-	widget:Shutdown()
-	widget:Initialize()
-end
-
-function widget:ToggleDebugger()
-	if dm_handle then
-		dm_handle.debugMode = not dm_handle.debugMode
-		RmlUi.SetDebugContext(dm_handle.debugMode and 'shared' or nil)
-	end
-end
+-- Pre-cache color variants for test C (assigns the forward-declared upvalues)
+colorTestCGreen = svgShapes.parallelogram({ skew = 8, fill = "rgb(34, 197, 94)" })
+colorTestCRed = svgShapes.parallelogram({ skew = 8, fill = "rgb(239, 68, 68)" })
+colorTestCActive = true
