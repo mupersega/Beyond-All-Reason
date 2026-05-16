@@ -25,6 +25,27 @@ row:SetClass("enabled", state.enabled)
 
 No marker, no DOM call. "It was easier" is not a reason. If you can't write a one-line technical reason matching one of the three cases, the change belongs in the model. Full API and guidance: **Direct DOM Manipulation** near the end of this doc.
 
+### No `widget:` methods for UI behaviour — use model + `data-event-*`
+
+Corollary of the rule above, and equally non-negotiable. **Do not wire behaviour through `widget:SomeFunction()` invoked from inline `onclick=` / `onkeyup=` / `onchange=` handlers.** Inline `on*=` + widget methods are a parallel, untracked control path that fragments the widget and bypasses the data model.
+
+Instead: define the function inside `initModel()`'s returned table and invoke it from RML via `data-event-*`:
+
+```rml
+<button data-event-click="confirm()">OK</button>
+<input data-event-keyup="onType(ev.key_identifier)" />
+```
+```lua
+-- inside the table returned by initModel()
+confirm = function() dm_handle.status = "ok" end,
+onType  = function(ev, keyId)
+    local el = ev and ev.target_element          -- the element, when you need it
+    performFilter((el and el:GetAttribute("value")) or "")
+end,
+```
+
+The model function receives the `Event` as its implicit first argument; read the element via `ev.target_element` (or `ev.current_element`) when you must touch it directly — e.g. to dodge the `data-value`-commits-after-the-event timing (RmlUi #668; see Critical Gotchas and Direct DOM Manipulation). Older widgets (`gui_options_rml`, …) still use `widget:OnSlider` / `onclick="widget:Reload()"`; that is **legacy debt to migrate, not a pattern to copy**.
+
 ## Widget File Structure
 
 Each RML widget lives in its own directory under `luaui/RmlWidgets/`:
