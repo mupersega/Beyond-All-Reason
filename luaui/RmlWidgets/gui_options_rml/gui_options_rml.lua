@@ -36,6 +36,7 @@ local searchIndex = {}          -- flat list built at content-init, source of tr
 local pathLabels = {}           -- ["gfx/display"] -> "Graphics > Display" (localized)
 local localSearchResults = {}   -- local mirror of results for arrow-nav lookup (never read from proxy)
 local selectedIndex = 0         -- 0 = none; 1-based index into localSearchResults
+local lastSearchValue           -- guard: only re-filter when the input text actually changed (nav-key keyups must not reset the dropdown)
 local pendingScrollId = nil     -- id to scroll into view next Update after tab switch
 local pendingScrollElement = nil -- element ref found on frame N; scrolled on frame N+1
 local pendingScrollFrames = 0   -- retry counter for deferred scroll
@@ -484,8 +485,8 @@ end
 
 -- Filter searchIndex by plain substring match (name weighted higher than
 -- desc), cap results, and push to the proxy for the dropdown. Called from
--- the `onSearchChange` model function that's wired to `data-event-change`
--- on the search input.
+-- the `onSearchInput` model function (wired to `data-event-keyup` on the
+-- search input) with the value read from the element, not the model.
 local function performSearch(raw)
 	if not dm_handle then return end
 	raw = raw or ""
@@ -559,6 +560,7 @@ local function navigateToResult(id)
 	dm_handle.searchResults = {}
 	dm_handle.showSearchResults = false
 	localSearchResults = {}
+	lastSearchValue = nil
 	selectedIndex = 0
 	dm_handle.selectedResultIndex = 0
 
@@ -686,14 +688,22 @@ local function initModel()
 		showSearchResults = false,
 		selectedResultIndex = 0,
 
-		-- Model function invoked via `data-event-change` on the search
-		-- input. Routed through the data binding engine rather than a
-		-- `widget:` method — this is the path `data-event-mousedown` uses
-		-- elsewhere in the widget and is expected to have different
-		-- timing from `onchange` handlers (which fire before data-value
-		-- propagates per RmlUi #668).
-		onSearchChange = function()
-			performSearch(dm_handle.searchQuery or "")
+		onSearchInput = function(ev, keyId)
+			-- Nav/commit keys (Enter 72, Down 20, Up 19, Escape 81) are
+			-- handled in onSearchKeyDown; ignore them here so a keyup
+			-- can't re-filter — Escape clears the box in keydown and a
+			-- stale element re-read would undo it — or reset the
+			-- dropdown selection on Up/Down.
+			if keyId == 72 or keyId == 20 or keyId == 19 or keyId == 81 then
+				return
+			end
+			-- Read the value from the ELEMENT, not the model: data-value
+			-- commits AFTER the event (RmlUi #668). keyup => per-keystroke.
+			local el = ev and ev.target_element
+			local q = (el and el:GetAttribute("value")) or ""
+			if q == lastSearchValue then return end
+			lastSearchValue = q
+			performSearch(q)
 		end,
 
 		onSearchSubmit = function()
@@ -735,6 +745,7 @@ local function initModel()
 				dm_handle.searchResults = {}
 				dm_handle.showSearchResults = false
 				localSearchResults = {}
+				lastSearchValue = nil
 				selectedIndex = 0
 				dm_handle.selectedResultIndex = 0
 				-- Pull focus away from the input by focusing the widget body.
