@@ -43,7 +43,7 @@
 
 		<!-- Scrollable console area -->
 		<div id="console-scroll" class="console-scroll" data-event-scroll="onScroll()">
-			<div id="console-text"></div>
+			<div id="console-text" data-event-click="copyLine()"></div>
 			<div id="scroll-anchor"></div>
 		</div>
 

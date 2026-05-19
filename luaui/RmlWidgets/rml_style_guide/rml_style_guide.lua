@@ -22,26 +22,10 @@ function widget:GetInfo()
     }
 end
 
--- Helper function for nested sheet group structures
-local function createSheetArray(ccgTable, prefix)
-    local result = {}
-    for key, value in pairs(ccgTable) do
-        table.insert(result, {
-            name = key,
-            class = prefix .. "." .. key,
-            container = value.container or "",
-            title = value.title or "",
-            content = value.content or "",
-            footer = value.footer or ""
-        })
-    end
-    return result
-end
-
 -- Helper function to convert class group tables to iterable arrays
 local function createIterableArray(ccgTable, prefix, shouldSort)
     local result = {}
-    for key, value in pairs(ccgTable) do
+    for key, value in pairs(ccgTable or {}) do
         table.insert(result, {
             name = key,
             class = prefix .. "." .. key,
@@ -82,7 +66,7 @@ local function createTextArray(ccgTable, prefix)
     }
     
     local result = {}
-    for key, value in pairs(ccgTable) do
+    for key, value in pairs(ccgTable or {}) do
         -- Skip badge and pill components - they belong in components section
         if key ~= "badge" and key ~= "pill" then
             local exampleData = textExamples[key] or { example = key, description = "Text style" }
@@ -133,7 +117,7 @@ local function createComponentArray(ccgTable, prefix, componentType)
     end
     
     local result = {}
-    for key, value in pairs(ccgTable) do
+    for key, value in pairs(ccgTable or {}) do
         local exampleData = componentExamples[key] or { example = key:upper(), description = componentType .. " variant" }
         table.insert(result, {
             name = key,
@@ -181,7 +165,6 @@ local function initModel()
             { id = "buttons", label = "Buttons" },
             { id = "text", label = "Text" },
             { id = "tags", label = "Tags" },
-            { id = "sheets", label = "Sheets" },
             { id = "cards", label = "Cards" },
             { id = "headings", label = "Headings" },
             { id = "panels", label = "Panels" },
@@ -231,9 +214,6 @@ local function initModel()
         textStyles = createTextArray(ccg.definitions.text, ccg.prefix .. ".text"),
         themeTextStyles = createTextArray(ccg.definitions.themeText, ccg.prefix .. ".themeText"),
         badges = createComponentArray(ccg.definitions.badge, ccg.prefix .. ".badge", "Badge"),
-        pills = createComponentArray(ccg.definitions.pill, ccg.prefix .. ".pill", "Pill"),
-        circles = createComponentArray(ccg.definitions.circle, ccg.prefix .. ".circle", "Circle"),
-        sheets = createSheetArray(ccg.definitions.sheet, ccg.prefix .. ".sheet"),
         cards = createIterableArray(ccg.definitions.card, ccg.prefix .. ".card"),
         headings = createIterableArray(ccg.definitions.heading, ccg.prefix .. ".heading", true),
         panels = createIterableArray(ccg.buildPanels(ccg.readCurrentOptions()), ccg.prefix .. ".panel", true),

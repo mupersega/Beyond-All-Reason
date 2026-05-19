@@ -27,6 +27,39 @@ end
 
 
 
+-- ── DPI / coordinate helpers ────────────────────────────────────────────
+-- Single source of truth for the RML dp ratio. rml_context_manager pushes
+-- this onto every RmlUi context (context.dp_ratio); rml_tooltip_layer uses
+-- it to place the cursor-following overlay. The whole dp coordinate space
+-- is calibrated to this exact computation — keep it here, don't re-derive.
+--
+-- NOTE: the scale basis is the FIRST return of Spring.GetViewGeometry().
+-- That is long-standing behaviour every dp measurement in the RML UI is
+-- calibrated against; do NOT "correct" the axis or change the divisor
+-- without re-deriving every widget's sizing.
+local DP_BASE_DIM = 1080
+
+local function computeDpRatio(scaleBasis)
+    local userScale = Spring.GetConfigFloat("ui_scale", 1)
+    return math.floor((scaleBasis / DP_BASE_DIM) * userScale * 100) / 100
+end
+
+-- Current dp ratio (resolution * user ui_scale, quantised to 0.01).
+function utils.getDpRatio()
+    local scaleBasis = Spring.GetViewGeometry()
+    return computeDpRatio(scaleBasis)
+end
+
+-- Convert Spring pixel coords (bottom-left origin) to RML dp coords
+-- (top-left origin). Returns dpX, dpY. dpRatio is clamped to > 0 so a
+-- degenerate viewport can't divide by zero.
+function utils.springToDp(sx, sy)
+    local scaleBasis, viewSizeY = Spring.GetViewGeometry()
+    local dpRatio = computeDpRatio(scaleBasis)
+    if dpRatio <= 0 then dpRatio = 1 end
+    return sx / dpRatio, (viewSizeY - sy) / dpRatio
+end
+
 -- RML Widget initialization helper
 function utils.initializeRmlWidget(widget, initParams)
     -- Validate required parameters

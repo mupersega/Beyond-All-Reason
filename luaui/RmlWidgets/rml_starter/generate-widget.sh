@@ -3,6 +3,9 @@
 # RML Widget Generator
 # Usage: ./generate-widget.sh --name widget_name
 #
+# Requires bash. On Windows, run it from Git Bash or WSL — NOT PowerShell
+# or cmd. (No PowerShell port: keeping one canonical script avoids drift.)
+#
 # Scaffolds a new RML widget (.lua/.rml/.rcss) using the canonical BAR
 # patterns: model-is-king (no widget: methods), block layout (no nested
 # flex-column), CCG for components + utility classes for layout. No debug
@@ -22,6 +25,8 @@ while [[ $# -gt 0 ]]; do
             echo "RML Widget Generator"
             echo ""
             echo "Usage: $0 --name widget_name"
+            echo ""
+            echo "Requires bash (Windows: run from Git Bash or WSL, not PowerShell/cmd)."
             echo ""
             echo "Required:"
             echo "  --name NAME        Widget name (letters, numbers, _ and - ; must start with a letter)"
@@ -74,7 +79,7 @@ echo "Generating RML widget: $WIDGET_NAME"
 mkdir "$WIDGET_DIR"
 
 # ---------------------------------------------------------------------------
-# Lua — logic, model factory, gated debug, change-only Update
+# Lua — logic, model factory, no debug UI, no per-frame Update
 # ---------------------------------------------------------------------------
 cat > "$WIDGET_DIR/${WIDGET_NAME}.lua" << EOF
 -- ${WIDGET_NAME} — RML widget
@@ -166,7 +171,7 @@ end
 EOF
 
 # ---------------------------------------------------------------------------
-# RML — block layout, utilities by default (CCG for heavy repeats), gated debug
+# RML — block layout, utilities by default (CCG for heavy repeats), no debug UI
 # ---------------------------------------------------------------------------
 cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << EOF
 <rml>

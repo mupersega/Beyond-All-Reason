@@ -65,6 +65,15 @@ local PLAY_FILLS = {
 	"rgb(120,120,125)",
 }
 
+-- ── Tooltip Layer demo state ──
+-- The shared overlay (rml_tooltip_layer / WG['rml_tooltip']) is *driven*,
+-- not fire-and-forget: it auto-hides ~170ms after the last Show(). So
+-- hover handlers only set state here; widget:Update re-Shows it every
+-- frame with live cursor coords while a demo target is hovered.
+local ttDemoText = nil    -- body content (inner RML); nil = nothing hovered
+local ttDemoTitle = nil   -- optional title; nil = plain (untitled) slot
+local ttDemoActive = false -- did we Show() last frame? (Hide only on transition)
+
 -- Build gradient SVG manually (shape library doesn't handle gradients)
 local function buildGradientShape(shapeType, opts)
 	local W, H = 100, 100
@@ -377,6 +386,24 @@ local function initModel()
             end
         end,
 
+        -- Tooltip Layer demo (see the "Tooltip Layer" tab). Handlers ONLY
+        -- set state — no WG['rml_tooltip'] calls here. widget:Update reads
+        -- this state and drives the shared overlay with live cursor coords.
+        showTooltipDemo = function(event, text, title)
+            ttDemoText = text
+            ttDemoTitle = (title ~= nil and title ~= "") and title or nil
+        end,
+        showRichTooltipDemo = function()
+            -- Markup content is normally assembled in Lua, not passed
+            -- through an RML attribute (avoids nested-quote escaping).
+            ttDemoText = "<span class='text-warning font-bold'>Markup works</span> — the body is inner RML."
+            ttDemoTitle = nil
+        end,
+        hideTooltipDemo = function()
+            ttDemoText = nil
+            ttDemoTitle = nil
+        end,
+
         -- All tabs
         tabs = {
             { id = "landing", label = "Welcome" },
@@ -384,6 +411,7 @@ local function initModel()
             { id = "base-widget-conventions", label = "Base Widget Conventions" },
             { id = "widget-positioning", label = "Widget Positioning" },
             { id = "data-binding", label = "Data Binding" },
+            { id = "tooltips", label = "Tooltip Layer" },
             { id = "tools", label = "Tools" },
             { id = "svg", label = "SVG" },
         },
@@ -605,6 +633,13 @@ function widget:Shutdown()
         modelName = MODEL_NAME
     }
     utils.shutdownRmlWidget(self, shutdownParams, document, dm_handle)
+    -- Don't orphan the shared overlay if we're torn down mid-hover.
+    if ttDemoActive and WG['rml_tooltip'] then
+        WG['rml_tooltip'].Hide()
+    end
+    ttDemoText = nil
+    ttDemoTitle = nil
+    ttDemoActive = false
     svgGraphEl = nil
     svgSweepRunning = false
     svgSweepElapsed = 0
@@ -623,6 +658,24 @@ function widget:Update(dt)
     end
     if dm_handle then
         dm_handle.currentTime = os.date("%H:%M:%S")
+    end
+
+    -- Tooltip Layer demo: drive the shared overlay while a demo target is
+    -- hovered. Same hover->Show / out->Hide idea as rml_style_guide, with
+    -- two refinements worth copying: (1) gated on the tab being active so
+    -- we don't fight other widgets when you're elsewhere, and (2) Hide()
+    -- only on the hover-out transition — the slot is a single shared
+    -- resource, so blindly Hiding every idle frame would clobber another
+    -- widget's tooltip.
+    if dm_handle and dm_handle.activeTab == "tooltips" and WG['rml_tooltip'] then
+        if ttDemoText then
+            local mx, my = Spring.GetMouseState()
+            WG['rml_tooltip'].Show(ttDemoText, mx, my, ttDemoTitle)
+            ttDemoActive = true
+        elseif ttDemoActive then
+            WG['rml_tooltip'].Hide()
+            ttDemoActive = false
+        end
     end
 
     if svgSweepRunning and svgGraphData and svgGraphEl then

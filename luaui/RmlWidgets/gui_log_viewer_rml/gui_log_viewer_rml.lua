@@ -152,8 +152,13 @@ local function flushToConsole()
 			cls = cls .. " console-line-copied"
 		end
 		cls = cls .. entry.cls
-		parts[i] = '<p class="' .. cls .. '" onclick="widget:CopyLine(' .. i .. ')">' .. escapeRml(entry.text) .. '</p>'
+		parts[i] = '<p class="' .. cls .. '" line-index="' .. i .. '">' .. escapeRml(entry.text) .. '</p>'
 	end
+	-- rml-dom-escape: high-volume append-only log — building markup as a
+	-- string and injecting it beats a data-for of thousands of lines re-bound
+	-- every flush (escape case 3: measured perf hot path). Line click-to-copy
+	-- is wired by ONE delegated data-event-click on #console-text (.rml) →
+	-- the copyLine() model fn — no per-line inline handlers, no widget: method.
 	consoleElement.inner_rml = table.concat(parts)
 
 	if autoScroll then
@@ -207,6 +212,22 @@ local function initModel()
 			if text ~= "" then
 				Spring.SetClipboard(text)
 				copiedTimer = spGetTimer()
+			end
+		end,
+
+		-- Click a log line to copy it. Delegated: a single
+		-- data-event-click lives on #console-text; ev.target_element is
+		-- the actual clicked <p> (read its line-index), not the bound
+		-- container — the one legitimate use of target_element over
+		-- current_element (event delegation onto string-injected rows).
+		copyLine = function(ev)
+			local el = ev and ev.target_element
+			local idx = el and tonumber(el:GetAttribute("line-index"))
+			if idx and lines[idx] then
+				Spring.SetClipboard(lines[idx].text)
+				copiedTimer = spGetTimer()
+				copiedLineIndex = idx
+				dirty = true
 			end
 		end,
 
@@ -268,17 +289,6 @@ function widget:Shutdown()
 	copiedTextElement = nil
 	copiedLineIndex = nil
 	lines = {}
-end
-
--- Click a line to copy it
-function widget:CopyLine(index)
-	index = tonumber(index)
-	if index and lines[index] then
-		Spring.SetClipboard(lines[index].text)
-		copiedTimer = spGetTimer()
-		copiedLineIndex = index
-		dirty = true
-	end
 end
 
 function widget:AddConsoleLine(msg, priority)

@@ -132,82 +132,16 @@ local CCG_MODEL_KEY = {
     combo        = "comboVariants",
     alphaLadder  = "alphaLadderVariants",
     replacement  = "replacementVariants",
-    -- Widget-test "family" — each entry targets one real RML widget
-    widgetTest   = "widgetTestVariants",
 }
 local ccgFamilyEntries = {}
 for _, f in ipairs(CCG_FAMILIES) do ccgFamilyEntries[f] = {} end
 for _, f in ipairs(UTILITY_FAMILIES) do ccgFamilyEntries[f] = {} end
-ccgFamilyEntries.widgetTest = {}
 
 -- Populated by populateCcgVariants/populateUtilVariants at init — each
 -- entry is a `{"flat", 500, key}` tuple. Drives the dedicated suite
 -- runners.
 local CCG_SUITE_SCENARIOS = {}
 local UTILITY_SUITE_SCENARIOS = {}
-local WIDGET_SUITE_SCENARIOS = {}
-
--- Real RML widgets we can put to the test — GetInfo.name values
--- extracted from each widget's .lua. `id` is a short identifier used
--- in data-model keys and result spans.
-local WIDGET_TESTS = {
-    { id = "opts",   label = "Options RML",         name = "Options RML" },
-    { id = "starter",label = "RML Starter",         name = "RML Starter" },
-    { id = "style",  label = "rml_style_guide",     name = "rml_style_guide" },
-    { id = "chg",    label = "Changelog (RML)",     name = "Changelog (RML)" },
-    { id = "log",    label = "Log Viewer (RML)",    name = "Log Viewer (RML)" },
-    { id = "tool",   label = "rml_tooltip_layer",   name = "rml_tooltip_layer" },
-    { id = "svg",    label = "SVG Test",            name = "SVG Test" },
-    { id = "quick",  label = "Quick Start UI",      name = "Quick Start UI" },
-    { id = "toggle", label = "RML Input Test",      name = "RML Input Test" },
-}
-
--- Names of widgets the stress test enabled during a widget-test scenario,
--- to be disabled when the test finishes.
-local widgetsEnabledByTest = {}
-
--- The stress test owns its own RmlUi context so target widgets we enable
--- during widget tests don't mix with the main "shared" context. Created
--- lazily on first widget test. Theme is applied immediately so the new
--- context isn't flat-coloured. See `WG.rml_testContextOverride` in
--- luaui/Include/rml_utilities/utils.lua for how target widgets route into it.
-local STRESS_CONTEXT_NAME = "stressTest"
-local stressTestContextReady = false
-
-local function ensureStressTestContext()
-    if stressTestContextReady then return end
-    local existing = RmlUi.GetContext(STRESS_CONTEXT_NAME)
-    if not existing then
-        RmlUi.CreateContext(STRESS_CONTEXT_NAME)
-    end
-    -- A fresh context doesn't inherit active theme state. applyTheme
-    -- iterates ALL contexts, so this propagates the current theme to the
-    -- new stressTest context (and re-affirms it on "shared", harmless).
-    themeUtils.applyTheme(themeUtils.GetCurrentTheme())
-    stressTestContextReady = true
-    Spring.Echo("rml_stress_test: created RmlUi context '" .. STRESS_CONTEXT_NAME .. "'")
-end
-
-local function unloadStressTestDocuments()
-    local ctx = RmlUi.GetContext(STRESS_CONTEXT_NAME)
-    if ctx then
-        pcall(function() ctx:UnloadAllDocuments() end)
-    end
-end
-
--- Force all documents in the stressTest context to be visible. Many BAR
--- widgets start hidden (calling document:Hide() at the end of their
--- Initialize, shown only on demand). For measurement we want to see them
--- actually render, so override after enable.
-local function showAllStressTestDocuments()
-    local ctx = RmlUi.GetContext(STRESS_CONTEXT_NAME)
-    if not ctx then return end
-    pcall(function()
-        for _, doc in ipairs(ctx.documents) do
-            doc:Show()
-        end
-    end)
-end
 
 local function populateCcgVariants()
     local model = ccg.getForModel()
@@ -258,24 +192,6 @@ end
 -- Utility-class variants: raw utility classes (bg-gradient, hazards-*, etc.)
 -- each tested individually at 500 elements. Shares the same family-entry
 -- storage mechanism as CCG variants so result routing stays uniform.
-local function populateWidgetTests()
-    WIDGET_SUITE_SCENARIOS = {}
-    local entries = {}
-    for _, item in ipairs(WIDGET_TESTS) do
-        local key = "widgetTest_" .. item.id
-        table.insert(entries, {
-            key         = key,
-            variantName = item.id,
-            label       = item.label,
-            widgetName  = item.name,
-            result      = "",
-            count       = 1,  -- unused for widget tests (they don't mount elements)
-        })
-        table.insert(WIDGET_SUITE_SCENARIOS, { "widgettest", item.name, key })
-    end
-    ccgFamilyEntries.widgetTest = entries
-end
-
 local function populateUtilVariants()
     for _, family in ipairs(UTILITY_FAMILIES) do
         local classList = UTILITY_VARIANTS[family]
@@ -311,10 +227,8 @@ local function refreshCCGClasses()
     -- Reset suites before we re-populate (in case of hot reload)
     CCG_SUITE_SCENARIOS = {}
     UTILITY_SUITE_SCENARIOS = {}
-    WIDGET_SUITE_SCENARIOS = {}
     populateCcgVariants()
     populateUtilVariants()
-    populateWidgetTests()
 
     -- Legacy simple variants — kept for the existing "card" / "panel"
     -- buttons in the Flat section so prior tests still work.
@@ -387,7 +301,6 @@ local ALL_RESULT_KEYS = {
     "flat_500_pad", "flat_500_bg", "flat_500_shadow",
     "flat_500_rounded", "flat_500_border",
     "flat_500_cardnopad", "flat_500_cardround",
-    "widgetstack_3", "widgetstack_5", "widgetstack_all",
 }
 
 -- Scenario kinds where timed sampling makes sense. `clear`, `vis`,
@@ -398,8 +311,6 @@ local MEASURABLE_KINDS = {
     deep = true,
     reactive = true,
     flexcol = true,
-    widgettest = true,
-    widgetstack = true,
     baseline = true,
 }
 
@@ -455,11 +366,6 @@ local function resultKeyFor(kind, arg1, arg2, arg3)
         return "reactive_" .. arg1 .. "_" .. (arg2 or "text")
     elseif kind == "flexcol" then
         return "flexcol_" .. arg1
-    elseif kind == "widgettest" then
-        -- arg2 is the pre-formatted key from the entry (e.g. "widgetTest_wc")
-        return arg2
-    elseif kind == "widgetstack" then
-        return "widgetstack_" .. tostring(arg1 or "?")
     elseif kind == "baseline" then
         return "baseline"
     end
@@ -488,6 +394,127 @@ local function commitResults()
     dm_handle.results = fresh
 end
 
+-----------------------------------------------------------------------
+-- Core tab — genericized. Was ~50 hand-written buttons + ~45 static
+-- {{results.x}} bindings, ALL permanently in the DOM (data-if only sets
+-- display:none). Now one nested data-for over `coreSections`; the array
+-- is emptied when the Core tab isn't active so those elements truly
+-- leave the DOM (the stress test must not contaminate its own numbers).
+-- Per-entry .result mirrors the proven CCG path (dynamic-index binding
+-- like results[b.key] is NOT supported by RmlUi data addresses).
+-----------------------------------------------------------------------
+
+local CORE_LAYOUT = {
+    { heading = "Flat (siblings)", buttons = {
+        { l="100 p", k="flat", a1=100, a2="plain" }, { l="100 card", k="flat", a1=100, a2="card" }, { l="100 pnl", k="flat", a1=100, a2="panel" },
+        { l="500 p", k="flat", a1=500, a2="plain" }, { l="500 card", k="flat", a1=500, a2="card" }, { l="500 pnl", k="flat", a1=500, a2="panel" },
+        { l="1k p", k="flat", a1=1000, a2="plain" }, { l="1k card", k="flat", a1=1000, a2="card" }, { l="1k pnl", k="flat", a1=1000, a2="panel" },
+        { l="2k p", k="flat", a1=2000, a2="plain" }, { l="2k card", k="flat", a1=2000, a2="card" }, { l="2k pnl", k="flat", a1=2000, a2="panel" },
+    }},
+    { heading = "Isolation @ 500 (vs plain)", buttons = {
+        { l="pad", k="flat", a1=500, a2="pad" }, { l="bg", k="flat", a1=500, a2="bg" }, { l="shadow", k="flat", a1=500, a2="shadow" },
+        { l="rounded", k="flat", a1=500, a2="rounded" }, { l="border", k="flat", a1=500, a2="border" },
+        { l="card-nopad", k="flat", a1=500, a2="cardnopad" }, { l="card+round", k="flat", a1=500, a2="cardround" },
+    }},
+    { heading = "Parent x children grid", buttons = {
+        { l="20x20 p", k="grid", a1=20, a2=20, a3="plain" }, { l="20x20 card", k="grid", a1=20, a2=20, a3="card" },
+        { l="30x30 p", k="grid", a1=30, a2=30, a3="plain" }, { l="30x30 card", k="grid", a1=30, a2=30, a3="card" },
+        { l="50x50 p", k="grid", a1=50, a2=50, a3="plain" }, { l="50x50 card", k="grid", a1=50, a2=50, a3="card" },
+    }},
+    { heading = "Deep nesting", buttons = {
+        { l="d10 p", k="deep", a1=10, a2="plain" }, { l="d30 p", k="deep", a1=30, a2="plain" }, { l="d100 p", k="deep", a1=100, a2="plain" },
+        { l="d10 card", k="deep", a1=10, a2="card" }, { l="d30 card", k="deep", a1=30, a2="card" },
+    }},
+    { heading = "Reactive (tick each frame)", buttons = {
+        { l="100 text", k="reactive", a1=100, a2="text" }, { l="500 text", k="reactive", a1=500, a2="text" }, { l="1k text", k="reactive", a1=1000, a2="text" },
+        { l="100 class", k="reactive", a1=100, a2="class" }, { l="500 class", k="reactive", a1=500, a2="class" }, { l="1k class", k="reactive", a1=1000, a2="class" },
+        { l="100 style", k="reactive", a1=100, a2="style" }, { l="500 style", k="reactive", a1=500, a2="style" },
+        { l="100 gameFrame", k="reactive", a1=100, a2="gamestate" }, { l="500 gameFrame", k="reactive", a1=500, a2="gamestate" },
+        { l="Stop ticking", k="stoptick" },
+    }},
+    { heading = "Anti-pattern: nested flex-col", buttons = {
+        { l="5", k="flexcol", a1=5 }, { l="10", k="flexcol", a1=10 }, { l="15", k="flexcol", a1=15 }, { l="20", k="flexcol", a1=20 },
+        { l="25 (crash)", k="flexcol", a1=25, danger=true }, { l="30 (crash)", k="flexcol", a1=30, danger=true }, { l="50 (crash)", k="flexcol", a1=50, danger=true },
+    }},
+    { heading = "Stage visibility", buttons = {
+        { l="display:none", k="vis", a1="none" }, { l="visible", k="vis", a1="show" },
+    }},
+}
+
+-- Flatten into entries (carry live .result) + a key->entry map.
+local coreEntries = {}
+local coreEntryByKey = {}
+local coreSectionsData = {}
+for _, sec in ipairs(CORE_LAYOUT) do
+    local secOut = { heading = sec.heading, buttons = {} }
+    for _, b in ipairs(sec.buttons) do
+        local key = resultKeyFor(b.k, b.a1, b.a2, b.a3)  -- nil for stoptick/vis
+        local entry = {
+            key    = key or "",
+            label  = b.l,
+            cls    = b.danger and "stress-btn-ccg stress-btn-danger" or "stress-btn-ccg",
+            kind   = b.k,
+            a1     = b.a1 ~= nil and b.a1 or false,
+            a2     = b.a2 ~= nil and b.a2 or false,
+            a3     = b.a3 ~= nil and b.a3 or false,
+            result = "",
+        }
+        coreEntries[#coreEntries + 1] = entry
+        if key then coreEntryByKey[key] = entry end
+        secOut.buttons[#secOut.buttons + 1] = entry
+    end
+    coreSectionsData[#coreSectionsData + 1] = secOut
+end
+
+-- Fresh tables each commit so the data-for binding dirties cleanly
+-- (mirrors commitCcgFamily). Entry refs carry the live .result.
+local function buildCoreSectionsFresh()
+    local out = {}
+    for _, sec in ipairs(coreSectionsData) do
+        local bs = {}
+        for i, e in ipairs(sec.buttons) do
+            bs[i] = { key=e.key, label=e.label, cls=e.cls, kind=e.kind,
+                      a1=e.a1, a2=e.a2, a3=e.a3, result=e.result }
+        end
+        out[#out + 1] = { heading = sec.heading, buttons = bs }
+    end
+    return out
+end
+
+-- Only repopulate when Core is the active tab — otherwise a suite run
+-- updating a Core result would re-add ~95 elements while you're on
+-- another tab, re-contaminating the measurement.
+local function commitCore()
+    if not dm_handle then return end
+    if dm_handle.currentTab ~= "core" then return end
+    dm_handle.coreSections = buildCoreSectionsFresh()
+end
+
+-- Tab gating: only the active tab's data-for arrays are populated; the
+-- rest are {} so RmlUi renders ZERO elements for them. data-if alone
+-- only sets display:none — the DOM + bindings would still be walked
+-- every frame, which is the stress test contaminating its own numbers.
+local CCG_TAB_FAMILIES  = { "card", "panel", "button", "themeButton", "badge" }
+local UTIL_TAB_FAMILIES = { "utilGradient", "utilTexture", "utilThemeBg",
+                            "utilEffect", "combo", "alphaLadder", "replacement" }
+
+local function setActiveTab(tab)
+    if not dm_handle then return end
+    tab = tab or "core"
+    dm_handle.currentTab = tab
+
+    if tab == "core" then commitCore() else dm_handle.coreSections = {} end
+
+    for _, fam in ipairs(CCG_TAB_FAMILIES) do
+        if tab == "ccg" then commitCcgFamily(fam)
+        else dm_handle[CCG_MODEL_KEY[fam]] = {} end
+    end
+    for _, fam in ipairs(UTIL_TAB_FAMILIES) do
+        if tab == "util" then commitCcgFamily(fam)
+        else dm_handle[CCG_MODEL_KEY[fam]] = {} end
+    end
+end
+
 local function setInfo(count, mode, tick)
     stageCount = count
     stageMode = mode
@@ -508,6 +535,16 @@ end
 
 local function writeButtonResult(resultKey, text)
     if not resultKey then return end
+
+    -- Format 0: Core tab — per-entry result. Intercept before the CCG/util
+    -- matchers; Core keys never collide (CCG keys carry an extra
+    -- _<variant> segment, e.g. flat_500_card_general vs Core flat_500_card).
+    local ce = coreEntryByKey[resultKey]
+    if ce then
+        ce.result = text
+        commitCore()
+        return
+    end
 
     -- Format 1: CCG + utility variants — "flat_<count>_<family>_<variant>"
     local family, variant = string.match(resultKey, "^flat_%d+_([a-zA-Z]+)_(.+)$")
@@ -540,6 +577,8 @@ end
 local function clearAllButtonResults()
     buttonResults = buildInitialResults()
     commitResults()
+    for _, e in ipairs(coreEntries) do e.result = "" end
+    commitCore()
 end
 
 local function resetTestState()
@@ -551,11 +590,6 @@ local function resetTestState()
     testState.samples = {}
     setTestStatus("idle")
 end
-
--- Forward-declared so finishTest (below) can reference it before its
--- actual definition further down. Assignment happens there; keep this
--- as a bare local so Lua scoping sees it as an upvalue, not a global.
-local disableWidgetsEnabledByTest
 
 local function startTest(label, resultKey)
     testState.active = true
@@ -613,8 +647,6 @@ local function finishTest()
         })
     end
 
-    -- Auto-teardown any widgets the test enabled.
-    disableWidgetsEnabledByTest()
 end
 
 local function labelFor(kind, arg1, arg2, arg3)
@@ -628,10 +660,6 @@ local function labelFor(kind, arg1, arg2, arg3)
         return "reactive " .. (arg2 or "text") .. " " .. (arg1 or 0)
     elseif kind == "flexcol" then
         return "flexcol " .. (arg1 or 0)
-    elseif kind == "widgettest" then
-        return "widget: " .. tostring(arg1 or "?")
-    elseif kind == "widgetstack" then
-        return "stack: " .. tostring(arg1 or "?")
     elseif kind == "baseline" then
         return "baseline"
     else
@@ -799,59 +827,6 @@ local function setStageVisible(visible)
     tracy.Message("StressTest: stage visible=" .. tostring(visible))
 end
 
--- BAR's widgetHandler uses ToggleWidget (no separate Enable/Disable).
--- State check via `knownWidgets[name].active`.
-local function isWidgetActive(widgetName)
-    if not widgetHandler.knownWidgets then return false end
-    local info = widgetHandler.knownWidgets[widgetName]
-    return info and info.active == true
-end
-
--- Widget tests — enable a real BAR widget, then let the timed-mode
--- infrastructure measure FPS for N seconds. On finishTest, the helper
--- below auto-disables any widgets we toggled on. The stage is cleared
--- but nothing else is mounted — the tested widget IS the subject.
-local function mountWidgetTest(widgetName)
-    clearStage()
-    stopReactive()
-    resetTestState()
-
-    tracy.ZoneBeginN("StressTest.WidgetTest.Enable")
-    tracy.ZoneText(tostring(widgetName))
-
-    ensureStressTestContext()
-
-    if isWidgetActive(widgetName) then
-        -- User already had it running in the shared context; we won't
-        -- force it into stressTest nor auto-disable after.
-        Spring.Echo("rml_stress_test: widget '" .. tostring(widgetName)
-                    .. "' already active in shared context — measuring as-is, won't disable after test")
-    else
-        -- Redirect the target widget's initializeRmlWidget call to our
-        -- stressTest context. Clear the override immediately after the
-        -- toggle returns so no unrelated widget init gets caught in the
-        -- window.
-        WG.rml_testContextOverride = STRESS_CONTEXT_NAME
-        local ok, err = pcall(function()
-            widgetHandler:ToggleWidget(widgetName)
-        end)
-        WG.rml_testContextOverride = nil
-
-        if not ok then
-            Spring.Echo("rml_stress_test: ToggleWidget('" .. tostring(widgetName)
-                        .. "') failed: " .. tostring(err))
-        else
-            widgetsEnabledByTest[widgetName] = true
-            -- Force visibility — most BAR widgets start hidden.
-            showAllStressTestDocuments()
-        end
-    end
-
-    tracy.ZoneEnd()
-    tracy.Message("StressTest: widget test '" .. tostring(widgetName) .. "'")
-    setInfo(0, "widget test: " .. tostring(widgetName), "off")
-end
-
 -- Baseline: measure FPS with the stress test idle (no stage content,
 -- no target widgets). Captures how much the stress test itself + whatever
 -- was already running costs us. Subsequent tests display delta-from-baseline.
@@ -861,74 +836,6 @@ local function mountBaseline()
     resetTestState()
     tracy.Message("StressTest: baseline measurement starting")
     setInfo(0, "baseline measurement", "off")
-end
-
--- Widget stack: enable N widgets from WIDGET_TESTS at once, all routed
--- into the stressTest context. Measures total cost of having N widgets
--- open simultaneously. `which` is "3", "5", or "all".
-local function mountWidgetStack(which)
-    clearStage()
-    stopReactive()
-    resetTestState()
-
-    ensureStressTestContext()
-
-    local count
-    if which == "all" then
-        count = #WIDGET_TESTS
-    else
-        count = tonumber(which) or 3
-    end
-    count = math.min(count, #WIDGET_TESTS)
-
-    tracy.ZoneBeginN("StressTest.WidgetStack." .. tostring(which))
-    tracy.ZoneText(tostring(count) .. " widgets")
-
-    local enabled = 0
-    for i = 1, count do
-        local item = WIDGET_TESTS[i]
-        local widgetName = item.name
-        if not isWidgetActive(widgetName) then
-            WG.rml_testContextOverride = STRESS_CONTEXT_NAME
-            local ok = pcall(function() widgetHandler:ToggleWidget(widgetName) end)
-            WG.rml_testContextOverride = nil
-            if ok then
-                widgetsEnabledByTest[widgetName] = true
-                enabled = enabled + 1
-            end
-        end
-    end
-
-    -- Force every enabled widget's document visible.
-    showAllStressTestDocuments()
-
-    tracy.ZoneEnd()
-    tracy.Message("StressTest: widget stack (" .. enabled .. " widgets)")
-    setInfo(enabled, "stack of " .. enabled .. " widgets", "off")
-end
-
--- Forward-declared above so finishTest can call it; assignment (no
--- `local`) binds the forward-declared local.
-disableWidgetsEnabledByTest = function()
-    if not next(widgetsEnabledByTest) then
-        -- Even with nothing tracked, make sure any stragglers in the
-        -- stressTest context get cleared (defensive).
-        unloadStressTestDocuments()
-        return
-    end
-    tracy.ZoneBeginN("StressTest.WidgetTest.Cleanup")
-    for name, _ in pairs(widgetsEnabledByTest) do
-        if isWidgetActive(name) then
-            pcall(function() widgetHandler:ToggleWidget(name) end)
-            tracy.Message("StressTest: disabled '" .. name .. "'")
-        end
-    end
-    widgetsEnabledByTest = {}
-    -- Belt-and-suspenders: wipe any documents the target widget left
-    -- behind in the stressTest context (shouldn't be any after a clean
-    -- widget:Shutdown, but costs nothing to verify).
-    unloadStressTestDocuments()
-    tracy.ZoneEnd()
 end
 
 dispatchScenario = function(kind, arg1, arg2, arg3)
@@ -953,10 +860,6 @@ dispatchScenario = function(kind, arg1, arg2, arg3)
         tracy.Message("StressTest: reactive stopped")
     elseif kind == "vis" then
         setStageVisible(arg1 == "show")
-    elseif kind == "widgettest" then
-        mountWidgetTest(arg1)
-    elseif kind == "widgetstack" then
-        mountWidgetStack(arg1)
     elseif kind == "baseline" then
         mountBaseline()
     else
@@ -1096,33 +999,39 @@ local function initModel()
         suiteStatus = "idle",
         durationStatus = tostring(testDuration) .. "s",
         baselineStatus = "not measured",
-        -- Which section of tests is visible. data-if gated so only one
-        -- tab's DOM exists at a time — keeps the stress test's own
-        -- overhead down per the "minimize DOM count" rule.
-        currentTab = "widgets",
+        -- Live FPS readout, refreshed ~2x/sec from widget:Update (one
+        -- model-string dirty, not a per-frame poll).
+        fpsNow = "--",
+        -- Which tab is active. NOTE: data-if only sets display:none — the
+        -- inactive tabs' DOM stays live and is still walked every frame.
+        -- Active tab gating: every tab's data-for arrays start EMPTY and
+        -- only the active tab's are populated (setActiveTab, called from
+        -- setTab + Initialize). Inactive tabs render zero elements — not
+        -- display:none — so they cost nothing per frame.
+        currentTab = "core",
         results = buttonResults,
+
+        -- Core tab (genericized): nested data-for over sections.
+        coreSections = {},
 
         -- CCG variant arrays for data-for iteration in the RML.
         -- Each entry: { key, variantName, label, result }.
-        ccgCardVariants        = ccgFamilyEntries.card,
-        ccgPanelVariants       = ccgFamilyEntries.panel,
-        ccgButtonVariants      = ccgFamilyEntries.button,
-        ccgThemeButtonVariants = ccgFamilyEntries.themeButton,
-        ccgBadgeVariants       = ccgFamilyEntries.badge,
+        ccgCardVariants        = {},
+        ccgPanelVariants       = {},
+        ccgButtonVariants      = {},
+        ccgThemeButtonVariants = {},
+        ccgBadgeVariants       = {},
 
         -- Utility-class variants — raw utilities tested individually.
-        utilGradientVariants   = ccgFamilyEntries.utilGradient,
-        utilTextureVariants    = ccgFamilyEntries.utilTexture,
-        utilThemeBgVariants    = ccgFamilyEntries.utilThemeBg,
-        utilEffectVariants     = ccgFamilyEntries.utilEffect,
+        utilGradientVariants   = {},
+        utilTextureVariants    = {},
+        utilThemeBgVariants    = {},
+        utilEffectVariants     = {},
 
         -- Advanced investigation families.
-        comboVariants          = ccgFamilyEntries.combo,
-        alphaLadderVariants    = ccgFamilyEntries.alphaLadder,
-        replacementVariants    = ccgFamilyEntries.replacement,
-
-        -- Widget tests — one entry per real RML widget we can open.
-        widgetTestVariants     = ccgFamilyEntries.widgetTest,
+        comboVariants          = {},
+        alphaLadderVariants    = {},
+        replacementVariants    = {},
 
         scenario = function(event, kind, arg1, arg2, arg3)
             if suiteActive then
@@ -1153,10 +1062,6 @@ local function initModel()
             startSuite(UTILITY_SUITE_SCENARIOS, "util")
         end,
 
-        runWidgetSuite = function(event)
-            startSuite(WIDGET_SUITE_SCENARIOS, "widget")
-        end,
-
         cancelSuite = function(event)
             stopSuite()
         end,
@@ -1173,9 +1078,7 @@ local function initModel()
         end,
 
         setTab = function(event, tabName)
-            if dm_handle then
-                dm_handle.currentTab = tostring(tabName or "core")
-            end
+            setActiveTab(tostring(tabName or "core"))
         end,
 
         copyResults = function(event)
@@ -1206,9 +1109,44 @@ function widget:GetInfo()
         date = "2026-04-19",
         license = "GNU GPL, v2 or later",
         layer = -999,
-        handler = true,  -- needed to call widgetHandler:ToggleWidget from widget tests
+        handler = true,  -- handler-scope widget (widgetHandler:RemoveWidget in close())
         enabled = false,
     }
+end
+
+-- Interface-isolation: two layers, both restored on close.
+--  1. hideinterface — widgetHandler:DrawScreen() skips the entire
+--     per-widget draw loop when Spring.IsGUIHidden() (barwidgets.lua:1519),
+--     killing every legacy GL widget's DrawScreen cost. It is a toggle, so
+--     we only flip when the current state differs from what we want.
+--  2. RML documents render independently of hideinterface, so we also
+--     Hide() every OTHER RML document (mirrors rml_context_manager's
+--     lobby-overlay hide/show pattern). rml_context_manager owns NO
+--     document — it only manages contexts/theme — so a document-level
+--     hide leaves it (and the shared context) fully intact. Our own doc
+--     is excluded by body id so the stress test stays visible/usable.
+local guiHiddenByUs = false
+local STRESS_BODY_ID = "rml_stress_test-widget"
+local hiddenRmlDocs = {}
+
+local function hideOtherRmlDocuments()
+    hiddenRmlDocs = {}
+    for _, ctx in ipairs(RmlUi.contexts()) do
+        for _, doc in ipairs(ctx.documents) do
+            if (doc.id or "") ~= STRESS_BODY_ID then
+                doc:Hide()
+                hiddenRmlDocs[#hiddenRmlDocs + 1] = doc
+            end
+        end
+    end
+    return #hiddenRmlDocs
+end
+
+local function restoreOtherRmlDocuments()
+    for _, doc in ipairs(hiddenRmlDocs) do
+        doc:Show()
+    end
+    hiddenRmlDocs = {}
 end
 
 function widget:Initialize()
@@ -1228,6 +1166,10 @@ function widget:Initialize()
     dm_handle = result.dm_handle
     setInfo(0, "(empty)", "off")
     setTestStatus("idle")
+
+    -- Populate ONLY the default tab's data-for arrays (others stay {}).
+    -- refreshCCGClasses() already ran above, so ccgFamilyEntries is built.
+    setActiveTab(dm_handle.currentTab or "core")
 
     -- Force the current theme onto the shared context. Without this, the
     -- `@media (theme: X) { ... }` rules in the theme RCSS files don't
@@ -1252,16 +1194,35 @@ function widget:Initialize()
     Spring.Echo("rml_stress_test: CCG themeButton.primary class = '"
                 .. tostring(CCG_CLASSES.themeButton_primary) .. "'")
 
+    -- Hide the rest of the UI for measurement isolation. If the stress
+    -- test itself also disappears, RmlUi is gated by hideinterface too
+    -- and this approach is a dead end.
+    if not Spring.IsGUIHidden() then
+        Spring.SendCommands("hideinterface")
+        guiHiddenByUs = true
+        Spring.Echo("rml_stress_test: interface hidden for isolation. "
+            .. "Restore with /hideinterface in chat, or "
+            .. "/luaui disablewidget RML Stress Test")
+    end
+
+    -- hideinterface only stops the legacy GL widgets; RmlUi keeps drawing.
+    -- Silence every other RML document too (restored on close).
+    local n = hideOtherRmlDocuments()
+    if n > 0 then
+        Spring.Echo("rml_stress_test: hid " .. n .. " other RML document(s) "
+            .. "for isolation; restored when this widget closes.")
+    end
+
     return true
 end
 
 function widget:Shutdown()
-    -- If any widget tests were mid-flight, disable the targets so we
-    -- don't leave BAR in a weird state, then wipe the stressTest context.
-    disableWidgetsEnabledByTest()
-    unloadStressTestDocuments()
-    -- Defensively clear the override in case we died mid-test.
-    if WG then WG.rml_testContextOverride = nil end
+    -- Restore everything we silenced for isolation.
+    restoreOtherRmlDocuments()
+    if guiHiddenByUs and Spring.IsGUIHidden() then
+        Spring.SendCommands("hideinterface")
+    end
+    guiHiddenByUs = false
 
     utils.shutdownRmlWidget(self, {
         widgetId = WIDGET_ID,
@@ -1274,6 +1235,8 @@ function widget:Shutdown()
     stageMode = "(empty)"
 end
 
+local fpsTickAccum = 0
+
 function widget:Update(dt)
     if dm_handle and dm_handle.reloadRequested then
         -- Deferred reload: tear down OUTSIDE the data-event dispatch that
@@ -1281,6 +1244,16 @@ function widget:Update(dt)
         widget:Shutdown()
         widget:Initialize()
         return
+    end
+
+    -- Ongoing FPS ticker: throttled to ~2 Hz so the readout is legible and
+    -- the model dirty is negligible (NOT a per-frame binding update).
+    fpsTickAccum = fpsTickAccum + (dt or 0)
+    if fpsTickAccum >= 0.5 then
+        fpsTickAccum = 0
+        if dm_handle then
+            dm_handle.fpsNow = tostring(math.floor(Spring.GetFPS() + 0.5))
+        end
     end
     if reactiveMode and #reactiveRefs > 0 then
         tracy.ZoneBeginN("StressTest.ReactiveTick." .. reactiveMode)

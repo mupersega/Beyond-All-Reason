@@ -55,35 +55,20 @@ local vsx, vsy = Spring.GetViewGeometry()
 
 -- Localized API
 local spGetViewGeometry = Spring.GetViewGeometry
-local spGetMouseState = Spring.GetMouseState
 local spGetDrawFrame = Spring.GetDrawFrame
-local spGetConfigFloat = Spring.GetConfigFloat
-local mathFloor = math.floor
 local mathMax = math.max
 local mathMin = math.min
 local strFormat = string.format
 
 -- ── Coordinate conversion ──────────────────────────────────────────────
-
-local function getDpRatio()
-	local viewSizeY = spGetViewGeometry()
-	local userScale = spGetConfigFloat("ui_scale", 1)
-	return mathFloor((viewSizeY / 1080) * userScale * 100) / 100
-end
-
--- Convert Spring pixel coords (bottom-left origin) to RML dp coords (top-left origin)
-local function springToRml(sx, sy)
-	local dpRatio = getDpRatio()
-	if dpRatio <= 0 then dpRatio = 1 end
-	local rmlX = sx / dpRatio
-	local rmlY = (vsy - sy) / dpRatio
-	return rmlX, rmlY
-end
+-- Spring px ↔ RML dp lives in shared utils (also drives every context's
+-- dp_ratio via rml_context_manager): utils.getDpRatio() / utils.springToDp().
+-- See luaui/Include/rml_utilities/utils.lua.
 
 -- ── Edge clamping ──────────────────────────────────────────────────────
 
 local function clampPosition(cursorDpX, cursorDpY, slotW, slotH)
-	local dpRatio = getDpRatio()
+	local dpRatio = utils.getDpRatio()
 	if dpRatio <= 0 then dpRatio = 1 end
 	local vpW = vsx / dpRatio
 	local vpH = vsy / dpRatio
@@ -137,7 +122,7 @@ local function showDescTooltip(content, springX, springY)
 
 	elTooltipDesc.inner_rml = content
 
-	local cursorDpX, cursorDpY = springToRml(springX, springY)
+	local cursorDpX, cursorDpY = utils.springToDp(springX, springY)
 	local dpX, dpY = clampPosition(cursorDpX, cursorDpY, SLOT_DESC_W, SLOT_DESC_H)
 
 	positionSlot(elTooltipDesc, dpX, dpY)
@@ -154,7 +139,7 @@ local function showTitledTooltip(content, springX, springY, title)
 	elTooltipTitledTitle.inner_rml = title
 	elTooltipTitledDesc.inner_rml = content
 
-	local cursorDpX, cursorDpY = springToRml(springX, springY)
+	local cursorDpX, cursorDpY = utils.springToDp(springX, springY)
 	local dpX, dpY = clampPosition(cursorDpX, cursorDpY, SLOT_TITLED_W, SLOT_TITLED_H)
 
 	positionSlot(elTooltipTitled, dpX, dpY)

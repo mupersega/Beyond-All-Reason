@@ -57,7 +57,7 @@ luaui/RmlWidgets/widget_name/
     widget_name.rcss    # Widget-specific styles (CSS-like)
 ```
 
-A generator script exists at `rml_starter/generate-widget.sh --name widget_name` that scaffolds all three files with the canonical patterns. **Use it to start every new widget** — its output already embodies every rule in this document.
+A generator script exists at `rml_starter/generate-widget.sh --name widget_name` that scaffolds all three files with the canonical patterns. **Use it to start every new widget** — its output already embodies every rule in this document. It requires bash; on Windows run it from **Git Bash or WSL** (not PowerShell/cmd). There is intentionally no `.ps1` port — one canonical script, no drift.
 
 ## Styling: utility classes by default, CCG for heavy repeats
 
@@ -418,13 +418,14 @@ Current theme is stored in Spring config: `Spring.GetConfigString("rml_theme", "
 ## Reference Widgets
 
 **Start here**:
-- **`rml_starter/generate-widget.sh`** — run it to scaffold a new widget. Its output *is* the canonical pattern (block layout, utility classes by default + CCG only for heavy repeats, gated debug, no per-frame polling).
+- **`rml_starter/generate-widget.sh`** — run it to scaffold a new widget. Its output *is* the canonical pattern (block layout, utility classes by default + CCG only for heavy repeats, no debug UI, no per-frame polling).
 - **rml_style_guide** — interactive library of every CCG component and utility class; the fastest way to see what's available.
 - **rml_starter** — tutorial widget demonstrating core data-binding patterns: tabs, collapse, reload, debug.
 
 **Production examples**:
-- **gui_options_rml** — the canonical reference for the block-layout performance patterns described below.
 - **rml_tooltip_layer** — shared tooltip overlay, always enabled. Don't build your own hover tooltips — call `WG['rml_tooltip'].Show(text, x, y[, title])` / `.Hide()` (see the shared-elements performance rule).
+
+> The block-layout performance patterns below were *proven on* the old `gui_options_rml` widget. That widget is `enabled = false` ("Options RML (V1 heavy)"), predates current doctrine, and is **not part of the designer base** — treat it as a historical case study (full write-up: contexts MCP `bar-rml-ui/layout-performance-rules`), not a widget to open and copy. New widgets get block layout for free from the generator.
 
 ## Performance in a Game Context
 

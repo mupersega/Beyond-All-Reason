@@ -17,17 +17,17 @@ function widget:GetInfo()
     }
 end
 
-local function calculateDpRatio()
-    local viewSizeY = Spring.GetViewGeometry()
-    local userScale = Spring.GetConfigFloat("ui_scale", 1)
-    local baseHeight = 1080
-    local resFactor = viewSizeY / baseHeight
-    local dpRatio = resFactor * userScale
-    return math.floor(dpRatio * 100) / 100
+-- dp ratio now lives in shared utils (also used by rml_tooltip_layer).
+-- Lazy-included like themeUtils below: this widget loads extremely early
+-- (layer -100000), so includes are kept out of module scope.
+local utils
+local function getUtils()
+    utils = utils or VFS.Include("luaui/Include/rml_utilities/utils.lua")
+    return utils
 end
 
 local function updateContextsDpRatio()
-    local newDpRatio = calculateDpRatio()
+    local newDpRatio = getUtils().getDpRatio()
     local contexts = RmlUi.contexts()
     for _, context in ipairs(contexts) do
         context.dp_ratio = newDpRatio

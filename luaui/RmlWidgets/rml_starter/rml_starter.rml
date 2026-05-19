@@ -896,6 +896,144 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Tooltip Layer Tab Panel -->
+            <div id="tooltips" data-attr-class="my.sheet + ' clip overflow-scroll relative'" data-if="activeTab == 'tooltips'">
+                <div data-attr-class="my.sheetTitle + ' flex flex-col items-center fixed top-0 z-1 w-full'">
+                    <h1 data-attr-class="ccg.heading.h1">Tooltip Layer</h1>
+                </div>
+                <div class="fixed-header-spacer h-24">you can't see me</div>
+                <p data-attr-class="ccg.text.body + ' px-6'">One shared overlay that every RML widget draws tooltips through. It is its own little system — know it before you reach for a hover element.</p>
+
+                <div data-attr-class="my.sheetContent + ' flex flex-col gap-3'">
+
+                    <!-- What it is -->
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
+                        <h2 data-attr-class="ccg.heading.h2">What It Is</h2>
+                        <p data-attr-class="ccg.text.body + ' mt-2'"><span class="code-green px-1">rml_tooltip_layer</span> is an always-enabled widget that owns a single full-screen, transparent, click-through overlay. At init it builds two tooltip "slots" — a plain one and a titled one — and parks them off-screen. It <span class="font-bold">never adds or removes DOM</span>: showing a tooltip just repositions a slot and rewrites its content.</p>
+                        <p data-attr-class="ccg.text.body + ' mt-2'">That is the whole point. One shared element beats N hidden ones. Putting a tooltip element inside a <span class="code-green px-1">data-for</span> row is the exact anti-pattern this exists to remove — it is the perf-correct answer to the "shared elements over per-item" rule.</p>
+                        <div data-attr-class="ccg.panel.info + ' p-3 mt-3'">
+                            <div data-attr-class="ccg.text.warning">Rule</div>
+                            <p data-attr-class="ccg.text.body + ' mt-1-5'">Never build your own hover-tooltip element. There is exactly one tooltip in the RML UI and it is this.</p>
+                        </div>
+                    </div>
+
+                    <!-- The API -->
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
+                        <h2 data-attr-class="ccg.heading.h2">The API</h2>
+                        <p data-attr-class="ccg.text.body + ' mt-2'">Exposed on the global <span class="code-green px-1">WG</span> table. No setup, no include — call it from any widget:</p>
+                        <div data-attr-class="my.codeBlock + ' m-4 p-4'">
+                            <div class="text-info">-- always available; no init needed</div>
+                            <div>WG['rml_tooltip'].Show(text, springX, springY)         <span class="text-info">-- plain</span></div>
+                            <div>WG['rml_tooltip'].Show(text, springX, springY, title)  <span class="text-info">-- titled</span></div>
+                            <div>WG['rml_tooltip'].Hide()</div>
+                        </div>
+                        <div class="pl-2 mt-2">
+                            <div class="flex items-center gap-2 mt-2">
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
+                                <p data-attr-class="ccg.text.body"><span class="code-green px-1">text</span> — the body, set as inner RML. Plain string, or markup.</p>
+                            </div>
+                            <div class="flex items-center gap-2 mt-2">
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
+                                <p data-attr-class="ccg.text.body"><span class="code-green px-1">springX, springY</span> — cursor in Spring pixel coords (bottom-left origin). Pass <span class="code-green px-1">Spring.GetMouseState()</span> straight through; the layer converts to dp and flips/clamps at screen edges for you.</p>
+                            </div>
+                            <div class="flex items-center gap-2 mt-2">
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
+                                <p data-attr-class="ccg.text.body"><span class="code-green px-1">title</span> — optional. Non-empty selects the titled slot; omit it for the plain slot.</p>
+                            </div>
+                            <div class="flex items-center gap-2 mt-2">
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
+                                <p data-attr-class="ccg.text.body">Empty or nil <span class="code-green px-1">text</span> is treated as <span class="code-green px-1">Hide()</span>.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Driven, not sticky -->
+                    <div data-attr-class="ccg.panel.info + ' p-4'">
+                        <h2 data-attr-class="ccg.heading.h2">It's Driven, Not Sticky</h2>
+                        <p data-attr-class="ccg.text.body + ' mt-2'">The key thing to understand: the overlay <span class="font-bold">auto-hides ~170ms after the last <span class="code-green px-1">Show()</span></span>. That stale-frame safety net means a widget that dies without calling <span class="code-green px-1">Hide()</span> can't leave a tooltip orphaned on screen.</p>
+                        <p data-attr-class="ccg.text.body + ' mt-2'">Consequence: a one-shot <span class="code-green px-1">Show()</span> just flashes and vanishes. The contract is to <span class="font-bold">re-call <span class="code-green px-1">Show()</span> every frame</span> while the tooltip should be visible (this is also what makes it follow the cursor), then <span class="code-green px-1">Hide()</span> — or simply stop, and let the safety net clean up.</p>
+                    </div>
+
+                    <!-- Consumer pattern -->
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
+                        <h2 data-attr-class="ccg.heading.h2">The Consumer Pattern</h2>
+                        <p data-attr-class="ccg.text.body + ' mt-2'">Hover handlers set state only; <span class="code-green px-1">widget:Update</span> does the per-frame driving. This is exactly the <span class="code-green px-1">rml_style_guide</span> pattern — and the live demo below.</p>
+                        <p data-attr-class="ccg.themeText.caption + ' mt-3'">RML — signal hover, nothing else:</p>
+                        <div data-attr-class="my.codeBlock + ' m-4 p-4'">
+                            <div>&lt;div data-event-mouseover="showTip('Hold SHIFT to queue')"</div>
+                            <div class="pl-5">data-event-mouseout="hideTip()"&gt;Build&lt;/div&gt;</div>
+                        </div>
+                        <p data-attr-class="ccg.themeText.caption">Lua — state in model fns, drive in Update:</p>
+                        <div data-attr-class="my.codeBlock + ' m-4 p-4'">
+                            <div>local tipText                       <span class="text-info">-- file-local</span></div>
+                            <div><br/></div>
+                            <div class="text-info">-- inside initModel():</div>
+                            <div>showTip = function(event, text) tipText = text end,</div>
+                            <div>hideTip = function()            tipText = nil  end,</div>
+                            <div><br/></div>
+                            <div>function widget:Update()</div>
+                            <div class="pl-2">local tt = WG['rml_tooltip']</div>
+                            <div class="pl-2">if not tt then return end</div>
+                            <div class="pl-2">if tipText then</div>
+                            <div class="pl-4">local mx, my = Spring.GetMouseState()</div>
+                            <div class="pl-4">tt.Show(tipText, mx, my)        <span class="text-info">-- +title arg = titled</span></div>
+                            <div class="pl-2">else</div>
+                            <div class="pl-4">tt.Hide()</div>
+                            <div class="pl-2">end</div>
+                            <div>end</div>
+                        </div>
+                        <div data-attr-class="ccg.panel.info + ' p-3'">
+                            <div data-attr-class="ccg.text.warning">Why not onmouseover="widget:Fn()"?</div>
+                            <p data-attr-class="ccg.text.body + ' mt-1-5'">Same reason as everywhere — the model is king (see Base Widget Conventions). The tooltip text <span class="font-italic">is</span> state; the view only signals that a hover happened. Model fn + <span class="code-green px-1">data-event-*</span>, never a <span class="code-green px-1">widget:</span> method off an inline handler.</p>
+                        </div>
+                    </div>
+
+                    <!-- Gotchas -->
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
+                        <h2 data-attr-class="ccg.heading.h2">Gotchas</h2>
+                        <div class="pl-2">
+                            <div class="flex items-center gap-2 mt-2">
+                                <div class="w-1 h-1 bg-warning rounded-full"></div>
+                                <p data-attr-class="ccg.text.body"><span class="font-bold">One owner at a time.</span> It's a single shared slot. Calling <span class="code-green px-1">Hide()</span> on every idle frame clobbers another widget's tooltip — prefer to Hide only on the hover-out transition (this widget does, and gates on its tab being active).</p>
+                            </div>
+                            <div class="flex items-center gap-2 mt-2">
+                                <div class="w-1 h-1 bg-warning rounded-full"></div>
+                                <p data-attr-class="ccg.text.body"><span class="font-bold">Spring coords, not dp.</span> Pass raw <span class="code-green px-1">Spring.GetMouseState()</span>; don't pre-convert to RML dp — the layer does that. If you ever need the conversion elsewhere (rare), it's <span class="code-green px-1">utils.springToDp(x, y)</span>.</p>
+                            </div>
+                            <div class="flex items-center gap-2 mt-2">
+                                <div class="w-1 h-1 bg-warning rounded-full"></div>
+                                <p data-attr-class="ccg.text.body"><span class="font-bold">Content is inner RML.</span> A stray <span class="code-green px-1">&lt;</span> is parsed as markup. Assemble rich content in Lua and escape any literal text.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live demo -->
+                    <div data-attr-class="ccg.panel.general + ' p-4'">
+                        <h2 data-attr-class="ccg.heading.h2">Try It</h2>
+                        <p data-attr-class="ccg.text.body + ' mt-2'">Hover these. The tooltip is the real shared overlay, driven by this tab's <span class="code-green px-1">widget:Update</span>.</p>
+                        <div class="flex flex-row gap-3 mt-3">
+                            <div class="flex-1 p-3 bg-darker rounded border border-dark-alpha cursor-pointer hover-brighten text-center"
+                                 data-event-mouseover="showTooltipDemo('Plain slot. One line of body text. Cursor-follow and edge-flip are automatic.')"
+                                 data-event-mouseout="hideTooltipDemo()">
+                                <span data-attr-class="ccg.text.body + ' font-bold'">Plain</span>
+                            </div>
+                            <div class="flex-1 p-3 bg-darker rounded border border-dark-alpha cursor-pointer hover-brighten text-center"
+                                 data-event-mouseover="showTooltipDemo('Shift-click to add a waypoint without clearing the queue.', 'Move Order')"
+                                 data-event-mouseout="hideTooltipDemo()">
+                                <span data-attr-class="ccg.text.body + ' font-bold'">Titled</span>
+                            </div>
+                            <div class="flex-1 p-3 bg-darker rounded border border-dark-alpha cursor-pointer hover-brighten text-center"
+                                 data-event-mouseover="showRichTooltipDemo()"
+                                 data-event-mouseout="hideTooltipDemo()">
+                                <span data-attr-class="ccg.text.body + ' font-bold'">Rich</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
             <!-- Tools Tab Panel -->
             <div id="tools" data-attr-class="my.sheet + ' clip overflow-scroll relative w-full'" data-if="activeTab == 'tools'">
                 <div data-attr-class="my.sheetTitle + ' flex flex-col items-center fixed top-0 z-1 w-full'">

@@ -18,7 +18,7 @@
 .stress-close {
     position: absolute;
     top: 4dp;
-    left: 4dp;
+    right: 4dp;
     width: 26dp;
     height: 26dp;
     padding: 0dp;

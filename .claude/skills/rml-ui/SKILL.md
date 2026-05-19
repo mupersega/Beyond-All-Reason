@@ -14,10 +14,10 @@ user-invocable: true
 The non-negotiables it defines in full (this is an index, **not** the spec — go read the spec):
 
 - **The model is king.** Change the view by mutating the data model; data binding updates the DOM. JS-style DOM (`GetElementById`/`QuerySelector`/`SetClass`/`.inner_rml`/`AppendChild`) is a last-resort escape hatch that must carry a `-- rml-dom-escape: <reason>` marker.
-- **No `widget:` methods for UI behaviour.** Never `widget:Func()` + inline `onclick=`/`onkeyup=`. Put the function in `initModel()`; invoke via `data-event-*`; get the element from `ev.target_element`.
+- **No `widget:` methods for UI behaviour.** Never `widget:Func()` + inline `onclick=`/`onkeyup=`. Put the function in `initModel()`; invoke via `data-event-*`; get the element from `ev.current_element` (the bound element; `ev.target_element` is the event origin, possibly a child).
 - **Utilities by default; CCG is rare.** Utility classes for everything. CCG only for the few abstractions that are *frequently used AND aggregate many utilities*. CCG groups are flat (no sub-components). A CCG must justify its existence — the inventory is intentionally small; don't add speculatively.
 - **Performance is correctness here.** Block layout, never nested flex-column. Minimize DOM. No per-frame polling in `widget:Update()`.
-- **`data-value` commits AFTER the event (RmlUi #668).** In handlers read the element (`ev.target_element:GetAttribute("value")`), not the model.
+- **`data-value` commits AFTER the event (RmlUi #668).** In handlers read the element (`ev.current_element:GetAttribute("value")`), not the model.
 - **Start from the generator.** `rml_starter/generate-widget.sh --name widget_name` — its output *is* the canonical pattern. Don't hand-roll a widget; don't copy legacy widgets.
 - **Shared tooltip exists.** `WG['rml_tooltip'].Show(text, x, y[, title])` / `.Hide()` — never build per-row hover tooltips.
 

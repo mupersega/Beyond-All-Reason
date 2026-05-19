@@ -9,8 +9,8 @@ include("keysym.h.lua")
 
 function widget:GetInfo()
 	return {
-		name = "Options RML (V1 heavy)",
-		desc = "Original RML-based options panel with full tab/search/CCG system. Kept for reference; the lightweight 'Options RML' V2 is the default.",
+		name = "Options RML",
+		desc = "RML-based options panel: tabbed, searchable, data-driven from options_config. Opt-in (disabled by default).",
 		author = "Mupersega",
 		date = "2025",
 		license = "GNU GPL, v2 or later",
