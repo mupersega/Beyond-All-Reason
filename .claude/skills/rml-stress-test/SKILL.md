@@ -16,8 +16,7 @@ user-invocable: true
 - `rml_stress_test.rcss` — minimal styling; stage content is left to whatever class the scenario applies
 
 **Companion resources:**
-- `contexts-mcp://bar-engine-profiling/rml-perf-findings-log` — append-only log of findings
-- `contexts-mcp://bar-rml-ui/layout-performance-rules` — canonical rules derived from findings
+- `luaui/RmlWidgets/CLAUDE.md` (Performance section) — the canonical RML layout/perf rules these tests validate and feed back into
 - `.claude/skills/bar-tracy-profiling/SKILL.md` — Tracy workflow for zone-level cost
 
 ## Architecture essentials
@@ -91,7 +90,7 @@ Say we want to add a `shadow-md` flat test at 500 count.
 
 ## Current findings snapshot (as of 2026-04-19)
 
-Full data in `contexts-mcp://bar-engine-profiling/rml-perf-findings-log`. Top-line:
+Headline empirical results so far. The durable *rules* derived from these are codified in `luaui/RmlWidgets/CLAUDE.md` → Performance section (the canonical home); this snapshot is the at-a-glance summary:
 
 - **Most expensive single utility class:** `box-shadow-sm` (-30% FPS on 500 elements vs plain).
 - **Padding paradox:** removing `p-2` from a shadowed card *hurts* perf. Shadow cost correlates with element box size — tall elements render shadow cheaper than short ones.
@@ -177,7 +176,7 @@ WG.rml_testContextOverride = nil        -- critical: clear immediately
 - **Never reintroduce direct DOM writes for button results** — use the `dm_handle.results` data binding path. Direct DOM writes inside `<button>` children don't persist through layout invalidation.
 - **Keep the widget's own sidebar cheap.** It's block layout, small flex rows, low element count. If the widget itself is expensive we're measuring noise.
 - **When adding variants, mirror the Tracy zone naming:** `StressTest.<Kind>.<variant>.<param>`. Consistent names make the Tracy flame chart searchable.
-- **After new findings, append to `rml-perf-findings-log`.** Then, when a rule emerges, codify it in `bar-rml-ui/layout-performance-rules`.
+- **When a finding becomes a durable rule, codify it in `luaui/RmlWidgets/CLAUDE.md`** (Performance section) — the canonical home — and keep the snapshot above current. Raw exploratory measurements are personal research, deliberately not tracked in the repo, so the skill stays self-contained.
 
 ## Stop signs
 

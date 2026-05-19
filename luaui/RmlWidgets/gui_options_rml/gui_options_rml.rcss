@@ -1,7 +1,7 @@
 /* Options RML Widget Styles */
 
 /* ─── Panel heading — Approach 2 (rotated div + parent clip) ──────────── */
-/* See contexts MCP bar-rml-ui/decoration-approaches for the full pattern.
+/* Canonical reference: luaui/RmlWidgets/CLAUDE.md → "Decoration Patterns".
    The heading lives in an absolutely-positioned wrapper that sits flush
    with the panel's top-left corner (ignoring the panel's padding), and
    uses clip: always to contain a rotated child that creates the diagonal
@@ -402,7 +402,7 @@ button.tab-dev-construction:active {
    text on the right (60%). Replaces .slider-card / .toggle-card for
    panels that adopt the new layout. Used first in the Terrain prototype;
    will roll out to all panels in Phase 3.
-   See contexts MCP bar-rml-ui/decoration-approaches and the
+   See luaui/RmlWidgets/CLAUDE.md "Decoration Patterns" and the
    .claude/skills/options-restructure/ skill for the full pattern. */
 
 .setting-row {

@@ -16,12 +16,12 @@ BAR's Lua widget profiler (`/luaui enablewidget Widget Profiler`) only times Lua
 2. **Drop it into** `BAR/data/engine/<tag>/` replacing the normal `spring.exe` (keep a backup).
 3. **Launch BAR**, then launch **`tracy-profiler.exe`** (from Tracy v0.11.1 at <https://github.com/wolfpld/tracy/releases/tag/v0.11.1> — note: in v0.11.x the GUI is named `tracy-profiler.exe`, not `Tracy.exe` like older versions) and click **Connect**. Search the zone list for `RmlUi.*`.
 
-If something fails, jump to `contexts-mcp://bar-engine-profiling/tracy-setup-common-pitfalls`.
+If something fails, see [references/tracy-pitfalls.md](references/tracy-pitfalls.md).
 
 ## 1. Which engine build do I download?
 
 - Go to <https://engine-builds.beyondallreason.dev/index.html> and find the tag matching BAR's current engine (check `infolog.txt` line containing `Spring ` to confirm).
-- Tracy-enabled builds are marked in the filename or release description. If you can't tell from the filename, there is usually a `-tracy`, `-profile`, or similar suffix — **verify the specific pattern for the current tag and log it to `contexts-mcp://bar-engine-profiling/engine-build-map`**.
+- Tracy-enabled builds are marked in the filename or release description. If you can't tell from the filename, there is usually a `-tracy`, `-profile`, or similar suffix — **verify the specific pattern for the current tag and record it in [references/engine-build-map.md](references/engine-build-map.md)**.
 - Verification after install: start BAR, open the chat console, and look for the boot log. If Tracy is compiled in, you will NOT see the line `Tracy: No support detected, replacing tracy.* with function stubs.` (emitted from `luaui/system.lua:18`). Absence of that line = Tracy build confirmed.
 - If you see the stub-detected line, you have a non-Tracy build.
 
@@ -99,9 +99,15 @@ If you find a hot Lua→engine call site that is not yet wrapped:
    tracy.ZoneEnd()
    ```
 2. Use the naming convention `RmlUi.<Operation>` for RmlUi boundary calls, `BAR.<Subsystem>.<Operation>` for anything else.
-3. Log the new wrapper in `contexts-mcp://bar-engine-profiling/lua-zone-wrappers` so future sessions know it exists.
+3. Record the new wrapper in [references/lua-zone-wrappers.md](references/lua-zone-wrappers.md) (same commit as the code change) so future sessions know it exists.
 4. **Never** guard with `if tracy then ...` — the stubs in `luaui/system.lua:17-26` make the calls free unconditionally.
 
-## 9. Findings log
+## 9. Recording durable findings
 
-Record every non-trivial diagnosis in `contexts-mcp://bar-engine-profiling/rml-perf-findings-log` as append-only entries. Each entry should have: date, symptom, diagnosis method (profiler / Tracy / both), root cause, fix, and any layout-rule implication that should feed back into `luaui/RmlWidgets/CLAUDE.md`.
+When a diagnosis yields something reusable, capture the **distilled conclusion** where it belongs in the repo — not a blow-by-blow journal:
+
+- a layout / perf rule → `luaui/RmlWidgets/CLAUDE.md` (Performance section); it is the canonical home for RML perf doctrine.
+- a Tracy-workflow gotcha → `references/tracy-pitfalls.md` (dated entry).
+- a new Lua→engine zone wrapper → `references/lua-zone-wrappers.md`.
+
+The raw, exploratory investigation log is personal research and is intentionally **not** tracked in the repo — only the distilled, reusable rule or gotcha is, so the skill stays self-contained and portable.

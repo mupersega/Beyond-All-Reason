@@ -1,7 +1,6 @@
 ---
 name: rml-ui
-description: RML UI widget development for Beyond All Reason — points to the authoritative BAR doctrine and adds upstream RmlUi library reference
-auto-invoke: when working on files in luaui/RmlWidgets/
+description: RML UI widget development for Beyond All Reason. Use whenever creating, editing, debugging, or reviewing any RML widget under luaui/RmlWidgets/ (.rml/.rcss/.lua files), or working on RmlUi data binding, layout, styling, theming, or document/context lifecycle in BAR — even if the user does not explicitly say "RML". Points to the authoritative BAR doctrine in luaui/RmlWidgets/CLAUDE.md and bundles the upstream RmlUi engine API reference (Lua API, data bindings, RCSS).
 user-invocable: true
 ---
 
@@ -27,9 +26,9 @@ If anything below or in memory disagrees with CLAUDE.md, **CLAUDE.md wins** — 
 
 CLAUDE.md is BAR patterns. The files below are the **upstream RmlUi engine API** — not BAR-specific, they don't change with our doctrine. Consult them for exact behaviour the engine provides:
 
-- **[rmlui-lua-api.md](rmlui-lua-api.md)** — Element / Document / Context / Event APIs, form controls, exact method signatures and property types. (E.g. `Event` exposes `target_element` and `current_element` — the basis for the model+`data-event` element-read pattern.)
-- **[rmlui-data-bindings.md](rmlui-data-bindings.md)** — data views/controllers, the binding expression language, transform pipes. Consult for complex binding expressions or debugging binding behaviour.
-- **[rmlui-rcss-reference.md](rmlui-rcss-reference.md)** — RCSS flexbox, selectors, decorators, animations, media queries, and where RCSS differs from CSS.
+- **[rmlui-lua-api.md](references/rmlui-lua-api.md)** — Element / Document / Context / Event APIs, form controls, exact method signatures and property types. (E.g. `Event` exposes `target_element` and `current_element` — the basis for the model+`data-event` element-read pattern.)
+- **[rmlui-data-bindings.md](references/rmlui-data-bindings.md)** — data views/controllers, the binding expression language, transform pipes. Consult for complex binding expressions or debugging binding behaviour.
+- **[rmlui-rcss-reference.md](references/rmlui-rcss-reference.md)** — RCSS flexbox, selectors, decorators, animations, media queries, and where RCSS differs from CSS.
 
 ## Reference widgets (read the code, after CLAUDE.md)
 

@@ -425,7 +425,7 @@ Current theme is stored in Spring config: `Spring.GetConfigString("rml_theme", "
 **Production examples**:
 - **rml_tooltip_layer** — shared tooltip overlay, always enabled. Don't build your own hover tooltips — call `WG['rml_tooltip'].Show(text, x, y[, title])` / `.Hide()` (see the shared-elements performance rule).
 
-> The block-layout performance patterns below were *proven on* the old `gui_options_rml` widget. That widget is `enabled = false` ("Options RML (V1 heavy)"), predates current doctrine, and is **not part of the designer base** — treat it as a historical case study (full write-up: contexts MCP `bar-rml-ui/layout-performance-rules`), not a widget to open and copy. New widgets get block layout for free from the generator.
+> The block-layout performance patterns below were *proven on* the old `gui_options_rml` widget. That widget is `enabled = false` ("Options RML (V1 heavy)"), predates current doctrine, and is **not part of the designer base** — treat it as a historical case study, not a widget to open and copy. New widgets get block layout for free from the generator.
 
 ## Performance in a Game Context
 
@@ -497,7 +497,7 @@ Block layout is **single-pass**: children flow top-to-bottom, each sized indepen
 
 **Scroll containers are block, not flex column.** Use `overflow: hidden scroll` with block-flow children. A flex-column scroll container forces the engine to measure total content height for flex distribution before it can even start scrolling.
 
-Full rules, the ideal layout hierarchy, and the options widget case study: contexts MCP `bar-rml-ui/layout-performance-rules`.
+This section is the canonical, complete statement of the RML layout-performance rules — there is no separate "fuller" version to consult.
 
 ### General rules
 - Minimize total DOM element count, especially inside `data-for` loops
@@ -550,7 +550,7 @@ stable across variable container sizes; pick Approach 1 when you need
 runtime parameterization; pick Approach 3 only if you're already on
 Approach 1 and hitting sub-pixel edge artifacts.
 
-**Authoritative reference**: contexts MCP `bar-rml-ui/decoration-approaches`
-has the full comparison, working code examples, file:line citations, and
-"when to use which" guidance. The SVG-specific deep dive for Approach 1
-lives in `bar-rml-ui/svg-dynamic-patterns`.
+**This section is the authoritative reference for decoration approaches.**
+The three techniques above — with the one-line trade-off and the in-repo
+example file:lines (`rml_style_guide.rcss:49-105`, `svg_test.lua`) — are the
+complete guidance. For deeper rationale, read those example widgets' source.
