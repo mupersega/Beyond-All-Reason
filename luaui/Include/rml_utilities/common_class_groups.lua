@@ -198,15 +198,15 @@ commonClassGroups.definitions = {
     },
 
     button = {
-        general = "text-upper text-center text-light bg-darkest bg-gradient-darkest hover-brighten cursor-pointer",
-        primary = "text-upper text-center text-darkest font-bold bg-gradient_primary-accent hover-brighten cursor-pointer",
-        success = "text-upper text-center text-success text-outline-darker-lg bg-success radial-focus-center-feint hover-brighten cursor-pointer",
-        danger = "text-upper text-center text-danger text-outline-darker-lg bg-danger radial-focus-center-feint hover-brighten cursor-pointer",
+        general = "text-upper text-center text-light bg-darkest bg-gradient-darkest border-0 hover-brighten cursor-pointer",
+        primary = "text-upper text-center text-darkest font-bold bg-gradient_primary-accent border-0 hover-brighten cursor-pointer",
+        success = "text-upper text-center text-success text-outline-darker-lg bg-success radial-focus-center-feint border-0 hover-brighten cursor-pointer",
+        danger = "text-upper text-center text-danger text-outline-darker-lg bg-danger radial-focus-center-feint border-0 hover-brighten cursor-pointer",
         ghost = "text-upper text-center text-light font-bold bg-darkest-alpha border border-light-alpha hover-fade cursor-pointer",
     },
 
     themeButton = {
-        primary = "text-upper text-center text-darkest font-bold bg-gradient_primary-accent hover-brighten cursor-pointer",
+        primary = "text-upper text-center text-darkest font-bold bg-gradient_primary-accent border-0 hover-brighten cursor-pointer",
         ghost = "text-upper text-center text-primary font-bold border border-primary-alpha bg-primary-hover-alpha cursor-pointer",
     },
 

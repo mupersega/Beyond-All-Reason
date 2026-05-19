@@ -4999,8 +4999,20 @@ function init()
 		  end,
 		},
 
-		{ id = "profiler_widget", group = "dev", category = types.dev, widget = "Widget Profiler", name = Spring.I18N('ui.settings.option.profiler') .. widgetOptionColor .. "  " .. Spring.I18N('ui.settings.option.profiler_widget'), type = "bool", value = GetWidgetToggleValue("Widget Profiler") },
-		{ id = "profiler_gadget", group = "dev", category = types.dev, name = widgetOptionColor .. "   " .. Spring.I18N('ui.settings.option.profiler_gadget'), type = "bool", value = false,
+		{ id = "legacy_interface", group = "dev", category = types.dev, name = widgetOptionColor .. "  " .. "Legacy interface", type = "bool", value = not Spring.IsGUIHidden(), description = "ON: legacy (raw-GL) widgets shown (normal). OFF: suppresses every legacy widget while the RML UI stays visible. Handy for perf isolation and RML development.",
+		  onchange = function(_, value)
+			  -- value = true => legacy shown (GUI not hidden). `hideinterface`
+			  -- is an engine toggle, so only flip when the current state
+			  -- differs from the desired one. RML renders independently of
+			  -- it, so RML stays visible regardless.
+			  if Spring.IsGUIHidden() ~= (not value) then
+				  Spring.SendCommands("hideinterface")
+			  end
+		  end,
+		},
+
+		{ id = "profiler_widget", group = "dev", category = types.dev, widget = "Widget Profiler", name = widgetOptionColor .. "   " .. "Widget Profiler", type = "bool", value = GetWidgetToggleValue("Widget Profiler"), description = "Show the widget profiler: a live table of every active client-side widget's CPU time and memory use, for finding which widgets are expensive. Sorting/averaging is controlled by the options below." },
+		{ id = "profiler_gadget", group = "dev", category = types.dev, name = widgetOptionColor .. "   " .. "Gadget Profiler", type = "bool", value = false, description = "Show the gadget profiler: server-side per-gadget CPU cost, toggled via the engine 'luarules profile' command. (Fires the command each time; it does not reflect persisted state.)",
 		  onchange = function(i, value)
 			  Spring.SendCommands("luarules profile")
 		  end,

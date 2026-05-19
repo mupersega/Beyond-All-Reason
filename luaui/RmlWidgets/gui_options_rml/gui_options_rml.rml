@@ -111,7 +111,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -150,7 +150,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -189,7 +189,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -233,7 +233,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -285,7 +285,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -323,7 +323,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -361,7 +361,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -399,7 +399,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -437,7 +437,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -481,7 +481,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -524,7 +524,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -567,7 +567,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>
@@ -611,7 +611,7 @@
                                 <span data-attr-class="ccg.text.description + ' setting-desc'">{{group.parent.desc}}</span>
                             </div>
                             <div data-if="group.parent.type == 'select'" class="setting-row">
-                                <div class="setting-control"><span class="option-label font-bold">{{group.parent.name}}</span><select data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select></div>
+                                <div class="setting-control"><span class="option-label font-bold">{{group.parent.name}}</span><select data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select></div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc'">{{group.parent.desc}}</span>
                             </div>
                             <div data-if="group.parent.type == 'action'" class="setting-row clickable" data-attr-id="'cfg-' + group.parent.id" onclick="widget:OnAction(element)">
@@ -660,7 +660,7 @@
                                         <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
                                     </div>
                                     <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
-                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value" data-attr-selected="choice.value == group.parent.value">{{choice.label}}</option></select>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
                                 </div>
                                 <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
                             </div>

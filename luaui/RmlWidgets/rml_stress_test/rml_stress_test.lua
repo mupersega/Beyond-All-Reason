@@ -397,9 +397,11 @@ end
 -----------------------------------------------------------------------
 -- Core tab — genericized. Was ~50 hand-written buttons + ~45 static
 -- {{results.x}} bindings, ALL permanently in the DOM (data-if only sets
--- display:none). Now one nested data-for over `coreSections`; the array
--- is emptied when the Core tab isn't active so those elements truly
--- leave the DOM (the stress test must not contaminate its own numbers).
+-- display:none). Now a static heading + a gated grid array per section
+-- (coreSec1..N), structurally identical to the CCG/Util tabs: the static
+-- headings keep the tab present on activation (no materialisation jump),
+-- and each grid array is emptied off-tab so those rows truly leave the
+-- DOM (the stress test must not contaminate its own numbers).
 -- Per-entry .result mirrors the proven CCG path (dynamic-index binding
 -- like results[b.key] is NOT supported by RmlUi data addresses).
 -----------------------------------------------------------------------
@@ -452,7 +454,10 @@ for _, sec in ipairs(CORE_LAYOUT) do
         local entry = {
             key    = key or "",
             label  = b.l,
-            cls    = b.danger and "stress-btn-ccg stress-btn-danger" or "stress-btn-ccg",
+            -- Match the exact class string CCG/Util buttons use. `.stress-btn`
+            -- supplies display:block + the (later-defined, winning) flex:1;
+            -- `.stress-btn-ccg` alone has only flex:0 -> buttons collapse.
+            cls    = b.danger and "stress-btn stress-btn-ccg stress-btn-danger" or "stress-btn stress-btn-ccg",
             kind   = b.k,
             a1     = b.a1 ~= nil and b.a1 or false,
             a2     = b.a2 ~= nil and b.a2 or false,
@@ -466,19 +471,23 @@ for _, sec in ipairs(CORE_LAYOUT) do
     coreSectionsData[#coreSectionsData + 1] = secOut
 end
 
--- Fresh tables each commit so the data-for binding dirties cleanly
--- (mirrors commitCcgFamily). Entry refs carry the live .result.
-local function buildCoreSectionsFresh()
-    local out = {}
-    for _, sec in ipairs(coreSectionsData) do
-        local bs = {}
-        for i, e in ipairs(sec.buttons) do
-            bs[i] = { key=e.key, label=e.label, cls=e.cls, kind=e.kind,
-                      a1=e.a1, a2=e.a2, a3=e.a3, result=e.result }
-        end
-        out[#out + 1] = { heading = sec.heading, buttons = bs }
+-- Fresh button list for ONE Core section (mirrors commitCcgFamily): a
+-- new table each commit so the data-for dirties cleanly; entry refs
+-- carry the live .result. Per-section, not whole-tab: the RML now has a
+-- static heading + gated grid per section (like the CCG/Util tabs), so
+-- the Core tab's structure is present the instant the tab shows instead
+-- of the whole heading+grid tree materialising at once — that two-phase
+-- materialisation was the on-activate layout jump.
+local NUM_CORE_SECS = #coreSectionsData
+local function buildCoreSecButtons(secIndex)
+    local sec = coreSectionsData[secIndex]
+    if not sec then return {} end
+    local bs = {}
+    for i, e in ipairs(sec.buttons) do
+        bs[i] = { key=e.key, label=e.label, cls=e.cls, kind=e.kind,
+                  a1=e.a1, a2=e.a2, a3=e.a3, result=e.result }
     end
-    return out
+    return bs
 end
 
 -- Only repopulate when Core is the active tab — otherwise a suite run
@@ -487,7 +496,9 @@ end
 local function commitCore()
     if not dm_handle then return end
     if dm_handle.currentTab ~= "core" then return end
-    dm_handle.coreSections = buildCoreSectionsFresh()
+    for i = 1, NUM_CORE_SECS do
+        dm_handle["coreSec" .. i] = buildCoreSecButtons(i)
+    end
 end
 
 -- Tab gating: only the active tab's data-for arrays are populated; the
@@ -503,7 +514,14 @@ local function setActiveTab(tab)
     tab = tab or "core"
     dm_handle.currentTab = tab
 
-    if tab == "core" then commitCore() else dm_handle.coreSections = {} end
+    if tab == "core" then
+        commitCore()
+    else
+        -- Empty every Core section grid so the inactive Core tab renders
+        -- zero rows (data-if alone only sets display:none). Headings are
+        -- static constant strings, so they cost nothing.
+        for i = 1, NUM_CORE_SECS do dm_handle["coreSec" .. i] = {} end
+    end
 
     for _, fam in ipairs(CCG_TAB_FAMILIES) do
         if tab == "ccg" then commitCcgFamily(fam)
@@ -579,6 +597,24 @@ local function clearAllButtonResults()
     commitResults()
     for _, e in ipairs(coreEntries) do e.result = "" end
     commitCore()
+    -- CCG/utility results live per-family in ccgFamilyEntries (Format 1),
+    -- NOT in buttonResults — the resets above miss them, so without this
+    -- "Clear results" appears to do nothing on the CCG/Util tabs (the
+    -- numbers stay on the buttons). Clear every family's entries, then
+    -- re-commit ONLY the active tab's families: committing an inactive
+    -- family would re-add its elements to the DOM and contaminate
+    -- measurements; it gets a fresh empty commit on the next tab switch
+    -- via setActiveTab anyway.
+    for _, entries in pairs(ccgFamilyEntries) do
+        for _, entry in ipairs(entries) do entry.result = "" end
+    end
+    if dm_handle then
+        local active = (dm_handle.currentTab == "ccg" and CCG_TAB_FAMILIES)
+                    or (dm_handle.currentTab == "util" and UTIL_TAB_FAMILIES)
+        if active then
+            for _, fam in ipairs(active) do commitCcgFamily(fam) end
+        end
+    end
 end
 
 local function resetTestState()
@@ -604,15 +640,16 @@ local function startTest(label, resultKey)
 end
 
 local function formatResultText(avg)
-    -- Show delta from baseline if one has been captured. A negative delta
-    -- means "this test dropped us below baseline by that many FPS", which
-    -- is the cost of whatever we just mounted/enabled.
-    if not baselineFps then
+    -- [avg | ±delta-from-baseline | % of resting FPS]. The % normalises
+    -- across machines: 100% = no measurable cost vs idle, lower = the
+    -- construct is more expensive (e.g. 60% = it cost 40% of your FPS).
+    if not baselineFps or baselineFps <= 0 then
         return " [" .. avg .. "]"
     end
     local delta = avg - baselineFps
     local sign = delta >= 0 and "+" or "-"
-    return " [" .. avg .. "|" .. sign .. math.abs(delta) .. "]"
+    local pct = math.floor(avg / baselineFps * 100 + 0.5)
+    return " [" .. avg .. "|" .. sign .. math.abs(delta) .. "|" .. pct .. "%]"
 end
 
 local function finishTest()
@@ -836,6 +873,9 @@ local function mountBaseline()
     resetTestState()
     tracy.Message("StressTest: baseline measurement starting")
     setInfo(0, "baseline measurement", "off")
+    -- Immediate feedback on the line the user is watching; finishTest
+    -- overwrites this with "<avg> fps" when the sampling run completes.
+    if dm_handle then dm_handle.baselineStatus = "measuring..." end
 end
 
 dispatchScenario = function(kind, arg1, arg2, arg3)
@@ -867,7 +907,11 @@ dispatchScenario = function(kind, arg1, arg2, arg3)
         return
     end
 
-    if timedMode and MEASURABLE_KINDS[kind] then
+    -- `baseline` is inherently a measurement — the only reason to trigger
+    -- it is to capture resting FPS — so it always runs the sampling pass,
+    -- independent of the Timed-mode toggle (which only governs whether
+    -- *other* scenario buttons auto-measure on press).
+    if MEASURABLE_KINDS[kind] and (timedMode or kind == "baseline") then
         local key = resultKeyFor(kind, arg1, arg2, arg3)
         startTest(labelFor(kind, arg1, arg2, arg3), key)
     end
@@ -898,16 +942,23 @@ startSuite = function(scenarios, label)
         timedMode = true
         if dm_handle then dm_handle.timedStatus = "ON" end
     end
+    -- Take a FRESH resting-FPS baseline first (idle stage), so every
+    -- result gets a delta + "% of resting" automatically — no need to
+    -- click "Measure baseline" yourself. Build a new list; never mutate
+    -- the shared SUITE_SCENARIOS arrays.
+    baselineFps = nil
+    local runList = { { "baseline" } }
+    for _, s in ipairs(scenarios) do runList[#runList + 1] = s end
     suiteActive = true
     suiteIndex = 0
     suiteResults = {}
-    currentSuiteScenarios = scenarios
+    currentSuiteScenarios = runList
     currentSuiteLabel = label
     clearAllButtonResults()
-    tracy.Message("StressTest: " .. label .. " suite start (" .. #scenarios .. " scenarios)")
+    tracy.Message("StressTest: " .. label .. " suite start (" .. #runList .. " steps)")
     Spring.Echo("=== STRESS TEST " .. string.upper(label) .. " SUITE STARTING ("
-                .. #scenarios .. " scenarios, ~"
-                .. (#scenarios * testDuration) .. "s at " .. testDuration .. "s each) ===")
+                .. #runList .. " steps incl. baseline, ~"
+                .. (#runList * testDuration) .. "s at " .. testDuration .. "s each) ===")
     advanceSuite()
 end
 
@@ -983,22 +1034,63 @@ finishSuite = function()
     renderResultsToStage()
 end
 
+-- Isolation (hideinterface + hide-other-RML) is NO LONGER engaged on load.
+-- Loading the widget is inert: it just shows this panel. Isolation is an
+-- explicit, user-driven toggle so a persisted-enabled widget can never
+-- silently blank the whole UI on launch/reload. Forward-declared here so
+-- initModel's toggleIsolation closure captures them as upvalues.
+local engageIsolation, disengageIsolation
+
+-- Copy-feedback: seconds until the COPY RESULTS button label reverts
+-- from "COPIED". Decremented in widget:Update; nil = inactive.
+local copyRevertCountdown
+
 local function initModel()
     return {
         reloadRequested = false,  -- set by requestReload(); acted on in widget:Update
+        closeRequested  = false,  -- set by close(); acted on in widget:Update
 
         -- No widget: methods — see CLAUDE.md "The model is king".
         close = function()
-            widgetHandler:RemoveWidget(widget)
+            -- × = turn the widget off AND persist it off. Deferred to
+            -- widget:Update (same as reload) so the teardown happens
+            -- OUTSIDE this data-event dispatch (Shutdown from inside a
+            -- model fn = use-after-free).
+            dm_handle.closeRequested = true
         end,
         requestReload = function()
             dm_handle.reloadRequested = true
+        end,
+
+        -- Peek: hide the stress test's OWN visual (keep it running, so
+        -- isolation stays in effect) to see what is actually rendering
+        -- behind it. The toggle button stays visible so you can't get
+        -- stuck. If isolation works you see a blank screen; anything you
+        -- DO see is a widget that leaked past hideinterface / doc:Hide.
+        peek = false,
+        togglePeek = function()
+            if dm_handle then dm_handle.peek = not dm_handle.peek end
+        end,
+
+        -- Explicit isolation toggle. Off until the user asks for it, so
+        -- merely loading/persisting this widget never blanks the UI.
+        isolationOn = false,
+        isolationLabel = "ISOLATION: OFF",
+        toggleIsolation = function()
+            if dm_handle and dm_handle.isolationOn then
+                disengageIsolation()
+            else
+                engageIsolation()
+            end
         end,
 
         timedStatus = "off",
         suiteStatus = "idle",
         durationStatus = tostring(testDuration) .. "s",
         baselineStatus = "not measured",
+        -- COPY RESULTS button label; flips to "COPIED" for ~3s on a
+        -- successful copy, reverted in widget:Update via copyRevertCountdown.
+        copyLabel = "COPY RESULTS",
         -- Live FPS readout, refreshed ~2x/sec from widget:Update (one
         -- model-string dirty, not a per-frame poll).
         fpsNow = "--",
@@ -1011,8 +1103,22 @@ local function initModel()
         currentTab = "core",
         results = buttonResults,
 
-        -- Core tab (genericized): nested data-for over sections.
-        coreSections = {},
+        -- Core tab: a static-heading + gated grid per section, mirroring
+        -- the CCG/Util tabs (whose static headings keep the tab structure
+        -- present on activation — no on-switch layout jump). Heading text
+        -- is sourced from CORE_LAYOUT so it's never duplicated; the grids
+        -- are gated per active tab exactly like the CCG families. NOTE:
+        -- the count is coupled to CORE_LAYOUT / the RML (same coupling the
+        -- CCG-family tabs already have); keep all three in sync.
+        coreSec1Heading = CORE_LAYOUT[1] and CORE_LAYOUT[1].heading or "",
+        coreSec2Heading = CORE_LAYOUT[2] and CORE_LAYOUT[2].heading or "",
+        coreSec3Heading = CORE_LAYOUT[3] and CORE_LAYOUT[3].heading or "",
+        coreSec4Heading = CORE_LAYOUT[4] and CORE_LAYOUT[4].heading or "",
+        coreSec5Heading = CORE_LAYOUT[5] and CORE_LAYOUT[5].heading or "",
+        coreSec6Heading = CORE_LAYOUT[6] and CORE_LAYOUT[6].heading or "",
+        coreSec7Heading = CORE_LAYOUT[7] and CORE_LAYOUT[7].heading or "",
+        coreSec1 = {}, coreSec2 = {}, coreSec3 = {}, coreSec4 = {},
+        coreSec5 = {}, coreSec6 = {}, coreSec7 = {},
 
         -- CCG variant arrays for data-for iteration in the RML.
         -- Each entry: { key, variantName, label, result }.
@@ -1091,6 +1197,8 @@ local function initModel()
                 local ok, err = pcall(Spring.SetClipboard, text)
                 if ok then
                     Spring.Echo("Results copied to clipboard (" .. #suiteResults .. " scenarios)")
+                    if dm_handle then dm_handle.copyLabel = "COPIED" end
+                    copyRevertCountdown = 3.0
                 else
                     Spring.Echo("Clipboard copy failed: " .. tostring(err))
                 end
@@ -1109,7 +1217,11 @@ function widget:GetInfo()
         date = "2026-04-19",
         license = "GNU GPL, v2 or later",
         layer = -999,
-        handler = true,  -- handler-scope widget (widgetHandler:RemoveWidget in close())
+        -- Not a handler widget (handler=true unset). enabled=false is only
+        -- the default for a never-seen widget — once toggled on, the
+        -- handler persists it via orderList until explicitly DisableWidget'd
+        -- (F11 selector or our × → close()). Loads INERT (no UI change);
+        -- isolation is an explicit in-panel toggle.
         enabled = false,
     }
 end
@@ -1126,6 +1238,7 @@ end
 --     hide leaves it (and the shared context) fully intact. Our own doc
 --     is excluded by body id so the stress test stays visible/usable.
 local guiHiddenByUs = false
+local isolationEngaged = false
 local STRESS_BODY_ID = "rml_stress_test-widget"
 local hiddenRmlDocs = {}
 
@@ -1134,8 +1247,22 @@ local function hideOtherRmlDocuments()
     for _, ctx in ipairs(RmlUi.contexts()) do
         for _, doc in ipairs(ctx.documents) do
             if (doc.id or "") ~= STRESS_BODY_ID then
-                doc:Hide()
-                hiddenRmlDocs[#hiddenRmlDocs + 1] = doc
+                -- Only hide docs that are CURRENTLY visible, and remember
+                -- exactly those. Restore then Show()s only this set, so a
+                -- doc that was already hidden (log viewer, options drawer,
+                -- changelog…) is left untouched instead of being forced
+                -- open. IsVisible may not exist in this binding -> pcall;
+                -- if unavailable we fall back to the old hide-all
+                -- behaviour (no regression).
+                local visible = true
+                local ok, res = pcall(function() return doc:IsVisible() end)
+                if ok and res ~= nil then
+                    visible = res and true or false
+                end
+                if visible then
+                    doc:Hide()
+                    hiddenRmlDocs[#hiddenRmlDocs + 1] = doc
+                end
             end
         end
     end
@@ -1147,6 +1274,40 @@ local function restoreOtherRmlDocuments()
         doc:Show()
     end
     hiddenRmlDocs = {}
+end
+
+-- Assign the forward-declared upvalues (NOT `local function` — that would
+-- shadow the forward declaration and break initModel's closure).
+function engageIsolation()
+    if isolationEngaged then return end
+    if not Spring.IsGUIHidden() then
+        Spring.SendCommands("hideinterface")
+        guiHiddenByUs = true
+    end
+    local n = hideOtherRmlDocuments()
+    isolationEngaged = true
+    if dm_handle then
+        dm_handle.isolationOn = true
+        dm_handle.isolationLabel = "ISOLATION: ON"
+    end
+    Spring.Echo("rml_stress_test: isolation ENGAGED — UI hidden"
+        .. (n > 0 and (", " .. n .. " RML docs") or "")
+        .. ". Toggle it off here, or disable the widget, to restore.")
+end
+
+function disengageIsolation()
+    if not isolationEngaged then return end
+    restoreOtherRmlDocuments()
+    if guiHiddenByUs and Spring.IsGUIHidden() then
+        Spring.SendCommands("hideinterface")
+    end
+    guiHiddenByUs = false
+    isolationEngaged = false
+    if dm_handle then
+        dm_handle.isolationOn = false
+        dm_handle.isolationLabel = "ISOLATION: OFF"
+    end
+    Spring.Echo("rml_stress_test: isolation released — UI restored.")
 end
 
 function widget:Initialize()
@@ -1194,35 +1355,22 @@ function widget:Initialize()
     Spring.Echo("rml_stress_test: CCG themeButton.primary class = '"
                 .. tostring(CCG_CLASSES.themeButton_primary) .. "'")
 
-    -- Hide the rest of the UI for measurement isolation. If the stress
-    -- test itself also disappears, RmlUi is gated by hideinterface too
-    -- and this approach is a dead end.
-    if not Spring.IsGUIHidden() then
-        Spring.SendCommands("hideinterface")
-        guiHiddenByUs = true
-        Spring.Echo("rml_stress_test: interface hidden for isolation. "
-            .. "Restore with /hideinterface in chat, or "
-            .. "/luaui disablewidget RML Stress Test")
-    end
-
-    -- hideinterface only stops the legacy GL widgets; RmlUi keeps drawing.
-    -- Silence every other RML document too (restored on close).
-    local n = hideOtherRmlDocuments()
-    if n > 0 then
-        Spring.Echo("rml_stress_test: hid " .. n .. " other RML document(s) "
-            .. "for isolation; restored when this widget closes.")
-    end
+    -- Load INERT: do NOT auto-engage isolation. Merely enabling/persisting
+    -- this widget must never silently blank the UI on launch or reload.
+    -- Isolation (hideinterface + hide-other-RML) is engaged only when the
+    -- user clicks the ISOLATION toggle (model fn engageIsolation), and is
+    -- always released in Shutdown.
+    Spring.Echo("rml_stress_test: loaded INERT (no UI change). "
+        .. "Click 'ISOLATION: OFF' in the panel to isolate for measurement.")
 
     return true
 end
 
 function widget:Shutdown()
-    -- Restore everything we silenced for isolation.
-    restoreOtherRmlDocuments()
-    if guiHiddenByUs and Spring.IsGUIHidden() then
-        Spring.SendCommands("hideinterface")
-    end
-    guiHiddenByUs = false
+    -- Release isolation if it was engaged (idempotent no-op if it never was,
+    -- e.g. the widget was only ever loaded inert). Restores hideinterface
+    -- and re-Show()s the RML docs we hid.
+    disengageIsolation()
 
     utils.shutdownRmlWidget(self, {
         widgetId = WIDGET_ID,
@@ -1236,8 +1384,24 @@ function widget:Shutdown()
 end
 
 local fpsTickAccum = 0
+local fpsSmoothed = 0
 
 function widget:Update(dt)
+    if dm_handle and dm_handle.closeRequested then
+        -- Deferred persist-disable. This widget is NOT a handler widget, so
+        -- its `widgetHandler` is the limited per-widget proxy (RemoveWidget
+        -- only — no DisableWidget). The proxy's RemoveWidget is session-only
+        -- (does not clear orderList / SaveConfigData), so it would auto-load
+        -- enabled and sit on top next launch. The scope-independent way to
+        -- truly disable+persist is the luaui console command, which routes
+        -- to DisableWidgetRaw (orderList=0 + SaveConfigData) and still runs
+        -- our Shutdown (isolation restored). Idiom proven in
+        -- map_edge_extension2.lua. Deferred here (not in close()) so the
+        -- teardown is outside the data-event dispatch.
+        Spring.SendCommands("luaui disablewidget " .. widget:GetInfo().name)
+        return
+    end
+
     if dm_handle and dm_handle.reloadRequested then
         -- Deferred reload: tear down OUTSIDE the data-event dispatch that
         -- requested it (Shutdown from inside a model fn = use-after-free).
@@ -1246,15 +1410,37 @@ function widget:Update(dt)
         return
     end
 
-    -- Ongoing FPS ticker: throttled to ~2 Hz so the readout is legible and
-    -- the model dirty is negligible (NOT a per-frame binding update).
-    fpsTickAccum = fpsTickAccum + (dt or 0)
-    if fpsTickAccum >= 0.5 then
-        fpsTickAccum = 0
-        if dm_handle then
-            dm_handle.fpsNow = tostring(math.floor(Spring.GetFPS() + 0.5))
+    -- Ongoing FPS ticker: instantaneous FPS from frame dt, EMA-smoothed.
+    -- alpha 0.035 ≈ ~28-frame window (steadier, less strobe); committed at
+    -- ~20 Hz so it still feels live. Tune independently: lower alpha =
+    -- smoother/stickier, smaller interval = snappier. Negligible cost.
+    local d = dt or 0
+    if d > 0 then
+        local inst = 1 / d
+        if fpsSmoothed <= 0 then
+            fpsSmoothed = inst
+        else
+            fpsSmoothed = fpsSmoothed + (inst - fpsSmoothed) * 0.035
         end
     end
+    fpsTickAccum = fpsTickAccum + d
+    if fpsTickAccum >= 0.05 then
+        fpsTickAccum = 0
+        if dm_handle then
+            dm_handle.fpsNow = tostring(math.floor(fpsSmoothed + 0.5))
+        end
+    end
+
+    -- Copy-feedback timer: revert the COPY RESULTS label after ~3s.
+    -- dt-driven (matches the fps ticker) — a UI timer, not a state poll.
+    if copyRevertCountdown then
+        copyRevertCountdown = copyRevertCountdown - d
+        if copyRevertCountdown <= 0 then
+            copyRevertCountdown = nil
+            if dm_handle then dm_handle.copyLabel = "COPY RESULTS" end
+        end
+    end
+
     if reactiveMode and #reactiveRefs > 0 then
         tracy.ZoneBeginN("StressTest.ReactiveTick." .. reactiveMode)
         reactiveCounter = reactiveCounter + 1

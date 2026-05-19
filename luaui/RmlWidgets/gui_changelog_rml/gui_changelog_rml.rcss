@@ -11,10 +11,13 @@
 	width: 720dp;
 	height: 80vh;
 	display: flex;
-	/* Blur the game world behind the widget. Visible wherever sub-elements
-	   use alpha backgrounds (nav column's bg-darkest-semi-alpha, main pane's
-	   card overlays). Matches the blur treatment used in gui_options_rml
-	   and the theme overlays. */
+	/* backdrop-filter only samples other elements in THIS RmlUi context — it
+	   blurs RML widgets layered behind this panel, NOT the 3D game world
+	   (which renders on a separate engine layer the context can't see).
+	   World-blur behind the panel comes from the RML→guishader bridge: the
+	   widget Lua registers this body with WG['rml_guishader'] (see
+	   gui_changelog_rml.lua / gfx_rml_guishader_bridge.lua). The two are
+	   complementary — keep both for full glass-over-everything. */
 	backdrop-filter: blur(3px);
 }
 

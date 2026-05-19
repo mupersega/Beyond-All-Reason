@@ -1,21 +1,16 @@
 /* ── Segmented Toggle ──
-   Same recessed-field aesthetic as range track and select: hairline 0.5dp
-   translucent-white border, dark #282828 bg, subtle inset shadow. */
+   Recessed-field aesthetic: dark #282828 bg + subtle inset shadow.
+   No border (removed — read as visual noise on the toggle). */
 .toggle-panel {
 	display: flex;
 	flex-direction: row;
 	background-color: #282828;
-	border: 0.5dp #ffffff20;
 	border-radius: 2dp;
 	gap: 1dp;
 	padding: 1dp;
 	cursor: pointer;
 	transition: transform 0.08s;
 	box-shadow: #00000060 0dp 1dp 2dp 0dp inset;
-}
-
-.toggle-panel:hover {
-	border: 0.5dp #ffffff35;
 }
 
 .toggle-panel:active {
@@ -33,8 +28,12 @@
    box-shadows removed: each toggle segment is rendered many times per options
    view, and box-shadow is the single most expensive utility per the perf
    findings log. Background colors alone still read as "on/off". */
+/* The toggle's OFF side uses the palette DARK GRAY (#4a4a4a, see
+   palette-standard-global.rcss .bg-dark), NOT red: a lit-red "off"
+   read as a bad/error state. Neutral gray just says "off"; green
+   still says "on". (Mirrors the success side's structure.) */
 .toggle-seg-inactive-danger {
-	background-color: #ef444420;
+	background-color: #4a4a4a20;
 }
 
 .toggle-seg-inactive-success {
@@ -47,7 +46,7 @@
 
 /* Hover brightens inactive segments */
 .toggle-panel:hover .toggle-seg-inactive-danger {
-	background-color: #ef444438;
+	background-color: #4a4a4a38;
 }
 
 .toggle-panel:hover .toggle-seg-inactive-success {
@@ -75,12 +74,14 @@
 	background-color: #ffe033;
 }
 
+/* "danger" = the toggle's OFF indicator (this segment lights when the
+   toggle is off). Neutral gray, not red — see note above. */
 .toggle-seg-danger {
-	background-color: #ef4444;
+	background-color: #4a4a4a;
 }
 
 .toggle-panel:hover .toggle-seg-danger {
-	background-color: #f55a5a;
+	background-color: #5a5a5a;
 }
 
 /* ── Range Slider ──

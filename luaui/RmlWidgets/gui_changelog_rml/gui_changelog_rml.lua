@@ -285,6 +285,18 @@ function widget:Initialize()
 		ownsWgChangelog = true
 	end
 
+	-- Glass-over-game: register the panel body with the RML→guishader bridge
+	-- so the 3D world blurs behind it. The widget's own
+	-- `backdrop-filter: blur()` (in the .rcss) only blurs other RML widgets
+	-- in the same context — it cannot reach the game layer; the bridge does.
+	-- `document` is the `#gui_changelog_rml-widget` body element (Document
+	-- inherits Element), which is the absolutely-positioned, sized box.
+	if WG['rml_guishader'] then
+		WG['rml_guishader'].register(WIDGET_ID, document, {
+			isVisible = function() return isVisible end,
+		})
+	end
+
 	return true
 end
 
@@ -292,6 +304,10 @@ function widget:Shutdown()
 	if ownsWgChangelog and WG['changelog'] then
 		WG['changelog'] = nil
 		ownsWgChangelog = false
+	end
+
+	if WG['rml_guishader'] then
+		WG['rml_guishader'].unregister(WIDGET_ID)
 	end
 
 	utils.shutdownRmlWidget(self, {

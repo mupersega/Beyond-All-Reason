@@ -21,9 +21,14 @@
     right: 4dp;
     width: 26dp;
     height: 26dp;
+    line-height: 26dp;
+    text-align: center;
     padding: 0dp;
     background-color: #7a2030cc;
-    border: 1dp #a04050;
+    border-top: 2dp #9a9ab4;
+    border-left: 2dp #9a9ab4;
+    border-right: 2dp #2a2a3c;
+    border-bottom: 2dp #2a2a3c;
     color: #ffe0e0;
     font-size: 18dp;
     font-weight: bold;
@@ -33,6 +38,57 @@
 
 .stress-close:hover {
     background-color: #a02040ee;
+}
+
+.stress-close:active {
+    border-top: 2dp #2a2a3c;
+    border-left: 2dp #2a2a3c;
+    border-right: 2dp #9a9ab4;
+    border-bottom: 2dp #9a9ab4;
+}
+
+.stress-peek {
+    position: absolute;
+    top: 4dp;
+    right: 34dp;
+    height: 26dp;
+    line-height: 26dp;
+    text-align: center;
+    padding: 0dp 8dp;
+    background-color: #304a64;
+    border-top: 2dp #9a9ab4;
+    border-left: 2dp #9a9ab4;
+    border-right: 2dp #2a2a3c;
+    border-bottom: 2dp #2a2a3c;
+    color: #d0e0ff;
+    font-size: 11dp;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 100;
+}
+
+.stress-peek:hover {
+    background-color: #4060a0;
+}
+
+.stress-peek:active {
+    border-top: 2dp #2a2a3c;
+    border-left: 2dp #2a2a3c;
+    border-right: 2dp #9a9ab4;
+    border-bottom: 2dp #9a9ab4;
+}
+
+/* Peek mode: hide this widget's own visual (it keeps running, so the
+   isolation stays in effect) so you can see what is actually rendering
+   behind it. The peek toggle itself is intentionally NOT hidden. */
+#widget-container.peeking {
+    background-color: transparent;
+}
+
+#widget-container.peeking .stress-sidebar,
+#widget-container.peeking .stress-stage-wrap,
+#widget-container.peeking .stress-close {
+    display: none;
 }
 
 /* `flex: 1` on the container with two block children (sidebar + stage-wrap)
@@ -57,36 +113,53 @@
     font-size: 9dp;
 }
 
-/* CCG variants — wrapping flex row. Hardcoded width gives the wrap
-   algorithm a definite bound; children have `flex: 0` (content-sized)
-   so their widths don't participate in flex growth — wrap decisions
-   are one-pass given the parent's fixed width.
+/* Variant list (CCG / Util / Core). Block, not flex-wrap: a flex-wrap
+   row with `flex: 0` (= basis 0%) collapsed buttons to ~0 width, so long
+   labels + the result number overlapped illegibly. One full-width row per
+   variant is single-pass block layout (cheaper) AND readable.
    288dp = sidebar content width (see .stress-row). */
 .stress-ccg-grid {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: block;
     width: 288dp;
     margin-bottom: 3dp;
 }
 
-/* CCG/util buttons — the highest-count button type in the widget.
-   Solid colors, two decorators. `flex: 0` skips flex sizing measurement. */
+/* Variant buttons — highest-count button type. Full-width single line so
+   "label [result]" always fits; clip rather than wrap if ever too long. */
 .stress-btn-ccg {
-    flex: 0;
+    display: block;
+    width: 100%;
     height: 16dp;
+    line-height: 16dp;
+    text-align: left;
     padding: 0dp 5dp;
-    margin-right: 2dp;
     margin-bottom: 2dp;
     font-size: 9dp;
     background-color: #2a3040;
-    border: 1dp #4a5064;
     color: #d0d8e0;
     cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .stress-btn-ccg:hover {
     background-color: #3a4054;
+}
+
+/* Generic variant list: drop the bevel — beveling ~90 dense rows reads as
+   visual noise and adds needless paint in a perf harness. Scoped to the
+   grid; the two-class selector outranks .stress-btn so the fixed control
+   buttons keep their retro bevel. */
+.stress-ccg-grid .stress-btn-ccg {
+    border-width: 0;
+    font-weight: normal;
+}
+
+/* Keep the dense grid flat even on press — a 2dp bevel flickering in
+   across ~90 rows on every click is noise + paint. Two-class+pseudo
+   specificity outranks .stress-btn:active. */
+.stress-ccg-grid .stress-btn-ccg:active {
+    border-width: 0;
 }
 
 .stress-title {
@@ -95,6 +168,14 @@
     font-weight: bold;
     margin-bottom: 3dp;
     color: #e0e0f0;
+}
+
+.stress-flavour {
+    display: block;
+    font-size: 8dp;
+    line-height: 11dp;
+    margin-bottom: 5dp;
+    color: #7a7a8c;
 }
 
 .stress-info {
@@ -107,6 +188,7 @@
 .stress-info > div {
     display: block;
     height: 11dp;
+    line-height: 11dp;
 }
 
 .stress-section {
@@ -136,12 +218,20 @@
     display: block;
     flex: 1;
     height: 16dp;
+    line-height: 16dp;
+    text-align: center;
     padding: 0dp 3dp;
     margin-right: 2dp;
     background-color: #30304a;
-    border: 1dp #505064;
+    /* Retro raised bevel: light edge top+left, dark edge bottom+right.
+       Uniform across all control buttons; -on states invert it (pressed). */
+    border-top: 2dp #9a9ab4;
+    border-left: 2dp #9a9ab4;
+    border-right: 2dp #2a2a3c;
+    border-bottom: 2dp #2a2a3c;
     color: #d0d0e0;
     font-size: 9dp;
+    font-weight: bold;
     cursor: pointer;
 }
 
@@ -149,10 +239,20 @@
     background-color: #404064;
 }
 
+/* Pressed: invert the bevel (dark top+left, light bottom+right) so the
+   button reads physically pushed-in. Only the edge colors swap — widths
+   stay 2dp — so there is no reflow on press/release. */
+.stress-btn:active {
+    border-top: 2dp #2a2a3c;
+    border-left: 2dp #2a2a3c;
+    border-right: 2dp #9a9ab4;
+    border-bottom: 2dp #9a9ab4;
+}
+
 .stress-btn-clear {
     height: 18dp;
+    line-height: 18dp;
     background-color: #603030;
-    border-color: #805050;
 }
 
 .stress-btn-clear:hover {
@@ -160,12 +260,9 @@
 }
 
 .stress-btn-timed {
-    width: 100%;
     height: 20dp;
-    margin-right: 0;
-    margin-bottom: 2dp;
+    line-height: 20dp;
     background-color: #304a30;
-    border-color: #506450;
     color: #d0e0d0;
     font-weight: bold;
 }
@@ -176,7 +273,11 @@
 
 .stress-btn-timed-on {
     background-color: #60a050;
-    border-color: #80c070;
+    /* pressed bevel (inverted): dark top+left, light bottom+right */
+    border-top: 2dp #2a2a3c;
+    border-left: 2dp #2a2a3c;
+    border-right: 2dp #9a9ab4;
+    border-bottom: 2dp #9a9ab4;
     color: #ffffe0;
 }
 
@@ -186,8 +287,8 @@
 
 .stress-btn-suite {
     height: 20dp;
+    line-height: 20dp;
     background-color: #304a64;
-    border-color: #5070a0;
     color: #d0e0ff;
     font-weight: bold;
 }
@@ -198,7 +299,6 @@
 
 .stress-btn-dur {
     background-color: #2a2a3a;
-    border-color: #4a4a5a;
     color: #a0a0b0;
 }
 
@@ -208,7 +308,11 @@
 
 .stress-btn-dur-on {
     background-color: #4a6080;
-    border-color: #6a80a0;
+    /* pressed bevel (inverted) — selected duration */
+    border-top: 2dp #2a2a3c;
+    border-left: 2dp #2a2a3c;
+    border-right: 2dp #9a9ab4;
+    border-bottom: 2dp #9a9ab4;
     color: #e0e8f0;
     font-weight: bold;
 }
@@ -223,8 +327,8 @@
 
 .stress-btn-tab {
     height: 20dp;
+    line-height: 20dp;
     background-color: #1e1e28;
-    border: 1dp #353545;
     color: #8080a0;
     font-weight: bold;
 }
@@ -236,7 +340,11 @@
 
 .stress-btn-tab-on {
     background-color: #50506a;
-    border-color: #7070a0;
+    /* pressed bevel (inverted) — active tab */
+    border-top: 2dp #2a2a3c;
+    border-left: 2dp #2a2a3c;
+    border-right: 2dp #9a9ab4;
+    border-bottom: 2dp #9a9ab4;
     color: #e0e0f0;
 }
 
@@ -259,8 +367,8 @@
 .stress-btn-copy {
     width: 100%;
     height: 18dp;
+    line-height: 18dp;
     background-color: #304a64;
-    border-color: #5070a0;
     color: #d0e0ff;
 }
 
@@ -289,14 +397,16 @@
 .stress-results-row {
     display: block;
     height: 14dp;
+    line-height: 14dp;
     font-size: 11dp;
     color: #d0e0f0;
     padding: 1dp 4dp;
 }
 
 .stress-btn-danger {
+    height: 18dp;
+    line-height: 18dp;
     background-color: #7a2030;
-    border-color: #a04050;
     color: #ffd0d0;
 }
 
@@ -319,6 +429,7 @@
 .stress-plain-item {
     display: block;
     height: 12dp;
+    line-height: 12dp;
     font-size: 9dp;
     color: #b0b0c0;
 }

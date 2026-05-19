@@ -35,7 +35,7 @@
 				<button data-attr-class="my.headerBtn + ' bg-dark-alpha-hover text-medium'" data-event-click="clearConsole()">
 					<svg src="../svg/bin_icon.svg" data-attr-class="my.svgStyles"></svg>
 				</button>
-				<button data-attr-class="my.headerBtn + ' bg-danger-hover text-medium'" data-event-click="close()" title="Close console">
+				<button data-attr-class="my.closeBtn + ' bg-danger-hover text-medium'" data-event-click="close()" title="Close console">
 					×
 				</button>
 			</div>

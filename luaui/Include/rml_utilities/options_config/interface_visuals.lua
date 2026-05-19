@@ -8,6 +8,35 @@ return function(deps)
 
 	return {
 		---------------------------------------------------------------
+		-- RML Panel Glass
+		--
+		-- Pure front-end onto the RML->guishader bridge master switch
+		-- (WG['rml_guishader'].setEnabled / .isEnabled). The bridge owns
+		-- the persisted config key entirely, so it is NOT named here -
+		-- no string duplication. Scoped to modern RML panels only; the
+		-- engine-wide guishader used by traditional widgets is unaffected.
+		-- If the bridge widget is disabled there is no world-blur feature
+		-- at all, so the toggle correctly reads false and is inert.
+		-- Plain-string name/desc on purpose: no i18n key exists yet and
+		-- Spring.I18N returns the raw key on a miss (the `... or "x"`
+		-- fallback used elsewhere here would display the literal key).
+		---------------------------------------------------------------
+		{ id = "heading_rml_glass", name = "Glass UI", type = "heading" },
+
+		{ id = "rml_world_blur", name = "Blur world behind panels",
+		  type = "bool", min = 0, max = 1, step = 1, value = false,
+		  desc = "Blur the 3D game world behind RML UI panels for a glass look. Turn off if your FPS drops while a panel is open.",
+		  onLoad = function()
+			  return WG['rml_guishader'] ~= nil and WG['rml_guishader'].isEnabled()
+		  end,
+		  onChange = function(v)
+			  if WG['rml_guishader'] then
+				  WG['rml_guishader'].setEnabled(v)
+			  end
+		  end,
+		},
+
+		---------------------------------------------------------------
 		-- Visuals
 		---------------------------------------------------------------
 		{ id = "heading_visuals", name = Spring.I18N('ui.settings.option.label_visuals') or "Visuals", type = "heading" },

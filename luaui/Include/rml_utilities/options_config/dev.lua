@@ -69,6 +69,24 @@ return function(deps)
 		  end,
 		},
 
+		-- ON = legacy (raw-GL) widgets shown (the normal state). OFF hides
+		-- them all via the engine `hideinterface` toggle. RML documents
+		-- render on a separate path, so the RML UI (including this options
+		-- panel) stays fully visible either way.
+		{ id = "legacy_interface", name = "Legacy Interface",
+		  type = "bool", min = 0, max = 1, step = 1, value = true,
+		  desc = "ON: legacy (raw-GL) widgets shown (normal). OFF: suppresses every legacy widget while the RML UI stays visible. Handy for perf isolation and RML development.",
+		  onLoad = function() return not Spring.IsGUIHidden() end,
+		  onChange = function(v)
+			  -- v = true => legacy shown (GUI not hidden). `hideinterface`
+			  -- is an engine toggle, so only flip when the current state
+			  -- differs from the desired one.
+			  if Spring.IsGUIHidden() ~= (not v) then
+				  Spring.SendCommands("hideinterface")
+			  end
+		  end,
+		},
+
 		{ id = "profiler_widget", name = Spring.I18N('ui.settings.option.profiler_widget') or "Widget Profiler",
 		  type = "bool", min = 0, max = 1, step = 1, value = false,
 		  desc = "",

@@ -46,6 +46,23 @@ local MIN_SEARCH_CHARS = 3
 local MAX_SEARCH_RESULTS = 12
 local MAX_SCROLL_RETRY_FRAMES = 10
 local HIGHLIGHT_DURATION_SEC = 1.5
+-- Must be >= the RCSS `transition: transform 0.25s` on #gui_options_rml-widget.
+-- We defer document:Hide() this long after a close so the slide-out is fully
+-- visible before the document drops out of the context's active set.
+local SLIDE_OUT_SEC = 0.3
+
+-- Draw-frame of the most recent (re)populate. RmlUi raises a spurious
+-- `onchange` on every <select>/<input> that data-for recreates when the
+-- section arrays are reassigned (in populateActiveTabData); at that instant
+-- the element reports its first/default option, not the bound value.
+-- OnSelect/OnSlider ignore changes within CONTROL_SETTLE_FRAMES of this so
+-- that spurious fire can't apply a wrong value (the bug: opening the
+-- Interface tab silently reset rml_theme to "base"). Real user input never
+-- lands this fast after a repopulate — the panel is still sliding in.
+-- MUST be declared here, before OnSlider/OnSelect reference it (Lua locals
+-- are only in scope textually after their declaration).
+local CONTROL_SETTLE_FRAMES = 4
+local controlSettleFrame = -1000
 
 -- Toggle panel visibility. nil = flip; true/false = set explicitly.
 --
@@ -62,24 +79,58 @@ local HIGHLIGHT_DURATION_SEC = 1.5
 -- different engine pipeline). We defensively re-assert both on every show
 -- and release both on every hide so no other widget's stale state can
 -- silently kill character input into our search box.
-local bodyElement  -- cached #gui_options_rml-widget element; populated in Initialize
+local bodyElement       -- cached #gui_options_rml-widget element; populated in Initialize
+local pendingOpenClass = false  -- set by toggleShow(open); widget:Update adds
+                                -- .drawer-open the NEXT frame so the slide-in
+                                -- has a laid-out 'from' state and animates
+local hideTimer = nil   -- Spring.GetTimer ref while sliding out; widget:Update
+                        -- fires document:Hide() once SLIDE_OUT_SEC has elapsed
+
 local function toggleShow(newState)
 	if newState == nil then
 		newState = not show
 	end
+	-- CRITICAL ordering: hideWindows() must run BEFORE `show = newState`.
+	-- It calls back into closeWindow('options_rml') -> isvisible() (== our
+	-- `show`); if `show` were already flipped to true, opening would
+	-- recursively close us mid-open (flag ends up false, slide-in still
+	-- fires → no content populate + broken toggle). Guarded by `newState`
+	-- so it only runs on open, exactly like the pre-refactor code.
+	--
+	-- No "already in this state" early-return on purpose: the SDL text-input
+	-- re-assert below is defensive (see the block comment above) and must run
+	-- on every call. The document Show/Hide/timer ops are idempotent, so a
+	-- redundant call is harmless (a redundant open just re-raises to front).
 	if newState and WG['topbar'] then
 		WG['topbar'].hideWindows()
 	end
 	show = newState
-	-- Drawer visibility is class-driven so the slide transition fires.
-	-- The document itself stays mounted; translateX(-100%) takes it off-screen.
-	if bodyElement then
-		bodyElement:SetClass('drawer-open', show)
-	end
+
 	if show then
+		-- Re-opened before a previous slide-out finished: cancel the pending
+		-- Hide so the still-live document just slides back in.
+		hideTimer = nil
+		-- Show() makes the document live AND pulls it to the front of the
+		-- shared context + gives it focus — no manual PullToFront needed.
+		-- Its default style is translateX(-100%), so it comes up off-screen;
+		-- the .drawer-open class is added one frame later (widget:Update) so
+		-- the transform transition animates instead of snapping open.
+		if document then
+			document:Show()
+		end
+		pendingOpenClass = true
 		Spring.SDLStartTextInput()
 		widgetHandler.textOwner = nil
 	else
+		-- Drop the class now so it slides back out; defer document:Hide()
+		-- until the transition has finished (widget:Update + hideTimer) so
+		-- the slide-out is visible and only then does the document leave
+		-- the context's active set.
+		pendingOpenClass = false
+		if bodyElement then
+			bodyElement:SetClass('drawer-open', false)
+		end
+		hideTimer = Spring.GetTimer()
 		Spring.SDLStopTextInput()
 		if widgetHandler.textOwner == widget then
 			widgetHandler.textOwner = nil
@@ -421,6 +472,11 @@ function widget:OnSlider(element)
 	local entry = optionById[id]
 	if not entry or entry.disabled then return end
 
+	-- Swallow the recreation-time spurious onchange (see controlSettleFrame).
+	if Spring.GetDrawFrame() - controlSettleFrame <= CONTROL_SETTLE_FRAMES then
+		return
+	end
+
 	local value = tonumber(element:GetAttribute("value"))
 	if value then
 		if entry.value ~= value then
@@ -442,6 +498,15 @@ function widget:OnSelect(element)
 	local id = (element:GetAttribute("id") or ""):gsub("^cfg%-", "")
 	local entry = optionById[id]
 	if not entry or entry.disabled then return end
+
+	-- Swallow the recreation-time spurious onchange (see controlSettleFrame).
+	-- This is the rml_theme="base" reset fix: on tab (re)populate the select
+	-- briefly reports its first option ("base") before data-attr-selected
+	-- binds, and the entry.value guard below does NOT catch it (loaded value
+	-- != "base"), so without this it would apply base and call rml_theme_changed.
+	if Spring.GetDrawFrame() - controlSettleFrame <= CONTROL_SETTLE_FRAMES then
+		return
+	end
 
 	local value = element:GetAttribute("value")
 	if value == nil then return end
@@ -876,6 +941,9 @@ local lastShow = false
 -- Write empty arrays to every sub-tab model key, then populate only the
 -- entries whose sub-tab matches (or single-section tabs get their one entry).
 local function populateActiveTabData(activeTab, gfxSubTab, interfaceSubTab)
+	-- Mark the settle window so the spurious recreation onchange that follows
+	-- this reassignment is ignored by OnSelect/OnSlider (see declaration).
+	controlSettleFrame = Spring.GetDrawFrame()
 	for _, plan in pairs(tabPlan) do
 		for _, entry in ipairs(plan.entries) do
 			dm_handle[entry.modelKey] = {}
@@ -967,11 +1035,25 @@ function widget:Initialize()
 	dm_handle = result.dm_handle
 	contentInitialized = false
 
-	-- Drawer stays mounted; off-screen by default (no .drawer-open class).
-	-- Showing/hiding just toggles the class to drive the slide transition.
-	document:Show()
+	-- Start closed: hidden and out of the context's active set. Open does
+	-- document:Show() (which also raises + focuses) then a one-frame-deferred
+	-- .drawer-open class so the slide-in animates from the default
+	-- translateX(-100%); close slides out then document:Hide() after the
+	-- transition. See toggleShow + widget:Update.
 	bodyElement = document:GetElementById('gui_options_rml-widget')
+	document:Hide()
 	show = false
+
+	-- Glass-over-game: register the drawer body with the RML→guishader bridge
+	-- so the 3D world blurs behind the options panel too. Globally gated by
+	-- the "world blur" interface setting (WG['rml_guishader'].setEnabled).
+	-- The drawer stays mounted and slides off-screen when closed, so the
+	-- bridge relies on the `show` predicate (not geometry) to drop the rect.
+	if WG['rml_guishader'] then
+		WG['rml_guishader'].register(WIDGET_ID, bodyElement, {
+			isVisible = function() return show end,
+		})
+	end
 
 	WG['options_rml'] = {
 		toggle    = function(state) toggleShow(state) end,
@@ -1033,6 +1115,10 @@ function widget:Shutdown()
 	widgetHandler.actionHandler:RemoveAction(self, "options_rml_dochide")
 	WG['options_rml'] = nil
 
+	if WG['rml_guishader'] then
+		WG['rml_guishader'].unregister(WIDGET_ID)
+	end
+
 	utils.shutdownRmlWidget(self, {
 		widgetId = WIDGET_ID,
 		modelName = MODEL_NAME,
@@ -1046,6 +1132,26 @@ end
 
 function widget:Update()
 	if not dm_handle then return end
+
+	-- Slide-in: .drawer-open is added the frame AFTER document:Show() so the
+	-- transform transition has a laid-out translateX(-100%) 'from' state and
+	-- animates instead of snapping straight to open.
+	if pendingOpenClass and bodyElement then
+		bodyElement:SetClass('drawer-open', true)
+		pendingOpenClass = false
+	end
+
+	-- Slide-out: once the close transition has elapsed, drop the document
+	-- from the context's active set. Re-opening clears hideTimer in
+	-- toggleShow; the `show` guard here is a belt-and-braces backstop.
+	if hideTimer then
+		if show then
+			hideTimer = nil
+		elseif Spring.DiffTimers(Spring.GetTimer(), hideTimer) >= SLIDE_OUT_SEC then
+			if document then document:Hide() end
+			hideTimer = nil
+		end
+	end
 
 	-- First-call deferred init: all widgets have now loaded, so WG.screenMode
 	-- (and any other dependent WG hooks) are available for dynamic selectOptions.

@@ -14,13 +14,24 @@
     <link rel="stylesheet" href="rml_stress_test.rcss" type="text/rcss" />
 </head>
 <body id="rml_stress_test-widget">
-    <div id="widget-container" data-model="rml_stress_test_model">
+    <div id="widget-container" data-model="rml_stress_test_model" data-class-peeking="peek">
         <!-- Close MUST live inside the data-model subtree or data-event-click
              never binds. Absolute-positioned, so its on-screen spot is
              unchanged (it still anchors to the positioned body). -->
         <button class="stress-close" data-event-click="close()">×</button>
+        <!-- Peek toggle: hides the rest of this widget's visual so you can
+             see what's actually rendering behind it. Stays visible while
+             peeking (NOT in the .peeking hide rules) so you can toggle back. -->
+        <button class="stress-peek" data-event-click="togglePeek()">{{peek ? 'SHOW' : 'PEEK'}}</button>
         <div class="stress-sidebar">
             <div class="stress-title">Stress Test</div>
+            <div class="stress-flavour">Loading this widget does nothing on its own. Click ISOLATION below to hide the entire rest of the UI — every legacy widget (hideinterface) and every other RML document — so only this widget's render is measured. Toggle it off (or disable the widget) to restore. Hit 'peek' to drop this overlay and confirm: a blank screen means isolation is clean; anything still drawing leaked through.</div>
+            <div class="stress-row">
+                <button data-attr-class="'stress-btn stress-btn-timed' + (isolationOn ? ' stress-btn-timed-on' : '')"
+                        data-event-click="toggleIsolation()">
+                    {{isolationLabel}}
+                </button>
+            </div>
             <div class="stress-info">
                 <div>FPS: <span class="btn-result">{{fpsNow}}</span></div>
                 <div>Stage: <span id="stress-count-val">0</span></div>
@@ -32,10 +43,12 @@
             </div>
 
             <!-- Always-visible global controls -->
-            <button data-attr-class="'stress-btn stress-btn-timed' + (timedStatus == 'ON' ? ' stress-btn-timed-on' : '')"
-                    data-event-click="toggleTimed()">
-                Timed mode: {{timedStatus}}
-            </button>
+            <div class="stress-row">
+                <button data-attr-class="'stress-btn stress-btn-timed' + (timedStatus == 'ON' ? ' stress-btn-timed-on' : '')"
+                        data-event-click="toggleTimed()">
+                    TIMED MODE: {{timedStatus}}
+                </button>
+            </div>
             <div class="stress-row">
                 <button data-attr-class="'stress-btn stress-btn-dur' + (durationStatus == '2s' ? ' stress-btn-dur-on' : '')" data-event-click="setDuration(2)">2s</button>
                 <button data-attr-class="'stress-btn stress-btn-dur' + (durationStatus == '3s' ? ' stress-btn-dur-on' : '')" data-event-click="setDuration(3)">3s</button>
@@ -43,45 +56,72 @@
                 <button data-attr-class="'stress-btn stress-btn-dur' + (durationStatus == '10s' ? ' stress-btn-dur-on' : '')" data-event-click="setDuration(10)">10s</button>
             </div>
             <div class="stress-row">
-                <button class="stress-btn stress-btn-suite" data-event-click="scenario('baseline')">Measure baseline</button>
+                <button class="stress-btn stress-btn-suite" data-event-click="scenario('baseline')">MEASURE BASELINE</button>
             </div>
             <div class="stress-row">
-                <button class="stress-btn stress-btn-clear" data-event-click="scenario('clear')">Clear stage</button>
-                <button class="stress-btn stress-btn-clear" data-event-click="scenario('clearresults')">Clear results</button>
+                <button class="stress-btn stress-btn-clear" data-event-click="scenario('clear')">CLEAR STAGE</button>
+                <button class="stress-btn stress-btn-clear" data-event-click="scenario('clearresults')">CLEAR RESULTS</button>
             </div>
             <div class="stress-row">
-                <button class="stress-btn stress-btn-copy" data-event-click="copyResults()">Copy results</button>
-                <button class="stress-btn stress-btn-danger" data-event-click="cancelSuite()">Stop suite</button>
+                <button class="stress-btn stress-btn-copy" data-event-click="copyResults()">{{copyLabel}}</button>
+                <button class="stress-btn stress-btn-danger" data-event-click="cancelSuite()">STOP SUITE</button>
             </div>
 
             <!-- Tab bar — only one tab's sections live in the DOM at a time -->
             <div class="stress-row stress-tab-bar">
-                <button data-attr-class="'stress-btn stress-btn-tab' + (currentTab == 'core' ? ' stress-btn-tab-on' : '')" data-event-click="setTab('core')">Core</button>
+                <button data-attr-class="'stress-btn stress-btn-tab' + (currentTab == 'core' ? ' stress-btn-tab-on' : '')" data-event-click="setTab('core')">CORE</button>
                 <button data-attr-class="'stress-btn stress-btn-tab' + (currentTab == 'ccg' ? ' stress-btn-tab-on' : '')" data-event-click="setTab('ccg')">CCG</button>
-                <button data-attr-class="'stress-btn stress-btn-tab' + (currentTab == 'util' ? ' stress-btn-tab-on' : '')" data-event-click="setTab('util')">Util</button>
+                <button data-attr-class="'stress-btn stress-btn-tab' + (currentTab == 'util' ? ' stress-btn-tab-on' : '')" data-event-click="setTab('util')">UTIL</button>
             </div>
 
             <!-- CORE TAB — the original scenario sections -->
             <div data-if="currentTab == 'core'" class="stress-tab-content">
                 <div class="stress-row">
-                    <button class="stress-btn stress-btn-suite" data-event-click="runSuite()">Run main suite</button>
+                    <button class="stress-btn stress-btn-suite" data-event-click="runSuite()">RUN MAIN SUITE</button>
                 </div>
 
-                <div data-for="sec : coreSections">
-                    <div class="stress-section">{{sec.heading}}</div>
-                    <div class="stress-ccg-grid">
-                        <button data-for="b : sec.buttons" data-attr-class="b.cls" data-event-click="scenario(b.kind, b.a1, b.a2, b.a3)">{{b.label}}<span class="btn-result">{{b.result}}</span></button>
-                    </div>
+                <!-- Static heading + gated grid per section (mirrors the
+                     CCG/Util tabs). Headings are always-present constant
+                     strings so the tab structure doesn't materialise (jump)
+                     on activation; only the gated grids fill. Section count
+                     is coupled to CORE_LAYOUT / the model coreSecN fields. -->
+                <div class="stress-section">{{coreSec1Heading}}</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="b : coreSec1" data-attr-class="b.cls" data-event-click="scenario(b.kind, b.a1, b.a2, b.a3)">{{b.label}}<span class="btn-result">{{b.result}}</span></button>
+                </div>
+                <div class="stress-section">{{coreSec2Heading}}</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="b : coreSec2" data-attr-class="b.cls" data-event-click="scenario(b.kind, b.a1, b.a2, b.a3)">{{b.label}}<span class="btn-result">{{b.result}}</span></button>
+                </div>
+                <div class="stress-section">{{coreSec3Heading}}</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="b : coreSec3" data-attr-class="b.cls" data-event-click="scenario(b.kind, b.a1, b.a2, b.a3)">{{b.label}}<span class="btn-result">{{b.result}}</span></button>
+                </div>
+                <div class="stress-section">{{coreSec4Heading}}</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="b : coreSec4" data-attr-class="b.cls" data-event-click="scenario(b.kind, b.a1, b.a2, b.a3)">{{b.label}}<span class="btn-result">{{b.result}}</span></button>
+                </div>
+                <div class="stress-section">{{coreSec5Heading}}</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="b : coreSec5" data-attr-class="b.cls" data-event-click="scenario(b.kind, b.a1, b.a2, b.a3)">{{b.label}}<span class="btn-result">{{b.result}}</span></button>
+                </div>
+                <div class="stress-section">{{coreSec6Heading}}</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="b : coreSec6" data-attr-class="b.cls" data-event-click="scenario(b.kind, b.a1, b.a2, b.a3)">{{b.label}}<span class="btn-result">{{b.result}}</span></button>
+                </div>
+                <div class="stress-section">{{coreSec7Heading}}</div>
+                <div class="stress-ccg-grid">
+                    <button data-for="b : coreSec7" data-attr-class="b.cls" data-event-click="scenario(b.kind, b.a1, b.a2, b.a3)">{{b.label}}<span class="btn-result">{{b.result}}</span></button>
                 </div>
 
                 <div class="stress-section">Dev</div>
-                <button class="stress-btn stress-btn-ccg" data-event-click="requestReload()">Reload widget</button>
+                <button class="stress-btn stress-btn-ccg" data-event-click="requestReload()">RELOAD WIDGET</button>
             </div>
 
             <!-- CCG TAB -->
             <div data-if="currentTab == 'ccg'" class="stress-tab-content">
                 <div class="stress-row">
-                    <button class="stress-btn stress-btn-suite" data-event-click="runCcgSuite()">Run CCG suite</button>
+                    <button class="stress-btn stress-btn-suite" data-event-click="runCcgSuite()">RUN CCG SUITE</button>
                 </div>
 
                 <div class="stress-section">card @ 500</div>
@@ -113,7 +153,7 @@
             <!-- UTIL TAB -->
             <div data-if="currentTab == 'util'" class="stress-tab-content">
                 <div class="stress-row">
-                    <button class="stress-btn stress-btn-suite" data-event-click="runUtilSuite()">Run utility suite</button>
+                    <button class="stress-btn stress-btn-suite" data-event-click="runUtilSuite()">RUN UTILITY SUITE</button>
                 </div>
 
                 <div class="stress-section">gradient @ 500</div>

@@ -126,7 +126,7 @@
 	position: absolute;
 	left: 0dp;
 	top: 0dp;
-	width: 480dp;
+	width: 540dp;
 	height: 100vh;
 	display: block;
 	backdrop-filter: blur(5px);
@@ -345,9 +345,19 @@
 	margin-bottom: 3dp;
 }
 
+/* Parent-off: make the group non-interactive (instant), and dim only
+   the CONTENT — label+control (.setting-control) and description
+   (.setting-desc) — NOT the container. opacity on the container
+   inherits to the whole subtree and washed out the row structure and
+   the .option-group bg. Transition is on .setting-control/.setting-desc
+   so toggling the ancestor's .dimmed fades them instead of snapping. */
 .option-group-children.dimmed {
-	opacity: 0.35;
 	pointer-events: none;
+}
+
+.option-group-children.dimmed .setting-control,
+.option-group-children.dimmed .setting-desc {
+	opacity: 0.35;
 }
 
 .select-card:hover {
@@ -425,6 +435,7 @@ button.tab-dev-construction:active {
 	align-items: center;
 	justify-content: space-between;
 	gap: 4dp;
+	transition: opacity 0.15s quadratic-out;
 }
 
 /* Right side: description text layout. Fills remaining 50%. Text
@@ -433,6 +444,7 @@ button.tab-dev-construction:active {
    can be tuned globally from common_class_groups.lua. */
 .setting-desc {
 	flex: 1;
+	transition: opacity 0.15s quadratic-out;
 }
 
 /* ─── Row readability experiments ─────────────────────────────────────

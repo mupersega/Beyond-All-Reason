@@ -1,10 +1,10 @@
 /* rml_style_guide Widget Styles */
 #rml_style_guide-widget {
-    /* positional properties */
+    /* positional properties — mirror of rml_starter, anchored left */
     display: flex;
     position: absolute;
-    left: 200dp;
-    top: 20dp;
+    left: 5dp;
+    top: 5vh;
     /* dimensional properties */
     width: 700dp;
     height: 80vh;
@@ -13,8 +13,8 @@
 #rml_style_guide-widget.collapsed {
     width: 144dp;
     height: 24dp;
-    top: 20dp;
-    left: 200dp;
+    top: 100dp;
+    transition: transform 0.1s elastic-in-out;
 }
 
 #widget-container {

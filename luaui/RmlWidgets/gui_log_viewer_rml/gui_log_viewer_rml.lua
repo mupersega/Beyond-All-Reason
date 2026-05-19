@@ -185,6 +185,7 @@ local function initModel()
 		my = {
 			svgStyles = "h-2-5 w-2-5",
 			headerBtn = "px-1-5 py-0-5 rounded text-xs cursor-pointer",
+			closeBtn  = "px-1-5 py-0-5 rounded text-xl cursor-pointer",
 		},
 
 		clearConsole = function()
