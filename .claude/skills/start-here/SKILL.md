@@ -31,18 +31,25 @@ ref is also kept as a known-good fallback to return to.
 When you want your work considered for the base, open a PR from your branch into
 `bar-ui-2.0` — don't push to `bar-ui-2.0` yourself.
 
-## 2. Make your first widget with the generator
+## 2. Make your first widget — just ask Claude
 
-Do not hand-roll a widget. The generator's output **is** the canonical pattern —
-it already embodies every rule:
+You don't need to run anything. You're a viber — Claude *is* your generator.
+In this repo, ask:
 
-```bash
-luaui/RmlWidgets/rml_starter/generate-widget.sh --name my_first_widget
-```
+> scaffold a new RML widget called `my_first_widget`
 
-Requires bash — on Windows run it from **Git Bash or WSL** (not PowerShell/cmd).
-It scaffolds `.lua` / `.rml` / `.rcss`. Set `enabled = true` in the generated
-`GetInfo()`, then in-game run `/luaui reload` to see it.
+Claude follows the canonical pattern (its source of truth is
+`luaui/RmlWidgets/CLAUDE.md` + the `rml_starter` reference + the
+`generate-widget.sh` templates), so you get the exact same blessed
+`.lua` / `.rml` / `.rcss` the generator produces — no bash, no setup,
+any OS. Then set `enabled = true` in the generated `GetInfo()` and run
+`/luaui reload` in-game to see it.
+
+> CLI alternative (only if you already live in a shell): run
+> `luaui/RmlWidgets/rml_starter/generate-widget.sh --name my_first_widget`
+> — needs bash (Windows: Git Bash or WSL). It and Claude produce the same
+> thing; the script is just the canonical pattern in runnable form. Don't
+> hand-roll a widget either way.
 
 ## 3. Read these two with your human eyes — they exist for a reason
 
