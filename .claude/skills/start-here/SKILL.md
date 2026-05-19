@@ -28,8 +28,14 @@ balk completely, just throw your branch away and re-cut a fresh one from
 `bar-ui-2.0` — the base is never at risk. A frozen `snapshot/bar-ui-2.0-<date>`
 ref is also kept as a known-good fallback to return to.
 
-When you want your work considered for the base, open a PR from your branch into
-`bar-ui-2.0` — don't push to `bar-ui-2.0` yourself.
+**No fork needed to build and vibe.** You just need git and this repo cloned —
+cloning a public repo needs no fork and no account. Everything stays local; the
+game runs from whatever branch you have checked out, and you never have to push.
+Forking (or being added as a collaborator) only matters *if* you later want your
+work merged back into the base — until then, ignore it entirely.
+
+When you do want your work considered for the base, open a PR from your branch
+into `bar-ui-2.0` — never push to `bar-ui-2.0` yourself.
 
 ## 2. Make your first widget — just ask Claude
 
