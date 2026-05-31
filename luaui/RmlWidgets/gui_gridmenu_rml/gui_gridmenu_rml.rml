@@ -1,0 +1,223 @@
+<rml>
+<head>
+    <title>Build Grid RML</title>
+
+    <!-- Stylesheet order matters (do not reorder) -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="gui_gridmenu_rml.rcss" type="text/rcss" />
+</head>
+<!--
+  v4 PERSISTENT FIXED-SLOT: builder strip + 4 tabs + 12 slots + back bar ALWAYS
+  laid out. No data-for, no data-if popping. Each slot/tab/builder binds its OWN
+  top-level model key.
+  PANEL THEMING: ccg.panel.general (the standard panel look) wraps ONLY the BODY
+  (cat tabs + grid + back bar) — NOT the whole widget. The builder-strip flag sits
+  ABOVE that panel as a separate element, so it reads as a TAB coming off the panel
+  rather than an angled bit on one big square. widget-container is a plain wrapper.
+  DYNAMIC PX-SNAP: cells size via data-style-width/height="cellSize" (integer px
+  from the dp ratio, pushSizes); body panel via data-style-width="panelSize". Keeps
+  the 1px gaps crisp at any UI scale. 1px gaps: mr-px cols 1-3, mb-px rows 1-2.
+  EMPTY-SLOT / MISSING-IMAGE HANDLING: an <img> with src "" renders WHITE, so each
+  image is gated by its own presence bool (slotN.hasIcon/hasBadge/hasType) and
+  hidden with opacity-0 when empty; an empty cell uses my.cellEmpty so empty slots
+  are nearly transparent. All conditional classes use the full-string
+  data-attr-class pattern. Flex elements (tabs, back-btn) hold their text in a
+  <span> child (a flex parent does not lay out raw text — §AA).
+  Each filled cell = unit icon + BADGE (top-left) + TYPE icon (bottom-left) + 2 cost
+  spans (bottom-right, hover-gated by hoveredD) + an inset HIGHLIGHT overlay
+  (cell-hl) carrying the armed/flash border INSIDE the cell. Hover drives the shared
+  tooltip. Armed/flash = armedD/flashD scalars vs each slot's LITERAL index ->
+  border-COLOR only (paint). Items fire on MOUSEDOWN. §R/§T/§U/§X/§AB.
+-->
+<body id="gui_gridmenu_rml-widget" class="widget-shadow">
+    <!-- widget-container is a PLAIN layout wrapper (no panel theming). It stacks the
+         flag builder-strip ABOVE the themed body panel. -->
+    <div id="widget-container" data-model="gui_gridmenu_rml_model">
+
+        <!-- BUILDER STRIP — the FLAG/TAB. ~75% width, sits ABOVE the panel so it
+             reads as a tab coming off it. Always laid out (fixed height); blank
+             slots opacity-0 but reserve space. The flag is an oversized rotated
+             wedge clipped to the strip box (CLAUDE.md Decoration Pattern #2 / the
+             advplayerslist rail-handle motif): builder-flag-clip is the clip:always
+             container, builder-flag the wedge (bg-dark fill, pe-none). It's the
+             first child → paints BEHIND the builder buttons (the flex children). -->
+        <div class="builder-strip">
+            <div class="builder-flag-clip pe-none"><div class="builder-flag bg-primary pe-none"></div><div class="builder-flag-fade bg-gradient-subtle-h pe-none"></div></div>
+            <div class="builder-btn cursor-pointer hover-brighten bg-darker border-0" data-event-mousedown="onBuilder(1)"
+                 data-attr-class="my.builderBtn + (builder1.present ? (1 == builderActive ? ' border-primary' : '') : ' opacity-0')">
+                <img class="builder-icon" data-attr-src="builder1.icon" />
+            </div>
+            <div class="builder-btn cursor-pointer hover-brighten bg-darker border-0" data-event-mousedown="onBuilder(2)"
+                 data-attr-class="my.builderBtn + (builder2.present ? (2 == builderActive ? ' border-primary' : '') : ' opacity-0')">
+                <img class="builder-icon" data-attr-src="builder2.icon" />
+            </div>
+            <div class="builder-btn cursor-pointer hover-brighten bg-darker border-0" data-event-mousedown="onBuilder(3)"
+                 data-attr-class="my.builderBtn + (builder3.present ? (3 == builderActive ? ' border-primary' : '') : ' opacity-0')">
+                <img class="builder-icon" data-attr-src="builder3.icon" />
+            </div>
+            <div class="builder-btn cursor-pointer hover-brighten bg-darker border-0" data-event-mousedown="onBuilder(4)"
+                 data-attr-class="my.builderBtn + (builder4.present ? (4 == builderActive ? ' border-primary' : '') : ' opacity-0')">
+                <img class="builder-icon" data-attr-src="builder4.icon" />
+            </div>
+            <div class="builder-btn cursor-pointer hover-brighten bg-darker border-0" data-event-mousedown="onBuilder(5)"
+                 data-attr-class="my.builderBtn + (builder5.present ? (5 == builderActive ? ' border-primary' : '') : ' opacity-0')">
+                <img class="builder-icon" data-attr-src="builder5.icon" />
+            </div>
+        </div>
+
+        <!-- MAIN PANEL — ccg.panel.general theming lives HERE, wrapping ONLY the body
+             (category tabs + the build grid + the bottom back/shift bar). The flag
+             above sits outside it → reads as a tab. Width is the dynamic panelSize so
+             the panel hugs the grid (4 cells + 3 gaps). -->
+        <div data-attr-class="ccg.panel.general + ' grid-panel bg-darkest'" data-style-width="panelSize">
+
+            <!-- CATEGORY TABS — 4 fixed tabs. The WHOLE row is hidden (data-visible →
+                 visibility:hidden, KEEPS its layout box) unless a non-factory builder
+                 is selected (chromeShown), so the grid never shifts. Active tab tinted.
+                 Each label is in a <span> so the flex tab can center it (§AA). -->
+            <div class="cat-row" data-visible="chromeShown">
+                <div data-event-mousedown="onCat(1)"
+                     data-attr-class="my.catTab + (1 == activeCat ? ' bg-gradient_primary-accent text-darkest font-bold' : ' bg-darker text-medium')"><span class="pe-none">{{tab1label}}</span></div>
+                <div data-event-mousedown="onCat(2)"
+                     data-attr-class="my.catTab + (2 == activeCat ? ' bg-gradient_primary-accent text-darkest font-bold' : ' bg-darker text-medium')"><span class="pe-none">{{tab2label}}</span></div>
+                <div data-event-mousedown="onCat(3)"
+                     data-attr-class="my.catTab + (3 == activeCat ? ' bg-gradient_primary-accent text-darkest font-bold' : ' bg-darker text-medium')"><span class="pe-none">{{tab3label}}</span></div>
+                <div data-event-mousedown="onCat(4)"
+                     data-attr-class="my.catTab + (4 == activeCat ? ' bg-gradient_primary-accent text-darkest font-bold' : ' bg-darker text-medium')"><span class="pe-none">{{tab4label}}</span></div>
+            </div>
+
+            <!-- 4x3 GRID — 12 hard-coded slots. Cell W/H = data-style cellSize (int px).
+                 1px gaps: mr-px cols 1-3, mb-px rows 1-2. Empty cell = my.cellEmpty;
+                 each <img> hidden via opacity-0 when its src is "". -->
+            <div class="grid-area">
+                <div class="grid-row mb-px" data-style-height="cellSize">
+                    <div data-attr-class="(slot1.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(1)" data-event-mouseover="onHover(1)" data-event-mouseout="onUnhover(1)">
+                        <img data-attr-class="'cell-icon' + (slot1.hasIcon ? '' : ' opacity-0')" data-attr-src="slot1.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot1.hasBadge ? '' : ' opacity-0')" data-attr-src="slot1.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot1.hasType ? '' : ' opacity-0')" data-attr-src="slot1.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (1 == hoveredD ? '' : ' opacity-0')">{{slot1.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (1 == hoveredD ? '' : ' opacity-0')">{{slot1.energy}}</span>
+                        <div data-attr-class="my.cellHl + (1 == flashD ? ' border-light' : (1 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                    <div data-attr-class="(slot2.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(2)" data-event-mouseover="onHover(2)" data-event-mouseout="onUnhover(2)">
+                        <img data-attr-class="'cell-icon' + (slot2.hasIcon ? '' : ' opacity-0')" data-attr-src="slot2.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot2.hasBadge ? '' : ' opacity-0')" data-attr-src="slot2.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot2.hasType ? '' : ' opacity-0')" data-attr-src="slot2.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (2 == hoveredD ? '' : ' opacity-0')">{{slot2.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (2 == hoveredD ? '' : ' opacity-0')">{{slot2.energy}}</span>
+                        <div data-attr-class="my.cellHl + (2 == flashD ? ' border-light' : (2 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                    <div data-attr-class="(slot3.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(3)" data-event-mouseover="onHover(3)" data-event-mouseout="onUnhover(3)">
+                        <img data-attr-class="'cell-icon' + (slot3.hasIcon ? '' : ' opacity-0')" data-attr-src="slot3.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot3.hasBadge ? '' : ' opacity-0')" data-attr-src="slot3.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot3.hasType ? '' : ' opacity-0')" data-attr-src="slot3.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (3 == hoveredD ? '' : ' opacity-0')">{{slot3.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (3 == hoveredD ? '' : ' opacity-0')">{{slot3.energy}}</span>
+                        <div data-attr-class="my.cellHl + (3 == flashD ? ' border-light' : (3 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                    <div data-attr-class="(slot4.has ? my.unitCell : my.cellEmpty)" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(4)" data-event-mouseover="onHover(4)" data-event-mouseout="onUnhover(4)">
+                        <img data-attr-class="'cell-icon' + (slot4.hasIcon ? '' : ' opacity-0')" data-attr-src="slot4.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot4.hasBadge ? '' : ' opacity-0')" data-attr-src="slot4.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot4.hasType ? '' : ' opacity-0')" data-attr-src="slot4.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (4 == hoveredD ? '' : ' opacity-0')">{{slot4.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (4 == hoveredD ? '' : ' opacity-0')">{{slot4.energy}}</span>
+                        <div data-attr-class="my.cellHl + (4 == flashD ? ' border-light' : (4 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                </div>
+                <div class="grid-row mb-px" data-style-height="cellSize">
+                    <div data-attr-class="(slot5.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(5)" data-event-mouseover="onHover(5)" data-event-mouseout="onUnhover(5)">
+                        <img data-attr-class="'cell-icon' + (slot5.hasIcon ? '' : ' opacity-0')" data-attr-src="slot5.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot5.hasBadge ? '' : ' opacity-0')" data-attr-src="slot5.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot5.hasType ? '' : ' opacity-0')" data-attr-src="slot5.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (5 == hoveredD ? '' : ' opacity-0')">{{slot5.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (5 == hoveredD ? '' : ' opacity-0')">{{slot5.energy}}</span>
+                        <div data-attr-class="my.cellHl + (5 == flashD ? ' border-light' : (5 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                    <div data-attr-class="(slot6.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(6)" data-event-mouseover="onHover(6)" data-event-mouseout="onUnhover(6)">
+                        <img data-attr-class="'cell-icon' + (slot6.hasIcon ? '' : ' opacity-0')" data-attr-src="slot6.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot6.hasBadge ? '' : ' opacity-0')" data-attr-src="slot6.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot6.hasType ? '' : ' opacity-0')" data-attr-src="slot6.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (6 == hoveredD ? '' : ' opacity-0')">{{slot6.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (6 == hoveredD ? '' : ' opacity-0')">{{slot6.energy}}</span>
+                        <div data-attr-class="my.cellHl + (6 == flashD ? ' border-light' : (6 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                    <div data-attr-class="(slot7.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(7)" data-event-mouseover="onHover(7)" data-event-mouseout="onUnhover(7)">
+                        <img data-attr-class="'cell-icon' + (slot7.hasIcon ? '' : ' opacity-0')" data-attr-src="slot7.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot7.hasBadge ? '' : ' opacity-0')" data-attr-src="slot7.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot7.hasType ? '' : ' opacity-0')" data-attr-src="slot7.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (7 == hoveredD ? '' : ' opacity-0')">{{slot7.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (7 == hoveredD ? '' : ' opacity-0')">{{slot7.energy}}</span>
+                        <div data-attr-class="my.cellHl + (7 == flashD ? ' border-light' : (7 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                    <div data-attr-class="(slot8.has ? my.unitCell : my.cellEmpty)" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(8)" data-event-mouseover="onHover(8)" data-event-mouseout="onUnhover(8)">
+                        <img data-attr-class="'cell-icon' + (slot8.hasIcon ? '' : ' opacity-0')" data-attr-src="slot8.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot8.hasBadge ? '' : ' opacity-0')" data-attr-src="slot8.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot8.hasType ? '' : ' opacity-0')" data-attr-src="slot8.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (8 == hoveredD ? '' : ' opacity-0')">{{slot8.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (8 == hoveredD ? '' : ' opacity-0')">{{slot8.energy}}</span>
+                        <div data-attr-class="my.cellHl + (8 == flashD ? ' border-light' : (8 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                </div>
+                <div class="grid-row" data-style-height="cellSize">
+                    <div data-attr-class="(slot9.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(9)" data-event-mouseover="onHover(9)" data-event-mouseout="onUnhover(9)">
+                        <img data-attr-class="'cell-icon' + (slot9.hasIcon ? '' : ' opacity-0')" data-attr-src="slot9.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot9.hasBadge ? '' : ' opacity-0')" data-attr-src="slot9.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot9.hasType ? '' : ' opacity-0')" data-attr-src="slot9.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (9 == hoveredD ? '' : ' opacity-0')">{{slot9.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (9 == hoveredD ? '' : ' opacity-0')">{{slot9.energy}}</span>
+                        <div data-attr-class="my.cellHl + (9 == flashD ? ' border-light' : (9 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                    <div data-attr-class="(slot10.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(10)" data-event-mouseover="onHover(10)" data-event-mouseout="onUnhover(10)">
+                        <img data-attr-class="'cell-icon' + (slot10.hasIcon ? '' : ' opacity-0')" data-attr-src="slot10.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot10.hasBadge ? '' : ' opacity-0')" data-attr-src="slot10.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot10.hasType ? '' : ' opacity-0')" data-attr-src="slot10.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (10 == hoveredD ? '' : ' opacity-0')">{{slot10.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (10 == hoveredD ? '' : ' opacity-0')">{{slot10.energy}}</span>
+                        <div data-attr-class="my.cellHl + (10 == flashD ? ' border-light' : (10 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                    <div data-attr-class="(slot11.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(11)" data-event-mouseover="onHover(11)" data-event-mouseout="onUnhover(11)">
+                        <img data-attr-class="'cell-icon' + (slot11.hasIcon ? '' : ' opacity-0')" data-attr-src="slot11.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot11.hasBadge ? '' : ' opacity-0')" data-attr-src="slot11.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot11.hasType ? '' : ' opacity-0')" data-attr-src="slot11.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (11 == hoveredD ? '' : ' opacity-0')">{{slot11.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (11 == hoveredD ? '' : ' opacity-0')">{{slot11.energy}}</span>
+                        <div data-attr-class="my.cellHl + (11 == flashD ? ' border-light' : (11 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                    <div data-attr-class="(slot12.has ? my.unitCell : my.cellEmpty)" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(12)" data-event-mouseover="onHover(12)" data-event-mouseout="onUnhover(12)">
+                        <img data-attr-class="'cell-icon' + (slot12.hasIcon ? '' : ' opacity-0')" data-attr-src="slot12.icon" />
+                        <img data-attr-class="'cell-badge pe-none' + (slot12.hasBadge ? '' : ' opacity-0')" data-attr-src="slot12.badge" />
+                        <img data-attr-class="'cell-type pe-none' + (slot12.hasType ? '' : ' opacity-0')" data-attr-src="slot12.typeIcon" />
+                        <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (12 == hoveredD ? '' : ' opacity-0')">{{slot12.metal}}</span>
+                        <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (12 == hoveredD ? '' : ' opacity-0')">{{slot12.energy}}</span>
+                        <div data-attr-class="my.cellHl + (12 == flashD ? ' border-light' : (12 == armedD ? ' border-primary' : ''))"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BACK PANEL — bottom strip; hidden (but space RESERVED via data-visible →
+                 visibility:hidden) unless a non-factory builder is selected (chromeShown),
+                 so the grid never shifts. Holds the Shift back-button on the LEFT, itself
+                 shown only inside a category (inCategory); the panel is fixed-height so the
+                 button toggling never shifts anything. Click it or release Shift to go home.
+                 Label text is in <span>s so the flex back-btn can center it (§AA). -->
+            <div class="back-panel" data-visible="chromeShown">
+                <div class="back-btn cursor-pointer hover-brighten bg-darker" data-visible="inCategory" data-event-mousedown="onBack()">
+                    <span class="gm-chevron border-light pe-none"></span>
+                    <span class="text-xs text-light pe-none">Back</span>
+                    <span class="back-key text-xs text-medium bg-darkest pe-none">Shift</span>
+                </div>
+            </div>
+
+        </div><!-- MAIN PANEL (ccg.panel.general) -->
+
+    </div>
+</body>
+</rml>

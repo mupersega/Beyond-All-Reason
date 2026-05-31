@@ -1,0 +1,266 @@
+/* gui_gridmenu_rml — build grid (v4, persistent fixed-slot, dynamic px-snap).
+   LAYOUT ONLY — all colour comes from utility/CCG classes in the .rml/model.
+   PERSISTENT structure: panel + builder strip + 4 tabs + 12 slots are ALWAYS
+   laid out (no data-for, no data-if). Empty = icon src "" / opacity-0 on a
+   fixed-size box. Cell/panel/row sizes are DYNAMIC integer px (data-style-* from
+   pushSizes in the .lua) so 1px gaps land on whole pixels at any UI scale — dp
+   sizes gave fractional pixels that swallowed the gap on some rows. All cell
+   overlays (badge, type icon, cost, highlight) are position:absolute so they
+   never affect the cell's single-pass layout. */
+
+#gui_gridmenu_rml-widget {
+	position: absolute;
+	left: 0;
+	bottom: 140dp;
+	width: 232dp;
+	display: block;
+}
+
+/* widget-container is now a PLAIN block wrapper (no panel theming, no bg). It
+   stacks the flag builder-strip ABOVE the themed body panel. It fills the root
+   width (232dp); the body panel inside sizes to the dynamic panelSize. */
+#widget-container {
+	display: block;
+}
+
+/* MAIN PANEL — carries ccg.panel.general + bg-darkest (in the .rml). Wraps ONLY
+   the body (tabs + grid + back bar); the flag sits outside/above it so the flag
+   reads as a tab. Width is the dynamic panelSize (data-style-width), padded 1px
+   for a crisp panel-bg frame around the grid (px, not dp, so it stays a single
+   pixel at any UI scale; content-box → the grid keeps its exact px-snapped size,
+   the root's 2dp slack absorbs the +2px). Set padding 0 for flush. */
+.grid-panel {
+	display: block;
+	padding: 1px;
+}
+
+/* ── builder strip — ALWAYS present (fixed height). 5 fixed slots; unused ones
+   are opacity-0 but keep their box so the grid below never shifts. ~75% width so
+   it reads as a FLAG/banner above the full-width grid (left-aligned, flex default).
+   position:relative anchors the absolute flag layer; the buttons are the flex
+   children that sit ON the flag. ── */
+.builder-strip {
+	display: flex;
+	align-items: center;
+	position: relative;
+	width: 75%;
+	height: 24dp;
+	/* No bottom margin: the flag sits FLUSH on the panel's top edge so it reads as
+	   a tab coming OFF the panel (lighter bg-dark flag on the darker panel). */
+	margin-bottom: 0;
+	padding-left: 3dp;
+}
+
+/* FLAG clip box — fills the strip (inset 0); clip:always trims the oversized
+   rotated wedge to a clean diagonal (the documented force-clip for transformed
+   children — plain overflow won't contain them). Absolute + first child so it
+   paints behind the buttons; pe-none so it never eats clicks. */
+.builder-flag-clip {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	clip: always;
+}
+
+/* The wedge: an OVERSIZED square (must stay oversized — that's what makes a flag,
+   not a chevron), rotated so its edge becomes the flag's diagonal RIGHT end after
+   the clip. Fill is the bg-dark utility in the .rml (no hard-coded colour).
+   TUNABLES (only two): `transform: rotate()` = the diagonal ANGLE (flip sign to
+   cut the other corner), and `right` = where the diagonal edge falls. LARGER right
+   pulls the wedge LEFT so the angled edge sits further INTO the strip (visible);
+   too negative pushes the diagonal off the right side (only the solid fill shows).
+   `top` is DERIVED to keep it vertically centred: top = -(width - 24dp)/2 =
+   -(260-24)/2 = -118dp; recompute it if you change width. */
+.builder-flag {
+	position: absolute;
+	width: 260dp;
+	height: 260dp;
+	top: -118dp;
+	right: 55dp;
+	transform: rotate(-28deg);
+}
+
+/* FLAG FADE — a subtle bottom gradient overlay on the flag (advplayerslist
+   rail-handle trick: a gradient child). Fills the SAME inset-0 box as
+   .builder-flag-clip so it is exactly aligned with the parent holding the flag —
+   a percentage-inset sub-box (top:45%) was fragile in RmlUi and left the fade
+   misaligned. The fade runs LEFT→RIGHT across the full flag: bg-gradient-subtle-h
+   is a 2-stop 90deg fade, ~40% black at the LEFT → transparent at the RIGHT, so the
+   flag is darkest at its anchored (left) end and fades out toward the tapered cut.
+   Sits AFTER the wedge (paints on top); clipped by the same box; pe-none. Tune the
+   start alpha in bg-gradient-subtle-h, or swap to bg-gradient-subtle for top→bottom. */
+.builder-flag-fade {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+.builder-btn {
+	display: block;
+	position: relative;
+	width: 22dp;
+	height: 22dp;
+	margin-right: 1dp;
+}
+
+.builder-icon {
+	display: block;
+	width: 22dp;
+	height: 22dp;
+}
+
+/* ── category tabs — ALWAYS 4, always laid out. flex:1 splits the row evenly
+   (sanctioned flex-row: definite cross-axis height, flex:<number>). ── */
+.cat-row {
+	display: flex;
+	height: 16dp;
+	margin-bottom: 2dp;
+}
+
+.cat-tab {
+	flex: 1;
+	height: 16dp;
+	/* Center the label both axes (text was sitting at the top of the box). flex +
+	   align-items center is the same vertical-centering the back-btn uses; no
+	   padding so the centering is exact. */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* ── BACK PANEL — bottom strip mirroring the cat-row. Present whenever the tabs
+   are (chromeShown); toggled via the .hidden utility in the .rml. Fixed height so
+   the back-btn appearing/disappearing inside it never shifts the grid. ── */
+.back-panel {
+	display: flex;
+	height: 16dp;
+	margin-top: 2dp;
+}
+
+/* The Shift back-button: left-aligned, width = content (so it sits on the left of
+   the panel). flex + align-items center vertically centres its label + keycap. */
+.back-btn {
+	display: flex;
+	align-items: center;
+	height: 16dp;
+	padding: 0 4dp;
+}
+
+/* "Shift" keycap hint — a small chip after the label (colour via utilities). */
+.back-key {
+	margin-left: 4dp;
+	padding: 0 3dp;
+}
+
+/* BACK CHEVRON — a custom rounded chevron (the rml_style_guide technique): only
+   the top + left borders are drawn and the top-left corner is rounded, forming a
+   soft arrowhead. rotate(135deg) points it LEFT (= "back"); style-guide expanded
+   is rotate(45deg)=down, so down rotated 90° CW = left. COLOUR comes from the
+   border-light utility on the element (no hard-coded colour); this rule sets only
+   geometry, so there is no border-colour cascade conflict (§P). If it points the
+   wrong way in-game, flip this single value (try -45deg / 135deg / 315deg). */
+.gm-chevron {
+	width: 4dp;
+	height: 4dp;
+	border-top-width: 2dp;
+	border-left-width: 2dp;
+	border-top-left-radius: 2dp;
+	transform: rotate(135deg);
+	margin-right: 5dp;
+	margin-left: 2dp;
+}
+
+/* Chrome show/hide (cat-row, back-panel, back-btn) is driven by data-visible in
+   the .rml → visibility:hidden, which KEEPS the layout box (no grid shift) and is
+   set directly on the element so it sidesteps the class cascade. No .hidden
+   (display:none) override here — that collapsed the box and shifted the grid. */
+
+/* ── the 4×3 grid: 3 block-stacked rows, each a flex-row of 4 cells. 1px gaps
+   via STATIC utility margins on KNOWN positions (cheap, deterministic): mr-px on
+   cols 1-3 (not col 4) and mb-px on rows 1-2 (not row 3), in the .rml. Cell px is
+   DYNAMIC (data-style cellSize, integer) so gaps stay crisp at any UI scale. ── */
+.grid-area {
+	display: block;
+}
+
+/* Row height is DYNAMIC: data-style-height="cellSize". Rows 1-2 also carry mb-px
+   (1px) in the .rml for the vertical gap. */
+.grid-row {
+	display: flex;
+}
+
+/* The unit cell — width/height are DYNAMIC: data-style-width/height="cellSize" =
+   an INTEGER px computed from the dp ratio (pushSizes). Integer-px cells + 1px
+   gaps → every edge is a whole pixel → identical crisp gaps on every row (no
+   sub-pixel rounding swallowing the gap). NO border on the cell; position:relative
+   anchors the absolute overlays. The armed/flash border lives on the inset
+   .cell-hl overlay so it draws INSIDE the cell, never in the 1px gap. */
+.unit-cell {
+	display: block;
+	position: relative;
+}
+
+/* Main unit picture: fills the cell (100%); changing src (incl. → "" for empty)
+   is paint on this box; the box is the cell's fixed px size. */
+.cell-icon {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* HIGHLIGHT overlay — absolute, fills the cell (100% + border-box so the 1dp
+   border draws INSIDE the box), so the armed/flash ring sits at the cell's inner
+   perimeter, fully within the cell — never in the inter-cell gap. Border WIDTH
+   from the border-0 utility (loads early); COLOUR from border-primary/border-light
+   via data-attr-class (§P) — so this sheet sets ONLY position + box-sizing + the
+   transition (border-color = paint, no layout). */
+.cell-hl {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	transition: border-color 0.05s quadratic-out;
+}
+
+/* GROUP BADGE — always-on overlay, TOP-LEFT, the primary/most-important icon so
+   it is the LARGER of the two. Absolute so it never reflows the cell. */
+.cell-badge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 20dp;
+	height: 20dp;
+}
+
+/* TYPE icon (role/silhouette) — always-on overlay, BOTTOM-LEFT, the secondary
+   icon so it is SMALLER. Absolute. */
+.cell-type {
+	position: absolute;
+	bottom: 1dp;
+	left: 1dp;
+	width: 11dp;
+	height: 11dp;
+}
+
+/* COST overlays — shown only on hover (opacity gated by hoveredD in the .rml).
+   Stacked at BOTTOM-RIGHT (metal upper, energy lower) so they clear the
+   bottom-left type icon. Absolute so they never reflow the cell; text is static
+   per unit (set on rebuild) so revealing it is a paint-only opacity flip. */
+.cell-cost {
+	position: absolute;
+	right: 2dp;
+}
+
+.cell-cost-m {
+	bottom: 13dp;
+}
+
+.cell-cost-e {
+	bottom: 1dp;
+}
