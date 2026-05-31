@@ -1,0 +1,61 @@
+<rml>
+<head>
+    <title>Order Menu RML</title>
+
+    <!-- Stylesheet order matters (do not reorder) -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="gui_ordermenu_rml.rcss" type="text/rcss" />
+</head>
+<body id="gui_ordermenu_rml-widget" class="widget-shadow">
+    <div id="widget-container" data-model="gui_ordermenu_rml_model" data-attr-class="ccg.panel.general"
+         data-style-width="panelW" data-style-height="panelH">
+
+        <!-- FIXED 6×6 canonical-slot grid (always 36 cells, always open). Rows are
+             block-stacked; each row is a flex-row of 6 integer-px slots (build-grid
+             px-snap: data-style cellW/cellH). 1px inter-cell gaps via mr-px (all but
+             the last col) / mb-px (all but the last row) so the gaps land on whole
+             pixels and never touch the outer edge; 1px panel padding in the rcss.
+             Every command owns a permanent slot — a slot the current selection lacks
+             renders as a faint empty placeholder, so the footprint never changes.
+
+             Filled cells: armed highlight compares cell.action to the top-level
+             `armedAction` scalar — arming dirties ONE model field and RmlUi
+             re-evaluates this class IN PLACE (a paint, not a relayout). The rows
+             array is reassigned only when the slot PLACEMENT changes, so the
+             frequent cursor/hotkey arming never rebuilds the grid. -->
+        <div class="cmd-grid">
+            <div data-for="row : rows" data-attr-class="'cmd-row' + (row.gapB ? ' mb-px' : '')">
+                <div data-for="cell : row.cells"
+                     data-attr-class="'cmd-slot' + (cell.gapR ? ' mr-px' : '')"
+                     data-style-width="cellW" data-style-height="cellH">
+                    <!-- TOGGLE (state) commands render as a coloured button reflecting
+                         their CURRENT state (success=on/last, danger=off/first,
+                         warning=middle of a tri-state). Uses my.toggle* (the ccg.button
+                         LOOK minus border-0, which pushed the tight grid). Non-toggle
+                         commands keep the subtle tint, with the armed one highlighted. -->
+                    <div data-if="!cell.empty"
+                         data-attr-class="my.cmdCell + (cell.isState ? (cell.stateKey == 'success' ? ' ' + my.toggleOn : (cell.stateKey == 'warning' ? ' ' + my.toggleMid : ' ' + my.toggleOff)) : (armedAction != '' && cell.action == armedAction ? ' bg-light text-darkest font-bold armed-pulse' : ' bg-darkest-alpha text-light'))"
+                         data-event-click="onCommand(cell.action)">
+                        <span>{{cell.label}}</span>
+                    </div>
+                    <!-- Empty slot: a super-faint "ghost" of its canonical command name
+                         (cell.ghost), so the full layout is always visible and
+                         non-interactive. Faintness via .cell-empty opacity. -->
+                    <div data-if="cell.empty" class="cmd-cell cell-empty bg-darkest-alpha text-upper text-xs text-center text-medium">
+                        <span>{{cell.ghost}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</rml>

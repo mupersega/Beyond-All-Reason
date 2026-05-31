@@ -1,0 +1,87 @@
+/* gui_ordermenu_rml — unit command/state grid: FIXED 6×6 canonical-slot grid.
+   LAYOUT ONLY — all colour comes from utility classes in the .rml (per
+   doctrine: never hard-code colours in widget RCSS).
+
+   Bottom-CENTRE-LEFT: sits along the bottom edge, left of screen centre
+   (roughly where the FlowUI order menu lived, beside the centred build menu).
+   `left` is in vw so it stays proportional across resolutions.
+
+   PX-SNAP SPACING (build-grid style, gui_gridmenu_rml): the slot width/height
+   come from the model as INTEGER px (data-style cellW/cellH, computed from the dp
+   ratio in pushSizes), the panel is the matching integer-px panelW/panelH, the
+   inter-cell gaps are a true 1px (mr-px/mb-px utilities in the .rml) and the panel
+   padding is 1px — so every gap/edge lands on a whole pixel at any UI scale (dp
+   sizes gave fractional px that swallowed the 1px gap on some rows). The widget
+   box has NO fixed size here — it wraps the dynamic-px panel exactly. */
+
+#gui_ordermenu_rml-widget {
+    position: absolute;
+    left: 33vw;
+    bottom: 0;
+    width: 312dp;        /* upper-bound box (≥ dynamic panelW); the px panel sits inside, height auto */
+    display: block;      /* no height → auto-sizes to the dynamic-px panel (grows up from bottom:0) */
+}
+
+#widget-container {
+    display: block;
+    position: relative;  /* anchor for any absolutely-positioned children */
+    padding: 1px;        /* 1px panel padding (build-grid style); width/height = panelW/panelH (data-style) */
+}
+
+/* Block-stacked rows; each row is a flex-row of 6 px-sized slots. Row height comes
+   from the slot cells; mb-px (in the .rml, all but the last row) adds the 1px gap. */
+.cmd-grid {
+    display: block;
+}
+
+.cmd-row {
+    display: flex;
+}
+
+/* Slot = one grid cell. width/height are DYNAMIC integer px (data-style
+   cellW/cellH). mr-px (in the .rml, all but the last col) adds the 1px gap.
+   flex-shrink:0 so the px width is never rounded down to fit. */
+.cmd-slot {
+    display: block;
+    flex-shrink: 0;
+}
+
+/* The reusable command cell (text variant) — fills its px-sized slot; flex centres
+   the single-line label. gridmenu/buildmenu reuse this skeleton with an icon
+   inside instead of the label span. Colour/hover are utility classes in the .rml. */
+.cmd-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.06s quadratic-out;
+}
+
+/* Click feedback: a tiny press-down nudge. transform is composited (no layout),
+   so it can't disturb the px-tight grid. Fires on the :active pseudo-class. */
+.cmd-cell:active {
+    transform: translateY(1dp);
+}
+
+/* Empty slots keep the 6×6 shape but stay faint, and now carry a super-greyed
+   "ghost" of the slot's canonical command name (always-on orientation; clearly
+   non-interactive — no cursor/hover). Opacity is the faintness knob: low enough
+   to read as inactive, high enough that the ghost text is legible. */
+.cell-empty {
+    opacity: 0.25;
+}
+
+/* Armed (non-toggle) command zhuzh: a slow, subtle "breathing" glow so the active
+   order reads as live. Animates OPACITY only — composited/paint, never layout — and
+   the class is present on ONLY the armed cell (one at a time), so it costs nothing
+   when idle. 0%/100% match so it loops seamlessly without needing `alternate`.
+   opacity is inherited, so the whole cell (bg + label) breathes together. */
+@keyframes order-armed-pulse {
+    0%   { opacity: 1.0; }
+    50%  { opacity: 0.6; }
+    100% { opacity: 1.0; }
+}
+.armed-pulse {
+    animation: 1.0s sine-in-out infinite order-armed-pulse;
+}
