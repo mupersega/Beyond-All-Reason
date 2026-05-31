@@ -1,0 +1,90 @@
+/* gui_top_bar_rml — Top Bar v1 (display core)
+   Positioning per rml_starter doctrine: absolute, screen-relative, hard-coded
+   size, no percentages on the widget box (left/width here are the screen-
+   anchor of the box, matching the FlowUI top bar's top strip; the bar's inner
+   layout is block + a single flex-row segment split). */
+
+#gui_top_bar_rml-widget {
+    position: absolute;
+    top: 0;
+    left: 30%;
+    width: 392dp;   /* sized to content: 2 res segs + wind + coms + clock */
+    height: 38dp;
+    display: block;
+}
+
+#widget-container {
+    display: block;
+    position: relative;
+    box-sizing: border-box;  /* height:100% + padding fits INSIDE the 38dp body
+                                (content-box would make it 44dp → panel bg + the
+                                guishader blur rect spilled ~6dp below the bar) */
+    height: 100%;
+    padding: 3dp;
+}
+
+/* Top-level horizontal split — the sanctioned flex-row case. */
+.bar-row {
+    display: flex;
+}
+
+/* A resource/info segment. Definite width + height so digit changes never
+   relayout the row and the engine skips content measurement. Sized tight to
+   contents — compact strip, not a chunky panel. */
+.seg {
+    height: 32dp;
+    padding-left: 4dp;
+    padding-right: 4dp;
+    width: 112dp;
+}
+
+.seg-narrow {
+    width: 44dp;
+}
+
+.seg-clock {
+    width: 48dp;
+}
+
+.seg-label {
+    width: 10dp;
+    text-align: center;
+}
+
+.seg-body {
+    display: block;
+    width: 100%;
+    padding-left: 3dp;
+}
+
+/* Hard-coded line heights — single-pass, no content measurement. */
+.seg-line {
+    display: block;
+    height: 10dp;
+}
+
+.seg-storage {
+    margin-left: 3dp;
+}
+
+.seg-expense {
+    margin-left: 5dp;
+}
+
+/* ── fillBar component (established here, reused program-wide) ──
+   Fixed-size track; the fill child's width is driven by data-style-width
+   (paint only, never relayout). Hard height keeps it out of measurement.
+   SQUARE on purpose — radius on a ~4dp bar reads as a blob. Radius lives on
+   the widget frame (style-mode axis) only, never on small interior elements. */
+.bar-track {
+    display: block;
+    height: 4dp;
+    width: 100%;
+    margin-top: 1dp;
+    margin-bottom: 1dp;
+}
+
+.bar-track > .fill {
+    display: block;
+    height: 4dp;
+}

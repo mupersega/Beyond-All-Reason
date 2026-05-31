@@ -1,0 +1,92 @@
+<rml>
+<head>
+    <title>Top Bar RML</title>
+
+    <!-- Stylesheet order matters (do not reorder) -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="gui_top_bar_rml.rcss" type="text/rcss" />
+</head>
+<!-- No `rounded-lg` on the body: the widget-frame radius is owned by the
+     style-mode radius axis (utils applies radius-*). Hard-coding rounded-lg
+     here double-specifies it (and forces 8dp regardless of user setting). -->
+<body id="gui_top_bar_rml-widget" class="widget-shadow">
+    <!-- One wrapper carries the data-model. Top-level layout is a single
+         flex-ROW splitting the bar into fixed segments (the sanctioned
+         horizontal-split flex case). Each segment is display:block inside. -->
+    <div id="widget-container" data-model="gui_top_bar_rml_model" data-attr-class="ccg.panel.general">
+        <div class="bar-row flex items-center h-full">
+
+            <!-- Metal segment -->
+            <div data-attr-class="my.panel + ' seg'">
+                <span class="seg-label text-sm text-light font-bold">M</span>
+                <div class="seg-body">
+                    <div class="seg-line">
+                        <span data-attr-class="my.num + (metal.warn ? ' text-danger' : '')">{{metal.cur}}</span>
+                        <span data-attr-class="my.sub + ' seg-storage'">/ {{metal.storage}}</span>
+                    </div>
+                    <!-- fillBar: fixed-size track + data-style-width fill (paint only) -->
+                    <div data-attr-class="my.fillTrack + ' bar-track'">
+                        <div data-attr-class="my.fillMetal" data-style-width="metal.pct + '%'"></div>
+                    </div>
+                    <div class="seg-line">
+                        <span class="text-success text-xs">+{{metal.income}}</span>
+                        <span class="text-danger text-xs seg-expense">-{{metal.expense}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Energy segment -->
+            <div data-attr-class="my.panel + ' seg'">
+                <span class="seg-label text-sm text-warning font-bold">E</span>
+                <div class="seg-body">
+                    <div class="seg-line">
+                        <span data-attr-class="my.num + (energy.warn ? ' text-danger' : '')">{{energy.cur}}</span>
+                        <span data-attr-class="my.sub + ' seg-storage'">/ {{energy.storage}}</span>
+                    </div>
+                    <div data-attr-class="my.fillTrack + ' bar-track'">
+                        <div data-attr-class="my.fillEnergy" data-style-width="energy.pct + '%'"></div>
+                    </div>
+                    <div class="seg-line">
+                        <span class="text-success text-xs">+{{energy.income}}</span>
+                        <span class="text-danger text-xs seg-expense">-{{energy.expense}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wind segment -->
+            <div data-attr-class="my.panel + ' seg seg-narrow'">
+                <div class="seg-body text-center">
+                    <div class="text-sm text-light font-bold">{{wind.cur}}</div>
+                    <div class="text-xs text-medium">{{wind.min}}-{{wind.max}}</div>
+                    <div class="text-xs text-medium">wind</div>
+                </div>
+            </div>
+
+            <!-- Commander count -->
+            <div data-attr-class="my.panel + ' seg seg-narrow'">
+                <div class="seg-body text-center">
+                    <div class="text-sm text-light font-bold">{{commCount}}</div>
+                    <div class="text-xs text-medium">coms</div>
+                </div>
+            </div>
+
+            <!-- Clock -->
+            <div data-attr-class="my.panel + ' seg seg-clock'">
+                <div class="seg-body text-center">
+                    <div class="text-sm text-light font-bold">{{clock}}</div>
+                    <div class="text-xs text-medium">time</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</rml>
