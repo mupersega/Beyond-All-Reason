@@ -150,6 +150,21 @@
 .bg-gradient {
     decorator: linear-gradient(150deg, #1d1d1d00 0%, #1d1d1d80 100%);
 }
+/* Subtle DOWNWARD depth fade — transparent at top → ~25% black at the BOTTOM
+   (180deg = straight down, unlike .bg-gradient's 150deg diagonal). Straight-down
+   suits WIDE/short banners (a diagonal fade on a wide element pushes the dark end
+   off to one side instead of the bottom). Much lighter than .bg-gradient (25% vs
+   50%) for a gentle base-shadow. First consumer: the gridmenu flag fade. */
+.bg-gradient-subtle {
+    decorator: linear-gradient(180deg, #1d1d1d00 0%, #1d1d1d40 100%);
+}
+/* Horizontal counterpart of .bg-gradient-subtle: ~40% black at the LEFT →
+   transparent at the RIGHT (90deg). For wide elements that should darken toward the
+   left edge and fade out across (e.g. the gridmenu flag). Naming: plain = vertical,
+   -h = horizontal. */
+.bg-gradient-subtle-h {
+    decorator: linear-gradient(90deg, #1d1d1d66 0%, #1d1d1d00 100%);
+}
 .bg-gradient-light {
     decorator: linear-gradient(150deg, #e5e7eb00 0%, #e5e7eb80 100%);
 }

@@ -1,0 +1,121 @@
+/* gui_factionpicker_rml — large outlined faction-name text fields.
+   Geometry + the per-faction name colours; the GL branch effect is drawn
+   separately, anchored to each text field. */
+
+/* Full-screen, transparent, CLICK-THROUGH layer. utils applies the user's
+   style-mode frame classes to this body; neutralize them (we're frameless)
+   and let map clicks pass through so start placement still works. */
+#gui_factionpicker_rml-widget {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    background-color: transparent;
+    decorator: none;
+    box-shadow: none;
+    border: 0dp transparent;
+    pointer-events: none;
+}
+
+#widget-container {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Dead-centred, frameless. Fades in; stays centred. Only fields catch clicks. */
+.fp-panel {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1100dp;
+    margin-left: -550dp;
+    margin-top: -140dp;
+    opacity: 0;
+    transition: opacity 0.3s linear-in-out;
+    pointer-events: none;
+}
+.fp-panel.fp-shown {
+    opacity: 1;
+}
+
+.fp-title {
+    height: 20dp;
+    text-align: center;
+    margin-bottom: 20dp;
+}
+
+/* Commanders row (the real choice: Armada vs Cortex vs ...). */
+.fp-tiles {
+    height: 72dp;
+}
+
+/* Random sits BELOW the commanders, further down. */
+.fp-random-row {
+    margin-top: 44dp;
+}
+
+.fp-tile {
+    display: block;
+    pointer-events: auto;
+    padding: 4dp 14dp;
+    margin-left: 14dp;
+    margin-right: 14dp;
+    opacity: 0;
+    transform: translateY(10dp);
+    transition: opacity 0.3s linear-in-out, transform 0.3s cubic-out;
+}
+.fp-tile.revealed {
+    opacity: 1;
+    transform: translateY(0dp);
+}
+
+/* The big outlined faction name. Colour fades on hover/select. */
+.fp-name {
+    font-size: 48dp;
+    height: 58dp;
+    text-align: center;
+    transition: color 0.18s linear-in-out;
+}
+
+/* Active (pressed) state — a quick white flash to denote the click (no scale). */
+.fp-tile:active .fp-name {
+    color: #ffffff;
+}
+
+/* Random option: smaller text. */
+.fp-tile.fp-random .fp-name {
+    font-size: 32dp;
+    height: 42dp;
+}
+
+/* Per-faction name colours — FIXED here (not the theme-aware utilities, which
+   render every faction in the active theme's colour). Owner-directed: install
+   the theme primaries locally so each faction is coloured correctly. */
+.fp-c-arm { color: #2BA5EA; }
+.fp-c-cor { color: #E63946; }
+.fp-c-leg { color: #7EB141; }
+.fp-c-random { color: #FDC04C; }
+/* Unselected names are greyed out (only the selected faction shows its colour). */
+.fp-c-off { color: #7C7C84; }
+
+/* Start-position nudge — pulses until placed, then .fp-done stops the pulse. */
+.fp-prompt {
+    margin-top: 24dp;
+    height: 20dp;
+    text-align: center;
+    animation: fp-prompt-pulse 1.1s sine-in-out infinite;
+}
+.fp-prompt.fp-done {
+    animation: none;
+}
+
+@keyframes fp-prompt-pulse {
+    0%   { opacity: 0.5; }
+    50%  { opacity: 1.0; }
+    100% { opacity: 0.5; }
+}

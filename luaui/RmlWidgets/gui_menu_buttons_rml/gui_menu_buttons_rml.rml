@@ -1,0 +1,39 @@
+<rml>
+<head>
+    <title>Menu Buttons RML</title>
+
+    <!-- Mandatory stylesheet order (do not reorder) -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="gui_menu_buttons_rml.rcss" type="text/rcss" />
+</head>
+<!-- No rounded-lg on body — widget-frame radius is the style-mode axis's job. -->
+<body id="gui_menu_buttons_rml-widget" class="widget-shadow">
+    <!-- The container spans a fixed top-right band but is click-through
+         (pointer-events: none in rcss); only the buttons capture clicks
+         (pointer-events: auto). This keeps the empty area left of the buttons
+         from blocking map/game clicks in the top strip. The row packs its
+         children to the right (justify-content: flex-end) so the cluster hugs
+         the screen corner regardless of how many buttons are present. -->
+    <div id="widget-container" data-model="gui_menu_buttons_rml_model">
+        <div class="btn-row flex items-center h-full">
+            <!-- data-for on the wrapper; bindings live on the inner button so
+                 d.X bindings don't sit on the data-for element itself (see
+                 rmlui_data_for_outer_binding_quirk). -->
+            <div data-for="b : buttons" class="menu-btn-wrap">
+                <button data-attr-class="(b.highlight ? ccg.button.primary : ccg.button.general) + ' ' + my.btn"
+                        data-event-click="activate(b.id)">
+                    <span class="pe-none">{{b.label}}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</rml>

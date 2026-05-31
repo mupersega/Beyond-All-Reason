@@ -1,0 +1,48 @@
+/* gui_menu_buttons_rml — top-right menu launcher.
+   Absolute, screen-anchored to the top-right. A fixed-width band whose row
+   right-packs its buttons; the band itself is click-through so its empty left
+   portion never eats map/game clicks (only the buttons capture input). */
+
+#gui_menu_buttons_rml-widget {
+    position: absolute;
+    top: 0;
+    right: 0;
+    /* Wide enough for the full button set; the row packs to the right and any
+       overflow extends leftward, staying pinned to the corner. */
+    width: 480dp;
+    height: 26dp;
+    display: block;
+}
+
+#widget-container {
+    display: block;
+    height: 100%;
+    /* Click-through: the band is just a positioning frame. Buttons re-enable
+       pointer events below. (See the full-screen click-through overlay pattern
+       — neutralize the container, capture on the inner interactive elements.) */
+    pointer-events: none;
+}
+
+/* Top-level horizontal split — the sanctioned flex-row case. Pack to the right
+   so the cluster hugs the screen corner. */
+.btn-row {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* data-for wrapper = the flex item. Block inside; keeps d.X bindings off the
+   data-for element itself. */
+.menu-btn-wrap {
+    display: block;
+}
+
+/* Buttons. Definite height (no content measurement); small left gap between
+   them via margin (block-friendly, not flex gap). pointer-events re-enabled so
+   clicks land here through the click-through container. */
+.menu-btn {
+    display: block;
+    height: 24dp;
+    line-height: 24dp;
+    margin-left: 3dp;
+    pointer-events: auto;
+}

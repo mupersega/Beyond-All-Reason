@@ -1,0 +1,103 @@
+<rml>
+<head>
+    <title>Faction Picker RML</title>
+
+    <!-- Stylesheet order matters (do not reorder) -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="gui_factionpicker_rml.rcss" type="text/rcss" />
+</head>
+<!-- Full-screen, transparent, CLICK-THROUGH layer (pointer-events:none) so map
+     clicks still reach the game for start placement. The GL branch effect is
+     drawn separately, anchored to the selected NAME (fp-name-N / fp-rname-N). -->
+<body id="gui_factionpicker_rml-widget">
+    <div id="widget-container" data-model="gui_factionpicker_rml_model">
+
+        <div data-attr-class="'fp-panel' + (shown ? ' fp-shown' : '')">
+
+            <div class="fp-title text-base font-bold text-light text-upper text-outline-darker-lg">{{title}}</div>
+
+            <!-- Commanders (the real choice). Names are GREY until selected,
+                 then show their OWN faction colour (fp-c-<faction>). -->
+            <div class="fp-tiles flex justify-center items-center gap-6">
+
+                <div data-if="slot1.showCmd"
+                     data-attr-class="'fp-tile' + (revealed1 ? ' revealed' : '')"
+                     data-event-click="pickFaction(1)" data-event-mouseover="onHover(1)" data-event-mouseout="onUnhover()">
+                    <div id="fp-name-1" data-attr-class="'fp-name font-bold text-upper text-outline-darker-xl' + ((selected1 || hovered1) ? ' fp-c-' + slot1.faction : ' fp-c-off')">{{slot1.name}}</div>
+                </div>
+
+                <div data-if="slot2.showCmd"
+                     data-attr-class="'fp-tile' + (revealed2 ? ' revealed' : '')"
+                     data-event-click="pickFaction(2)" data-event-mouseover="onHover(2)" data-event-mouseout="onUnhover()">
+                    <div id="fp-name-2" data-attr-class="'fp-name font-bold text-upper text-outline-darker-xl' + ((selected2 || hovered2) ? ' fp-c-' + slot2.faction : ' fp-c-off')">{{slot2.name}}</div>
+                </div>
+
+                <div data-if="slot3.showCmd"
+                     data-attr-class="'fp-tile' + (revealed3 ? ' revealed' : '')"
+                     data-event-click="pickFaction(3)" data-event-mouseover="onHover(3)" data-event-mouseout="onUnhover()">
+                    <div id="fp-name-3" data-attr-class="'fp-name font-bold text-upper text-outline-darker-xl' + ((selected3 || hovered3) ? ' fp-c-' + slot3.faction : ' fp-c-off')">{{slot3.name}}</div>
+                </div>
+
+                <div data-if="slot4.showCmd"
+                     data-attr-class="'fp-tile' + (revealed4 ? ' revealed' : '')"
+                     data-event-click="pickFaction(4)" data-event-mouseover="onHover(4)" data-event-mouseout="onUnhover()">
+                    <div id="fp-name-4" data-attr-class="'fp-name font-bold text-upper text-outline-darker-xl' + ((selected4 || hovered4) ? ' fp-c-' + slot4.faction : ' fp-c-off')">{{slot4.name}}</div>
+                </div>
+
+                <div data-if="slot5.showCmd"
+                     data-attr-class="'fp-tile' + (revealed5 ? ' revealed' : '')"
+                     data-event-click="pickFaction(5)" data-event-mouseover="onHover(5)" data-event-mouseout="onUnhover()">
+                    <div id="fp-name-5" data-attr-class="'fp-name font-bold text-upper text-outline-darker-xl' + ((selected5 || hovered5) ? ' fp-c-' + slot5.faction : ' fp-c-off')">{{slot5.name}}</div>
+                </div>
+
+            </div>
+
+            <!-- Random sits BELOW the commanders, smaller + further down. -->
+            <div class="fp-random-row flex justify-center items-center">
+
+                <div data-if="slot1.showRnd"
+                     data-attr-class="'fp-tile fp-random' + (revealed1 ? ' revealed' : '')"
+                     data-event-click="pickFaction(1)" data-event-mouseover="onHover(1)" data-event-mouseout="onUnhover()">
+                    <div id="fp-rname-1" data-attr-class="'fp-name font-bold text-upper text-outline-darker-xl' + ((selected1 || hovered1) ? ' fp-c-' + slot1.faction : ' fp-c-off')">{{slot1.name}}</div>
+                </div>
+
+                <div data-if="slot2.showRnd"
+                     data-attr-class="'fp-tile fp-random' + (revealed2 ? ' revealed' : '')"
+                     data-event-click="pickFaction(2)" data-event-mouseover="onHover(2)" data-event-mouseout="onUnhover()">
+                    <div id="fp-rname-2" data-attr-class="'fp-name font-bold text-upper text-outline-darker-xl' + ((selected2 || hovered2) ? ' fp-c-' + slot2.faction : ' fp-c-off')">{{slot2.name}}</div>
+                </div>
+
+                <div data-if="slot3.showRnd"
+                     data-attr-class="'fp-tile fp-random' + (revealed3 ? ' revealed' : '')"
+                     data-event-click="pickFaction(3)" data-event-mouseover="onHover(3)" data-event-mouseout="onUnhover()">
+                    <div id="fp-rname-3" data-attr-class="'fp-name font-bold text-upper text-outline-darker-xl' + ((selected3 || hovered3) ? ' fp-c-' + slot3.faction : ' fp-c-off')">{{slot3.name}}</div>
+                </div>
+
+                <div data-if="slot4.showRnd"
+                     data-attr-class="'fp-tile fp-random' + (revealed4 ? ' revealed' : '')"
+                     data-event-click="pickFaction(4)" data-event-mouseover="onHover(4)" data-event-mouseout="onUnhover()">
+                    <div id="fp-rname-4" data-attr-class="'fp-name font-bold text-upper text-outline-darker-xl' + ((selected4 || hovered4) ? ' fp-c-' + slot4.faction : ' fp-c-off')">{{slot4.name}}</div>
+                </div>
+
+                <div data-if="slot5.showRnd"
+                     data-attr-class="'fp-tile fp-random' + (revealed5 ? ' revealed' : '')"
+                     data-event-click="pickFaction(5)" data-event-mouseover="onHover(5)" data-event-mouseout="onUnhover()">
+                    <div id="fp-rname-5" data-attr-class="'fp-name font-bold text-upper text-outline-darker-xl' + ((selected5 || hovered5) ? ' fp-c-' + slot5.faction : ' fp-c-off')">{{slot5.name}}</div>
+                </div>
+
+            </div>
+
+            <div data-attr-class="'fp-prompt text-sm text-outline-darker-lg' + (startChosen ? ' fp-done text-success' : ' text-warning')">{{promptText}}</div>
+
+        </div>
+    </div>
+</body>
+</rml>

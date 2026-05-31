@@ -5,7 +5,6 @@ end
 local widget = widget ---@type Widget
 local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
 local ccg = VFS.Include("luaui/Include/rml_utilities/common_class_groups.lua")
-include("keysym.h.lua")
 
 function widget:GetInfo()
 	return {
@@ -33,19 +32,15 @@ local show = false
 -- Search feature state
 local searchIndex = {}          -- flat list built at content-init, source of truth for search
 local pathLabels = {}           -- ["gfx/display"] -> "Graphics > Display" (localized)
-local localSearchResults = {}   -- local mirror of results for arrow-nav lookup (never read from proxy)
-local selectedIndex = 0         -- 0 = none; 1-based index into localSearchResults
-local lastSearchValue           -- guard: only re-filter when the input text actually changed (nav-key keyups must not reset the dropdown)
-local pendingScrollId = nil     -- id to scroll into view next Update after tab switch
-local pendingScrollElement = nil -- element ref found on frame N; scrolled on frame N+1
-local pendingScrollFrames = 0   -- retry counter for deferred scroll
-local highlightElement = nil    -- currently-highlighted option card
-local highlightTimer = nil      -- Spring.GetTimer ref; nil when no highlight active
+local lastSearchValue           -- guard: only re-filter when the input text actually changed
+
+-- Forward declaration: performSearch / clearSearch (defined below, before
+-- initModel) call populateActiveTabData (defined much later). Declared here so
+-- every closure captures the same upvalue; the definition uses
+-- `function populateActiveTabData` (no `local`) to assign into it.
+local populateActiveTabData
 
 local MIN_SEARCH_CHARS = 3
-local MAX_SEARCH_RESULTS = 12
-local MAX_SCROLL_RETRY_FRAMES = 10
-local HIGHLIGHT_DURATION_SEC = 1.5
 -- Must be >= the RCSS `transition: transform 0.25s` on #gui_options_rml-widget.
 -- We defer document:Hide() this long after a close so the slide-out is fully
 -- visible before the document drops out of the context's active set.
@@ -335,6 +330,18 @@ local TAB_KEY_MAP = {
 	accessibility       = { tab = "accessibility" },
 }
 
+-- Display order for search-result section headings (one per sub-tab location).
+-- Matches the tab-rail order so grouped results read top-to-bottom the same way
+-- the tabs do, instead of the unordered pairs() order of the config map.
+local SUBTAB_ORDER = {
+	"gfx_display", "gfx_rendering", "gfx_environment",
+	"audio",
+	"interface_general", "interface_widgets", "interface_visuals", "interface_info", "interface_spectator",
+	"control", "game", "notifications", "accessibility", "dev",
+}
+local subTabOrderIndex = {}
+for i, k in ipairs(SUBTAB_ORDER) do subTabOrderIndex[k] = i end
+
 -- Build a lookup of already-localized path labels for the breadcrumb shown
 -- in the search results dropdown. Called from initModel() where we still
 -- have direct access to the tab arrays before they go through the proxy.
@@ -388,6 +395,11 @@ local function buildSearchIndex(cfg)
 						tab = loc.tab,
 						subTab = loc.subTab,
 						subTabKey = loc.subTabKey,
+						-- locKey is the config/cache key (e.g. "gfx_display"); used
+						-- to bucket + order search results by sub-category. pathLabel
+						-- is the localized "Tab > SubTab" heading for that bucket.
+						locKey = subTabKey,
+						pathLabel = getPathLabel(loc.tab, loc.subTab),
 						parentName = entry.parentId and parentNames[entry.parentId] or nil,
 					}
 				end
@@ -547,142 +559,92 @@ function widget:OnSettingClick(element)
 	end
 end
 
--- Filter searchIndex by plain substring match (name weighted higher than
--- desc), cap results, and push to the proxy for the dropdown. Called from
--- the `onSearchInput` model function (wired to `data-event-keyup` on the
--- search input) with the value read from the element, not the model.
+-- Reset just the search model fields (no repopulate). Callers that immediately
+-- (re)populate a tab themselves use this; clearSearch wraps it for the cases
+-- that need the current tab restored.
+local function exitSearchState()
+	if not dm_handle then return end
+	lastSearchValue = nil
+	dm_handle.searchQuery = ""
+	dm_handle.searchSections = {}
+	dm_handle.searchResultCount = 0
+	dm_handle.searchActive = false
+	-- Search off → the content panel returns to the currently-selected tab.
+	dm_handle.contentView = dm_handle.activeTab
+end
+
+-- Clear search AND restore the active tab's content. Used when the query drops
+-- below MIN_SEARCH_CHARS and on Escape (the tab doesn't change in those cases).
+local function clearSearch()
+	if not dm_handle then return end
+	exitSearchState()
+	-- Bring the normal tab content back (search emptied the tab arrays).
+	populateActiveTabData(dm_handle.activeTab, dm_handle.gfxSubTab, dm_handle.interfaceSubTab)
+end
+
+-- Live cross-category filter. Builds the matching options into the SAME
+-- { heading, groups } section shape the tabs use, grouped by sub-category and
+-- ordered like the tab rail, then swaps them into dm_handle.searchSections and
+-- flips searchActive. The search panel in the RML renders these through the
+-- exact same interactive row markup as the tabs (real sliders/toggles/selects),
+-- so options are editable in place — no navigate-and-scroll. We reuse the live
+-- config entries from optionById (which carry current values + full field set),
+-- not the lighter searchIndex rows. Called from onSearchInput (data-event-keyup)
+-- with the value read off the element (RmlUi #668 — model commits after event).
 local function performSearch(raw)
 	if not dm_handle then return end
-	raw = raw or ""
-	local q = raw:lower():gsub("^%s+", ""):gsub("%s+$", "")
+	local q = (raw or ""):lower():gsub("^%s+", ""):gsub("%s+$", "")
 
 	if #q < MIN_SEARCH_CHARS then
-		dm_handle.searchResults = {}
-		dm_handle.showSearchResults = false
+		clearSearch()
 		return
 	end
 
-	local scored = {}
+	-- Bucket matches by sub-category (locKey), preserving tab-rail order.
+	local buckets = {}
+	local count = 0
 	for i = 1, #searchIndex do
-		local entry = searchIndex[i]
-		local score = 0
-		if entry.nameLower:find(q, 1, true) then score = score + 10 end
-		if entry.descLower:find(q, 1, true) then score = score + 1 end
-		if score > 0 then
-			scored[#scored + 1] = { entry = entry, score = score }
+		local e = searchIndex[i]
+		if e.nameLower:find(q, 1, true) or e.descLower:find(q, 1, true) then
+			local entry = optionById[e.id]
+			if entry then
+				local b = buckets[e.locKey]
+				if not b then
+					b = { heading = e.pathLabel, order = subTabOrderIndex[e.locKey] or 999, groups = {} }
+					buckets[e.locKey] = b
+				end
+				-- Each match renders as a standalone row (no nested children in
+				-- search results — a matched child is shown on its own).
+				b.groups[#b.groups + 1] = {
+					parent = entry,
+					children = {},
+					hasChildren = false,
+					parentOff = false,
+				}
+				count = count + 1
+			end
 		end
 	end
-	table.sort(scored, function(a, b)
-		if a.score ~= b.score then return a.score > b.score end
-		return a.entry.nameLower < b.entry.nameLower
-	end)
 
-	local results = {}
-	local limit = math.min(#scored, MAX_SEARCH_RESULTS)
-	for i = 1, limit do
-		local e = scored[i].entry
-		-- Build full breadcrumb: "Tab > SubTab > [Parent >] Name"
-		local path = getPathLabel(e.tab, e.subTab)
-		if e.parentName then
-			path = path .. " > " .. e.parentName
-		end
-		path = path .. " > " .. e.name
-		results[#results + 1] = {
-			id = e.id,
-			name = e.name,
-			pathLabel = path,
-			index = i,
-		}
+	local ordered = {}
+	for _, b in pairs(buckets) do ordered[#ordered + 1] = b end
+	table.sort(ordered, function(a, b) return a.order < b.order end)
+
+	local sections = {}
+	for _, b in ipairs(ordered) do
+		sections[#sections + 1] = { heading = b.heading, groups = b.groups }
 	end
-	localSearchResults = results
-	selectedIndex = 0
-	dm_handle.selectedResultIndex = 0
-	dm_handle.searchResults = results
-	dm_handle.showSearchResults = #results > 0
+
+	-- Empty the tab arrays so only the search panel produces DOM (data-if just
+	-- hides — see rmlui_data_if_keeps_in_dom; emptying the arrays is what
+	-- actually keeps the element count down). This also stamps controlSettleFrame
+	-- so the spurious recreation onchange from the new selects is swallowed.
+	populateActiveTabData(nil, nil, nil)
+	dm_handle.searchSections = sections
+	dm_handle.searchResultCount = count
+	dm_handle.searchActive = true
+	dm_handle.contentView = "search"
 end
-
--- Navigate to a search result: switch tab + sub-tab, clear search UI, queue
--- a deferred scroll. Shared by OnSearchResultClick (mouse) and KeyPress (Enter).
-local function navigateToResult(id)
-	if not dm_handle or not id or id == "" then return end
-
-	local target
-	for i = 1, #searchIndex do
-		if searchIndex[i].id == id then
-			target = searchIndex[i]
-			break
-		end
-	end
-	if not target then return end
-
-	dm_handle.activeTab = target.tab
-	if target.subTabKey and target.subTab then
-		dm_handle[target.subTabKey] = target.subTab
-	end
-
-	dm_handle.searchQuery = ""
-	dm_handle.searchResults = {}
-	dm_handle.showSearchResults = false
-	localSearchResults = {}
-	lastSearchValue = nil
-	selectedIndex = 0
-	dm_handle.selectedResultIndex = 0
-
-	if highlightElement then
-		highlightElement:SetClass("highlight-search-match", false)
-		highlightElement = nil
-	end
-	highlightTimer = nil
-	pendingScrollId = id
-	pendingScrollElement = nil
-	pendingScrollFrames = 0
-end
-
-function widget:OnSearchResultClick(element)
-	local id = (element:GetAttribute("id") or ""):gsub("^searchresult%-", "")
-	navigateToResult(id)
-end
-
--- Form submit: Enter pressed while the search input has focus. RmlUi fires
--- a submit event on the <form> element at the C++ level before Lua's
--- widget:KeyPress ever sees the key — so we catch it here instead.
-function widget:OnSearchSubmit()
-	Spring.Echo("[options_rml] OnSearchSubmit fired — selectedIndex=" .. tostring(selectedIndex) .. " resultCount=" .. tostring(#localSearchResults))
-	if not dm_handle or #localSearchResults == 0 then return end
-	local idx = selectedIndex
-	if idx < 1 then idx = 1 end
-	if idx <= #localSearchResults then
-		navigateToResult(localSearchResults[idx].id)
-	end
-end
-
--- Arrow-key navigation: when the dropdown is visible, intercept Up/Down.
--- Enter and Escape are handled elsewhere: Enter via data-event-submit on
--- the <form>, Escape via onSearchKeyDown (search-clear) + topbar's
--- hideWindows/disallowEsc chain (widget-close).
-function widget:KeyPress(key, mods, isRepeat)
-	if not show or not dm_handle then return false end
-	if not dm_handle.showSearchResults then return false end
-
-	if key == KEYSYMS.DOWN then
-		if selectedIndex < #localSearchResults then
-			selectedIndex = selectedIndex + 1
-			dm_handle.selectedResultIndex = selectedIndex
-		end
-		return true
-	elseif key == KEYSYMS.UP then
-		if selectedIndex > 1 then
-			selectedIndex = selectedIndex - 1
-			dm_handle.selectedResultIndex = selectedIndex
-		end
-		return true
-	end
-
-	return false
-end
-
--- Tab navigation: RML uses inline proxy writes (data-event-mousedown="activeTab = tab.id")
--- so no handler methods needed here.
 
 -----------------------------------------------------------------------
 -- Data model factory
@@ -731,8 +693,15 @@ local function initModel()
 			optionCard = "bg-darker-alpha p-2",
 		},
 
-		-- Top-level tab nav
+		-- Top-level tab nav. activeTab drives the tab-rail highlight (and the
+		-- sub-tab nav); contentView drives WHICH content panel shows. They match
+		-- normally, but while a search is active contentView == "search" so the
+		-- results panel replaces the tab content while the rail still highlights
+		-- the tab you'd return to. Using a single == discriminator (not
+		-- activeTab == X && !searchActive) keeps every data-if to the simple,
+		-- well-supported equality form.
 		activeTab = "gfx",
+		contentView = "gfx",
 		tabs = tabs,
 
 		-- Graphics sub-tabs
@@ -743,21 +712,48 @@ local function initModel()
 		interfaceSubTab = "general",
 		interfaceSubTabs = interfaceSubTabs,
 
-		-- Search state
+		-- Tab / sub-tab navigation — REPLACES inline "activeTab = tab.id" /
+		-- "gfxSubTab = st.id" assignments in the RML. An inline data-event
+		-- assignment only updates RmlUi's own binding (so the highlight moves)
+		-- and does NOT write back through the Lua data-model proxy, so
+		-- widget:Update's poll of dm_handle never sees the switch and the new
+		-- tab is never populated. Writing via dm_handle here is the sanctioned
+		-- Lua path (keeps both sides in sync); we also repopulate immediately so
+		-- the panel fills the same frame instead of waiting for the poll.
+		-- Clicking any tab/sub-tab also leaves search mode: clear the query +
+		-- result state and flip searchActive off so the tab content shows. We
+		-- clear inline (not via clearSearch, which repopulates the CURRENT tab)
+		-- because we're switching to a different tab in the same call.
+		selectTab = function(_, id)
+			exitSearchState()
+			dm_handle.activeTab = id
+			dm_handle.contentView = id
+			populateActiveTabData(id, dm_handle.gfxSubTab, dm_handle.interfaceSubTab)
+		end,
+		selectGfxSubTab = function(_, id)
+			exitSearchState()
+			dm_handle.gfxSubTab = id
+			populateActiveTabData("gfx", id, dm_handle.interfaceSubTab)
+		end,
+		selectInterfaceSubTab = function(_, id)
+			exitSearchState()
+			dm_handle.interfaceSubTab = id
+			populateActiveTabData("interface", dm_handle.gfxSubTab, id)
+		end,
+
+		-- Search state. searchActive flips the whole panel from tab content to the
+		-- grouped results view; searchSections holds the matches in the same
+		-- { heading, groups } shape the tabs use (rendered by the same interactive
+		-- row markup). searchResultCount drives the "N results" / no-matches line.
 		searchQuery = "",
-		searchResults = {},
-		showSearchResults = false,
-		selectedResultIndex = 0,
+		searchActive = false,
+		searchSections = {},
+		searchResultCount = 0,
 
 		onSearchInput = function(ev, keyId)
-			-- Nav/commit keys (Enter 72, Down 20, Up 19, Escape 81) are
-			-- handled in onSearchKeyDown; ignore them here so a keyup
-			-- can't re-filter — Escape clears the box in keydown and a
-			-- stale element re-read would undo it — or reset the
-			-- dropdown selection on Up/Down.
-			if keyId == 72 or keyId == 20 or keyId == 19 or keyId == 81 then
-				return
-			end
+			-- Escape (81) is handled in onSearchKeyDown (clears + defocuses);
+			-- ignore it here so a keyup re-read can't immediately re-filter.
+			if keyId == 81 then return end
 			-- Read the value from the ELEMENT, not the model: data-value
 			-- commits AFTER the event (RmlUi #668). keyup => per-keystroke.
 			local el = ev and ev.current_element  -- the bound input (see CLAUDE.md)
@@ -767,48 +763,10 @@ local function initModel()
 			performSearch(q)
 		end,
 
-		onSearchSubmit = function()
-			Spring.Echo("[options_rml] onSearchSubmit fired — selectedIndex=" .. tostring(selectedIndex) .. " resultCount=" .. tostring(#localSearchResults))
-			if #localSearchResults == 0 then return end
-			local idx = selectedIndex
-			if idx < 1 then idx = 1 end
-			if idx <= #localSearchResults then
-				navigateToResult(localSearchResults[idx].id)
-			end
-		end,
-
 		onSearchKeyDown = function(ev, keyId)
-			local KI_RETURN = 72
-			local KI_DOWN = 20
-			local KI_UP = 19
 			local KI_ESCAPE = 81
-
-			if keyId == KI_RETURN then
-				if #localSearchResults > 0 then
-					local idx = selectedIndex
-					if idx < 1 then idx = 1 end
-					if idx <= #localSearchResults then
-						navigateToResult(localSearchResults[idx].id)
-					end
-				end
-			elseif keyId == KI_DOWN then
-				if selectedIndex < #localSearchResults then
-					selectedIndex = selectedIndex + 1
-					dm_handle.selectedResultIndex = selectedIndex
-				end
-			elseif keyId == KI_UP then
-				if selectedIndex > 1 then
-					selectedIndex = selectedIndex - 1
-					dm_handle.selectedResultIndex = selectedIndex
-				end
-			elseif keyId == KI_ESCAPE then
-				dm_handle.searchQuery = ""
-				dm_handle.searchResults = {}
-				dm_handle.showSearchResults = false
-				localSearchResults = {}
-				lastSearchValue = nil
-				selectedIndex = 0
-				dm_handle.selectedResultIndex = 0
+			if keyId == KI_ESCAPE then
+				clearSearch()
 				-- Pull focus away from the input by focusing the widget body.
 				-- RmlUi has no Blur() API, but focusing a non-input element
 				-- implicitly defocuses the text input.
@@ -940,7 +898,7 @@ local lastShow = false
 
 -- Write empty arrays to every sub-tab model key, then populate only the
 -- entries whose sub-tab matches (or single-section tabs get their one entry).
-local function populateActiveTabData(activeTab, gfxSubTab, interfaceSubTab)
+function populateActiveTabData(activeTab, gfxSubTab, interfaceSubTab)
 	-- Mark the settle window so the spurious recreation onchange that follows
 	-- this reassignment is ignored by OnSelect/OnSlider (see declaration).
 	controlSettleFrame = Spring.GetDrawFrame()
@@ -968,6 +926,15 @@ local function initializeContent()
 
 	-- Load current values from config onLoad functions.
 	-- Seed bools: force boolean, copy into toggleState (source of truth for clicks).
+	-- Normalize the field union: the RML row template binds group.parent.disabled
+	-- on every row and group.parent.labelClass inside the action ternary, and
+	-- RmlUi evaluates BOTH ternary/data-if branches regardless of which renders —
+	-- so any entry missing those fields logs "Could not get value from data
+	-- variable ...". Only a couple of entries declare them in config, so default
+	-- the rest here (see rmlui_datafor_homogeneous: data-for rows must be a full
+	-- field union with safe defaults). These live entries are shared by the tab
+	-- sections and the search sections (both via optionById), so one pass covers
+	-- both views.
 	for _, subTabConfig in pairs(allConfig) do
 		for _, entry in ipairs(subTabConfig) do
 			if entry.onLoad then
@@ -977,6 +944,8 @@ local function initializeContent()
 				entry.value = (entry.value == true)
 				toggleState[entry.id] = entry.value
 			end
+			if entry.disabled == nil then entry.disabled = false end
+			if entry.labelClass == nil then entry.labelClass = "" end
 		end
 	end
 
@@ -1058,8 +1027,11 @@ function widget:Initialize()
 	WG['options_rml'] = {
 		toggle    = function(state) toggleShow(state) end,
 		isvisible = function() return show end,
+		-- First Esc clears an active search (handled by onSearchKeyDown); only
+		-- then should Esc fall through to the topbar to close the window. While
+		-- search is active we tell the topbar to hold the close.
 		disallowEsc = function()
-			return show and dm_handle and dm_handle.showSearchResults
+			return show and dm_handle and dm_handle.searchActive
 		end,
 	}
 
@@ -1169,6 +1141,9 @@ function widget:Update()
 	if show ~= lastShow then
 		lastShow = show
 		if show then
+			-- Open fresh on the selected tab — drop any search left from a
+			-- previous session (exitSearchState resets contentView to activeTab).
+			exitSearchState()
 			populateActiveTabData(dm_handle.activeTab, dm_handle.gfxSubTab, dm_handle.interfaceSubTab)
 			lastActiveTab       = dm_handle.activeTab
 			lastGfxSubTab       = dm_handle.gfxSubTab
@@ -1194,43 +1169,5 @@ function widget:Update()
 		end
 	end
 
-	-- Deferred scroll: two-stage pipeline.
-	-- Stage 1 (pendingScrollElement == nil): find the element in the DOM.
-	--   Record it but DON'T scroll yet — RmlUi hasn't computed its layout
-	--   position because data-if/data-for just created it this frame.
-	-- Stage 2 (pendingScrollElement set): one frame later, scroll + highlight.
-	if pendingScrollId and document then
-		pendingScrollFrames = pendingScrollFrames + 1
-		local target = document:GetElementById("cfg-" .. pendingScrollId)
-		if target then
-			if not pendingScrollElement then
-				pendingScrollElement = target
-			else
-				pendingScrollElement:ScrollIntoView()
-				pendingScrollElement:SetClass("highlight-search-match", true)
-				highlightElement = pendingScrollElement
-				highlightTimer = Spring.GetTimer()
-				pendingScrollId = nil
-				pendingScrollElement = nil
-				pendingScrollFrames = 0
-			end
-		elseif pendingScrollFrames > MAX_SCROLL_RETRY_FRAMES then
-			pendingScrollId = nil
-			pendingScrollElement = nil
-			pendingScrollFrames = 0
-		end
-	end
-
-	-- Remove highlight class once the pulse duration has elapsed.
-	if highlightTimer then
-		local elapsed = Spring.DiffTimers(Spring.GetTimer(), highlightTimer)
-		if elapsed >= HIGHLIGHT_DURATION_SEC then
-			if highlightElement then
-				highlightElement:SetClass("highlight-search-match", false)
-				highlightElement = nil
-			end
-			highlightTimer = nil
-		end
-	end
 end
 

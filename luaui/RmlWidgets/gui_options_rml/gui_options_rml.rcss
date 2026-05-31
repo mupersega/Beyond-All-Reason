@@ -13,7 +13,57 @@
    padding-top from ccg.panel.general because widget-local CSS loads last. */
 .panel-with-abs-heading {
 	padding-top: 29dp;
+	/* Staggered slide-in. Each section panel is (re)created by data-for every
+	   time a tab/sub-tab is populated or a search runs; RmlUi plays @keyframes
+	   animations on element creation (transitions would NOT fire — they need a
+	   class/pseudo change, see CLAUDE.md), so this runs each time the panels
+	   appear. Panels start fully off-screen-left and slide all the way in.
+
+	   PURE TRANSFORM, no opacity. Two RmlUi specifics make this work:
+	   1. Animate a LENGTH (dp), not a percentage. RmlUi interpolates length
+	      transforms but does NOT reliably interpolate a translateX percentage
+	      (the proven in-repo example, gui_quick_start's deduction-drift, keeps
+	      its translateX(%) constant and only animates a dp axis). A percentage
+	      here is why an earlier translateX(-100%) didn't move at all — only the
+	      opacity animated. -540dp clears the 540dp drawer width fully.
+	   2. Hiding is done by CLIPPING, not opacity. Transformed elements escape
+	      overflow:hidden in RmlUi, so .scroll-area carries `clip: always`
+	      (+ overflow:hidden) — the documented way to force-clip transformed
+	      children. The parked/sweeping panel is clipped at the scroll area's
+	      left edge instead of poking over the tab rail, so no opacity fade is
+	      needed.
+
+	   The cascade is baked into the keyframes as a flat off-screen HOLD, NOT
+	   animation-delay: RmlUi has no animation-fill-mode, so a delay window
+	   would show the resting style (flash) and a hidden resting style would
+	   make panels vanish after animating. Instead every panel starts at frame 0
+	   holding off-screen for its stagger slot, then slides; the resting style
+	   has no transform (== translateX(0) == the final keyframe), so the
+	   post-animation revert is seamless. nth-child rules pick the per-slot set. */
+	animation: 0.45s quadratic-out 1 option-group-in;
 }
+
+/* 1st panel: no hold — slides 0%→44%, then holds in place. */
+@keyframes option-group-in {
+	0%        { transform: translateX(-540dp); }
+	44%, 100% { transform: translateX(0dp); }
+}
+/* Panels 2–6: hold off-screen for an increasing slot, then run the same slide. */
+@keyframes option-group-in-2 { 0%, 10% { transform: translateX(-540dp); } 54%, 100% { transform: translateX(0dp); } }
+@keyframes option-group-in-3 { 0%, 20% { transform: translateX(-540dp); } 64%, 100% { transform: translateX(0dp); } }
+@keyframes option-group-in-4 { 0%, 30% { transform: translateX(-540dp); } 74%, 100% { transform: translateX(0dp); } }
+@keyframes option-group-in-5 { 0%, 40% { transform: translateX(-540dp); } 84%, 100% { transform: translateX(0dp); } }
+@keyframes option-group-in-6 { 0%, 50% { transform: translateX(-540dp); } 94%, 100% { transform: translateX(0dp); } }
+
+/* Assign the per-slot keyframe set by position. The data-for wrapper divs are
+   direct children of .scroll-area, each wrapping one .panel-with-abs-heading.
+   Capped at 6; panels 7+ fall back to the base (no-hold) keyframe and slide in
+   immediately, so long lists never over-delay. */
+.scroll-area > div:nth-child(2) .panel-with-abs-heading { animation: 0.45s quadratic-out 1 option-group-in-2; }
+.scroll-area > div:nth-child(3) .panel-with-abs-heading { animation: 0.45s quadratic-out 1 option-group-in-3; }
+.scroll-area > div:nth-child(4) .panel-with-abs-heading { animation: 0.45s quadratic-out 1 option-group-in-4; }
+.scroll-area > div:nth-child(5) .panel-with-abs-heading { animation: 0.45s quadratic-out 1 option-group-in-5; }
+.scroll-area > div:nth-child(6) .panel-with-abs-heading { animation: 0.45s quadratic-out 1 option-group-in-6; }
 
 /* The heading element IS the clip container. Fixed 30dp height,
    content-sized width via white-space: nowrap. 50dp of right padding gives
@@ -193,6 +243,13 @@
 	flex: 1;
 	padding: 2dp 4dp 4dp 4dp;
 	overflow: hidden scroll;
+	/* Force-clip transformed children: the option-group slide-in animation
+	   parks panels off-screen-left via translateX, and transformed elements
+	   escape plain overflow:hidden in RmlUi. clip: always makes the slide get
+	   clipped to this box's edge (the documented fix) so panels sweep in
+	   cleanly from the left instead of poking over the tab rail — which is what
+	   lets the animation be a pure slide with no opacity fade. */
+	clip: always;
 }
 
 /* Spacing between section panels inside the scroll area */
@@ -485,37 +542,7 @@ button.tab-dev-construction:active {
 	animation: 1.5s linear infinite placeholder-pulse;
 }
 
-/* Search feature ---------------------------------------------------------
-   Floating results dropdown — positioning only. Background, border, and
-   hover come from bg-darkest + border utilities inline in the RML, and
-   row-level styling (padding, hover, cursor, height) comes from utility
-   classes. */
-.search-results {
-	left: 0dp;
-	right: 0dp;
-	/* Anchored to the title bar (position: relative via svg-decorator-host);
-	   top: 100% drops the panel directly below the title bar regardless of
-	   the bar's computed height. */
-	top: 100%;
-	/* Fits MAX_SEARCH_RESULTS (12) × .h-6 row height (24dp) with a little
-	   breathing room, so no row is clipped by overflow-hidden. */
-	max-height: 300dp;
-	display: block;
-}
-
-/* Highlight pulse applied by Lua after scrolling a search result into
-   view. Runs once for HIGHLIGHT_DURATION_SEC. */
-@keyframes search-highlight-pulse {
-	0%   { background-color: rgba(255, 200, 0, 0); }
-	40%  { background-color: rgba(255, 200, 0, 140); }
-	100% { background-color: rgba(255, 200, 0, 0); }
-}
-
-.highlight-search-match {
-	animation: 1.5s ease-out 1 search-highlight-pulse;
-}
-
-/* Arrow-key selected row in the search results dropdown. */
-.search-selected {
-	background-color: rgba(255, 200, 0, 60);
-}
+/* (Search results now render through the standard .options-content /
+   .scroll-area / .setting-row markup — the old floating dropdown, its
+   highlight-pulse keyframe, and the arrow-key selection style were removed
+   with the navigate-and-scroll behavior.) */

@@ -344,6 +344,8 @@ definite size, so the container does not need flex to fill it.
 ### Utility classes
 `rml-utility-classes.rcss` provides Tailwind-like utilities: `flex`, `flex-col`, `items-center`, `justify-between`, `gap-2`, `p-3`, `mt-2`, `rounded`, `border`, `text-sm`, `font-bold`, `w-full`, `h-full`, `hidden`, `cursor-pointer`, `transition`, etc.
 
+> **Gotcha — `border-0` reserves a border (it doesn't remove one).** `.border-0` is `border: 1dp transparent` — it *reserves* a 1dp border so a coloured border can later appear with zero layout shift. It's bundled into every `ccg.button.*`. So dropping a button class onto a content-box element sized to fill a tight slot (`width/height: 100%`) adds 2dp and pushes the layout. Fix: `box-sizing: border-box` (the reserved border then draws inside), or apply the button's colour/text utilities **without** `border-0` (e.g. a `my.*` bundle). Diagnosed on the order-menu toggle buttons.
+
 ### Transitions & Timing Functions
 
 Syntax: `transition: <property> <duration> [<timing-function>]`
@@ -365,6 +367,35 @@ Use `linear-in-out` when you want constant speed.
 
 **Caution**: Aggressive easing curves (`exponential-out`, `elastic-*`, `bounce-*`) can cause visible sub-pixel jitter on small transforms like `translateX(5dp)`. Prefer `quadratic-out` or `cubic-out` for subtle UI shifts.
 
+### Keyframe Animations (`@keyframes`) — entrance/looping motion
+
+Use `@keyframes` + the `animation` property (not `transition`) when motion must fire on **element creation** — e.g. items appearing in a `data-for` loop, a tab's content (re)populating, search results rendering. Transitions can't do this: they only fire on a class/pseudo change (see the gotcha above), and a freshly-created element has no "before" state to transition from. Animations play immediately on mount, which is exactly what entrance motion needs.
+
+```rcss
+.row { animation: 0.45s quadratic-out 1 slide-in; }   /* <duration> <tween> <iterations> <name> */
+@keyframes slide-in {
+    0%   { transform: translateX(-540dp); }
+    100% { transform: translateX(0dp); }
+}
+```
+
+Hard-won BAR specifics (these cost a long debugging session — trust them):
+
+- **Animate `translateX` as a LENGTH (`dp`), never a percentage.** RmlUi interpolates length transforms but does **not** reliably interpolate a `translateX(%)` — a `translateX(-100%) → translateX(0)` keyframe pair simply does not move (any `opacity` in the same keyframes still animates, so it looks like a fade, masking the problem). Pick a `dp` value that clears the element's travel (e.g. `-540dp` for a 540dp-wide drawer). Confirmed in-repo: `gui_quick_start`'s `deduction-drift` keeps its `translateX(-50%)` *constant* and only animates a `dp`/length axis.
+- **Transformed elements escape `overflow: hidden`.** A panel parked/sweeping off-screen via `translateX` will paint outside its scroll container (e.g. over the tab rail) unless you add **`clip: always`** (alongside `overflow: hidden`) to the clipping ancestor — the documented RmlUi way to force-clip transformed children. This is what lets a slide-in be a pure transform with no opacity-fade crutch.
+- **No `animation-fill-mode`.** RmlUi has neither `forwards` nor `backwards`, and this dictates how you stage things:
+  - *After* a one-shot animation completes, the element **reverts to its resting (RCSS) style**. So the resting style must equal the final keyframe (e.g. no `transform` override on the rule == `translateX(0)` == the `100%` frame), or the element visibly snaps back when the animation ends.
+  - *During* an `animation-delay` window, the element shows its **resting style** (not the `0%` frame) — so a delayed start visibly flashes the resting state before animating.
+- **Stagger a cascade via in-keyframe holds, NOT `animation-delay`.** Because of the delay-flash above, don't use `animation-delay` for a staggered list. Instead give each position its own keyframe set that *holds* the hidden state for an increasing slot, then runs the same slide — all starting at frame 0. Select per position with `:nth-child` (supported). Cap it (e.g. 6) and let later items fall back to the no-hold base keyframe so long lists don't over-delay:
+  ```rcss
+  @keyframes in    { 0%       { transform: translateX(-540dp); } 44%, 100% { transform: translateX(0dp); } }
+  @keyframes in-2  { 0%, 10%  { transform: translateX(-540dp); } 54%, 100% { transform: translateX(0dp); } }
+  .scroll-area > div:nth-child(2) .row { animation: 0.45s quadratic-out 1 in-2; }
+  ```
+- **`animation` is a shorthand only.** RmlUi parses `animation: <duration> <delay>? <tween>? <iterations>? <name>` — there is no bare `animation-delay`/`animation-name` longhand. Keyframe percentages are duration-relative, so changing only the duration rescales holds + slide together.
+
+Reference example: the staggered, flash-free slide-in on `gui_options_rml`'s `.panel-with-abs-heading` (option-group entrance).
+
 ### RCSS differs from CSS
 
 RCSS is based on CSS2 with selected CSS3 features — **not full CSS**. If a CSS feature silently isn't working, check here:
@@ -380,6 +411,7 @@ RCSS is based on CSS2 with selected CSS3 features — **not full CSS**. If a CSS
 - **`inline-flex` needs a definite width**, otherwise it collapses.
 - **No nested `@media`**, no CSS Level 4 media query syntax (`<=`, `>=`).
 - **Transitions only fire on class/pseudo-class changes** (see Transitions above).
+- **`@keyframes` translate must use a length, not `%`** — `translateX(%)` doesn't interpolate; transformed elements also need `clip: always` on an ancestor to respect `overflow: hidden` (see Keyframe Animations above).
 
 ## Theme System
 

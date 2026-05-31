@@ -1,0 +1,188 @@
+/* gui_info_rml — bottom unit/selection info bar (v1). LAYOUT ONLY — colour
+   via utility/CCG classes in the .rml. ALWAYS laid out: never shown/hidden;
+   modes are overlaid panes toggled by data-visible (visibility:hidden — keeps
+   the box, no relayout).
+
+   STRUCTURE (owner-directed):
+     - the WIDGET has NO background; the bg lives ONLY on `.info-body`.
+     - `.info-body` bottom:0, height = bodyH (= order-menu height, data-style) so
+       its TOP aligns with the order menu → one clean line across.
+     - `.info-tab` is a 232dp bridge (= build-grid width, flush-left) carrying the
+       owner; fills from the body's top up to the widget top (140dp). SQUARE.
+
+   POSITION (deduced from the siblings' hard-coded anchors):
+     build grid = left:0 bottom:150dp width:232dp ;  order menu = left:33vw.
+     The info widget tops out at 140dp → a 10dp gap below the grid (no overlap). */
+
+#gui_info_rml-widget {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 33vw;        /* span across to the order menu (left:33vw) */
+    height: 140dp;      /* up to the build grid's (moved-up) bottom edge; keep == ROOT_H_DP */
+    display: block;
+    pointer-events: none;
+}
+
+/* No background here — transparent wrapper. */
+#widget-container {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* The bridge tab. top:0 = info-widget top (a gap below the build grid);
+   height = tabH (data-style) fills from the body's top up to the widget top.
+   232dp = build-grid width, flush-left so they align. SQUARE — no radius
+   (owner). Carries the owning player. Fill = bg-dark utility (.rml). */
+.info-tab {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 232dp;
+    display: flex;
+    align-items: center;
+}
+.info-tab-label {
+    padding-left: 8dp;
+}
+
+/* LOWER INFO SECTION — the ONLY element with a background (ccg.panel.general
+   in the .rml). bottom:0; height = bodyH (data-style) → top aligns with the
+   order menu. It is the positioning context for the two overlaid panes. */
+.info-body {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* height set via data-style-height="bodyH" */
+}
+
+/* Two persistent panes overlaid in the body (absolute → overlap, no summing);
+   data-visible flips visibility (paint-only, keeps the box). */
+.info-pane {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    padding: 4dp 8dp 4dp 8dp;
+}
+
+/* header row inside a pane: name (left) + owner (right) */
+.info-headrow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 16dp;
+    margin-bottom: 2dp;
+}
+
+/* single-unit columns */
+.col-icon {
+    display: block;
+    width: 54dp;
+    flex-shrink: 0;
+}
+.unit-icon {
+    display: block;
+    width: 50dp;
+    height: 50dp;
+}
+.col-main {
+    flex: 1;
+    display: block;
+    margin: 0 8dp;
+}
+.col-stats {
+    display: block;
+    width: 120dp;
+    flex-shrink: 0;
+}
+
+/* multi-select columns */
+.col-tally {
+    flex: 1;
+    display: block;
+}
+.tally-grid {
+    display: block;
+}
+.col-seltotals {
+    display: block;
+    width: 160dp;
+    flex-shrink: 0;
+}
+
+/* ── shared rows (fixed heights) ── */
+.info-costrow {
+    display: flex;
+    justify-content: space-between;
+    height: 14dp;
+    margin-bottom: 2dp;
+}
+
+.info-hp {
+    display: flex;
+    align-items: center;
+    height: 13dp;
+    margin-bottom: 2dp;
+}
+.hp-track {
+    display: block;
+    position: relative;
+    flex: 1;            /* flex-basis:0 → skips content measurement */
+    height: 6dp;
+    margin-right: 5dp;
+}
+.hp-fill {
+    display: block;
+    height: 100%;
+    /* width via data-style-width (paint); colour via hpBarClass (.rml) */
+}
+.hp-val {
+    display: block;
+}
+
+.info-flow {
+    display: flex;
+    align-items: center;
+    height: 13dp;
+}
+.info-flow-label {
+    display: block;
+    width: 44dp;
+}
+.flow-make {
+    display: block;
+    margin-right: 6dp;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    height: 13dp;
+}
+
+/* multi-select tally: fixed cells; blank ones keep their box (icon src "").
+   inline-block flows + wraps; definite size → no measure. */
+.info-cell {
+    display: inline-block;
+    position: relative;
+    width: 28dp;
+    height: 28dp;
+    margin: 1dp;
+}
+.info-cell-icon {
+    display: block;
+    width: 26dp;
+    height: 26dp;
+}
+.info-cell-count {
+    position: absolute;
+    right: 1dp;
+    bottom: 0dp;
+}

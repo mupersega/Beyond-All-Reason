@@ -26,7 +26,7 @@
         <nav id="tab-rail">
             <button data-for="tab : tabs"
                 data-attr-class="(tab.id == 'dev' ? 'text-upper text-center text-light bg-darkest cursor-pointer hazards-construction-textured tab-dev-construction' + (activeTab == 'dev' ? ' tab-dev-active' : '') : (activeTab == tab.id ? ccg.themeButton.primary + ' bg-primary_hover' : ccg.button.general)) + ' rail-tab font-bold'"
-                data-event-mousedown="activeTab = tab.id"
+                data-event-mousedown="selectTab(tab.id)"
                 data-attr-title="tab.label">
                 <span class="pe-none">{{ tab.abbr }}</span>
             </button>
@@ -52,31 +52,56 @@
                 Options
             </span>
 
-            <!-- Right-side cluster: search input + (dev) reload/debug buttons -->
+            <!-- Right-side cluster: live search filter. Typing >=3 chars
+                 replaces the panel content with matching options grouped by
+                 sub-category (searchActive + searchSections, built in Lua).
+                 No dropdown / navigate-and-scroll — matches are edited in place.
+                 Escape (onSearchKeyDown) clears + defocuses. -->
             <div class="flex items-center gap-1 z-50 pr-1">
-                <form class="flex items-center min-h-6 px-1 bg-darker-alpha relative"
-                      style="width: 160dp;"
-                      data-event-submit="onSearchSubmit()">
+                <div class="flex items-center min-h-6 px-1 bg-darker-alpha relative"
+                      style="width: 160dp;">
                     <span data-visible="searchQuery == ''" class="placeholder-text pe-none absolute">Search options...</span>
                     <input id="options-search-input" type="text"
                         class="flex-1 p-1 text-sm"
                         data-value="searchQuery"
                         data-event-keydown="onSearchKeyDown(ev.key_identifier)"
                         data-event-keyup="onSearchInput(ev.key_identifier)"></input>
-                </form>
+                </div>
             </div>
+        </div>
 
-            <!-- Floating results panel — anchored to the title bar's
-                 position: relative, spans its full width, drops below via
-                 top: 100% in RCSS. Single shared element (not per-item). -->
-            <div data-if="showSearchResults"
-                 class="search-results absolute z-50 overflow-hidden bg-darkest border border-w-px">
-                <div data-for="result : searchResults"
-                     class="block cursor-pointer px-1-5 h-6 hover-brighten"
-                     data-attr-id="'searchresult-' + result.id"
-                     data-class-search-selected="result.index == selectedResultIndex"
-                     onclick="widget:OnSearchResultClick(element)">
-                    <span class="pe-none text-sm">{{result.pathLabel}}</span>
+        <!-- ============================================================ -->
+        <!-- SEARCH results (live filter) — replaces tab content when active. -->
+        <!-- Same { heading, groups } shape + interactive row markup as the   -->
+        <!-- tabs, so matched options are edited in place. Grouped by          -->
+        <!-- sub-category; searchActive/searchSections come from Lua.          -->
+        <!-- ============================================================ -->
+        <div data-if="contentView == 'search'" class="options-content">
+            <div class="scroll-area">
+                <div data-if="searchResultCount == 0" class="p-3">
+                    <span data-attr-class="ccg.text.description + ' text-sm'">No matching options.</span>
+                </div>
+                <div data-for="section : searchSections">
+                    <div data-attr-class="ccg.panel.general + ' p-2 relative panel-with-abs-heading'">
+                        <div data-attr-class="my.panelHeading">
+                            <div class="panel-heading-angle bg-darkest-alpha radial-focus-start"></div>
+                            {{section.heading}}
+                        </div>
+                        <div data-for="group : section.groups" data-attr-class="'option-group' + (group.parent.disabled ? ' disabled' : '')">
+                            <div data-attr-class="'setting-row' + (group.parent.type == 'bool' || group.parent.type == 'action' ? ' clickable' : '')" data-attr-id="'cfg-' + group.parent.id" onclick="widget:OnSettingClick(element)">
+                                <div class="setting-control">
+                                    <span data-attr-class="(group.parent.type == 'action' ? group.parent.labelClass : 'option-label font-bold') + ' pe-none'">{{group.parent.name}}</span>
+                                    <div data-if="group.parent.type == 'bool'" data-attr-class="ccg.toggle.panel + ' pe-none'">
+                                        <div data-attr-class="(group.parent.value ? ccg.toggle.offDanger : ccg.toggle.danger)"></div>
+                                        <div data-attr-class="(group.parent.value ? ccg.toggle.success : ccg.toggle.offSuccess)"></div>
+                                    </div>
+                                    <div data-if="group.parent.type == 'slider'" class="slider-area"><input type="range" data-attr-id="'cfg-' + group.parent.id" data-attr-min="group.parent.min" data-attr-max="group.parent.max" data-attr-step="group.parent.step" data-attr-value="group.parent.value" onchange="widget:OnSlider(element)" /><span data-attr-class="ccg.text.warning + ' slider-value'" data-attr-id="'val-' + group.parent.id">{{group.parent.value}}</span></div>
+                                    <select data-if="group.parent.type == 'select'" data-attr-id="'cfg-' + group.parent.id" data-value="group.parent.value" onchange="widget:OnSelect(element)"><option data-for="choice : group.parent.selectOptions" data-attr-value="choice.value">{{choice.label}}</option></select>
+                                </div>
+                                <span data-attr-class="ccg.text.description + ' setting-desc pe-none'">{{group.parent.desc}}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -84,12 +109,12 @@
         <!-- ============================================================ -->
         <!-- GRAPHICS tab (sub-tabs: display/rendering/environment)        -->
         <!-- ============================================================ -->
-        <div data-if="activeTab == 'gfx'" class="options-content">
+        <div data-if="contentView == 'gfx'" class="options-content">
 
             <nav class="flex bg-dark-alpha min-h-6 box-shadow-sm" style="gap: 1px;">
                 <button data-for="st : gfxSubTabs" class="transition"
                     data-attr-class="(gfxSubTab == st.id ? ccg.themeButton.primary + ' bg-primary_hover': ccg.button.general) + ' transition-bg p-1-5 text-sm font-bold text-outline'"
-                    data-event-mousedown="gfxSubTab = st.id">
+                    data-event-mousedown="selectGfxSubTab(st.id)">
                     {{ st.label }}
                 </button>
             </nav>
@@ -216,7 +241,7 @@
         <!-- ============================================================ -->
         <!-- SOUND tab (single flat config)                                -->
         <!-- ============================================================ -->
-        <div data-if="activeTab == 'audio'" class="options-content">
+        <div data-if="contentView == 'audio'" class="options-content">
             <div class="scroll-area">
                 <div data-for="section : audioSections">
                     <div data-attr-class="ccg.panel.general + ' p-2 relative panel-with-abs-heading'">
@@ -259,12 +284,12 @@
         <!-- ============================================================ -->
         <!-- INTERFACE tab (5 sub-tabs)                                    -->
         <!-- ============================================================ -->
-        <div data-if="activeTab == 'interface'" class="options-content">
+        <div data-if="contentView == 'interface'" class="options-content">
 
             <nav class="flex bg-dark-alpha min-h-6 box-shadow-sm" style="gap: 1px;">
                 <button data-for="st : interfaceSubTabs" class="transition"
                     data-attr-class="(interfaceSubTab == st.id ? ccg.themeButton.primary + ' bg-primary_hover': ccg.button.general) + ' transition-bg p-1-5 text-sm font-bold text-outline'"
-                    data-event-mousedown="interfaceSubTab = st.id">
+                    data-event-mousedown="selectInterfaceSubTab(st.id)">
                     {{ st.label }}
                 </button>
             </nav>
@@ -464,7 +489,7 @@
         <!-- ============================================================ -->
         <!-- CONTROL tab (single flat config)                              -->
         <!-- ============================================================ -->
-        <div data-if="activeTab == 'control'" class="options-content">
+        <div data-if="contentView == 'control'" class="options-content">
             <div class="scroll-area">
                 <div data-for="section : controlSections">
                     <div data-attr-class="ccg.panel.general + ' p-2 relative panel-with-abs-heading'">
@@ -507,7 +532,7 @@
         <!-- ============================================================ -->
         <!-- GAME tab (single flat config)                                 -->
         <!-- ============================================================ -->
-        <div data-if="activeTab == 'game'" class="options-content">
+        <div data-if="contentView == 'game'" class="options-content">
             <div class="scroll-area">
                 <div data-for="section : gameSections">
                     <div data-attr-class="ccg.panel.general + ' p-2 relative panel-with-abs-heading'">
@@ -550,7 +575,7 @@
         <!-- ============================================================ -->
         <!-- NOTIFICATIONS tab (single flat config)                        -->
         <!-- ============================================================ -->
-        <div data-if="activeTab == 'notifications'" class="options-content">
+        <div data-if="contentView == 'notifications'" class="options-content">
             <div class="scroll-area">
                 <div data-for="section : notificationsSections">
                     <div data-attr-class="ccg.panel.general + ' p-2 relative panel-with-abs-heading'">
@@ -593,7 +618,7 @@
         <!-- ============================================================ -->
         <!-- ACCESSIBILITY tab (single flat config)                        -->
         <!-- ============================================================ -->
-        <div data-if="activeTab == 'accessibility'" class="options-content">
+        <div data-if="contentView == 'accessibility'" class="options-content">
             <div class="scroll-area">
                 <div data-for="section : accessibilitySections">
                     <div data-attr-class="ccg.panel.general + ' p-2 relative panel-with-abs-heading'">
@@ -643,7 +668,7 @@
         <!-- ============================================================ -->
         <!-- DEV tab (single flat config)                                  -->
         <!-- ============================================================ -->
-        <div data-if="activeTab == 'dev'" class="options-content">
+        <div data-if="contentView == 'dev'" class="options-content">
             <div class="scroll-area">
                 <div data-for="section : devSections">
                     <div data-attr-class="ccg.panel.general + ' p-2 relative panel-with-abs-heading'">

@@ -38,8 +38,8 @@ while [[ $# -gt 0 ]]; do
             echo "  $0 --name my_widget"
             echo "  $0 --name build_menu"
             echo ""
-            echo "Generated widgets use a 300x400dp box at top-left."
-            echo "Customize size/position in the generated .rcss file."
+            echo "Generated widgets use a compact 260x300dp box at top-left."
+            echo "Customize size/position in the generated .rcss file (size tight to content)."
             exit 0
             ;;
         *)
@@ -190,7 +190,7 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << EOF
 
     <link rel="stylesheet" href="${WIDGET_NAME}.rcss" type="text/rcss" />
 </head>
-<body id="${WIDGET_NAME}-widget" class="widget-shadow rounded-lg">
+<body id="${WIDGET_NAME}-widget" class="widget-shadow">
     <!-- Single wrapper with data-model. Block layout: children stack
          top-to-bottom in one layout pass. Never use flex-direction:
          column here — it is the #1 layout-perf killer in this engine. -->
@@ -198,6 +198,11 @@ cat > "$WIDGET_DIR/${WIDGET_NAME}.rml" << EOF
          aggregation, which is exactly what CCG is for. Everything else
          below is plain utility classes (the default). Buttons use
          ccg.button.* for the same reason. -->
+    <!-- RADIUS: the body has NO rounded-* class. The widget FRAME's corner
+         radius is owned by the style-mode radius axis (utils applies
+         radius-square/subtle/rounded from the user's setting). Do NOT add
+         rounded-lg here, and keep small interior elements (bars, thin rows,
+         cells) SQUARE — radius on a few-dp element reads as a blob. -->
     <div id="widget-container" data-model="${WIDGET_NAME}_model" data-attr-class="ccg.panel.general">
 
         <div class="starter-title text-lg font-bold text-primary">${WIDGET_NAME}</div>
@@ -231,12 +236,17 @@ EOF
 cat > "$WIDGET_DIR/${WIDGET_NAME}.rcss" << EOF
 /* ${WIDGET_NAME} widget styles */
 
+/* Size the box TIGHT to its contents — avoid oversized panels. Dense HUD
+   widgets should hug their content (small dp box, text-sm/text-xs, tight
+   padding). This 260x300 default is a starting point; shrink it further to
+   fit what you actually draw. The frame radius comes from the style-mode
+   axis (see the .rml body note) — do not add a border-radius here. */
 #${WIDGET_NAME}-widget {
     position: absolute;
     left: 50dp;
     top: 100dp;
-    width: 300dp;
-    height: 400dp;
+    width: 260dp;
+    height: 300dp;
     display: block;
 }
 
@@ -282,6 +292,8 @@ echo "Defaults baked in (the canonical patterns — keep them):"
 echo "  - Block layout, no nested flex-column"
 echo "  - Utility classes by default; CCG (ccg.*) only for heavy repeats (panel, buttons)"
 echo "  - No debug buttons (only rml_starter has those); no per-frame polling"
+echo "  - Frame radius via style-mode axis only (no rounded-* on body; square interior elements)"
+echo "  - Compact box sized to content (text-sm/text-xs in dense widgets)"
 echo ""
 echo "Next steps:"
 echo "  1. Set enabled = true in GetInfo() when ready"

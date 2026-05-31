@@ -1,0 +1,111 @@
+<rml>
+<head>
+    <title>Info RML</title>
+
+    <!-- Stylesheet order matters (do not reorder) -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="gui_info_rml.rcss" type="text/rcss" />
+</head>
+<!-- ALWAYS laid out. The WIDGET itself has NO background — the bg lives only on
+     the lower info section. Passive HUD: pointer-events:none. -->
+<body id="gui_info_rml-widget" class="pe-none">
+    <div id="widget-container" data-model="gui_info_rml_model" class="pe-none">
+
+        <!-- BLANK notched bridge: 232dp = build-grid width, flush-left. Fills the
+             thin strip from the body's top up to the build grid. No text. -->
+        <div class="info-tab bg-dark" data-style-height="tabH">
+            <span class="info-tab-label text-xs text-light font-bold">{{ownerLabel}}</span>
+        </div>
+
+        <!-- LOWER INFO SECTION — the ONLY element with a background. Its TOP is
+             set to the order-menu height (bodyH) so the line runs across. -->
+        <div class="info-body" data-style-height="bodyH" data-attr-class="ccg.panel.general + ' info-body widget-shadow pe-none'">
+
+            <!-- SINGLE UNIT -->
+            <div class="info-pane" data-visible="mode == 'unit'">
+                <div class="col-icon">
+                    <img data-attr-src="uIcon" class="unit-icon" />
+                </div>
+
+                <div class="col-main">
+                    <div class="info-headrow">
+                        <span class="text-sm text-light font-bold">{{headerLabel}}</span>
+                    </div>
+                    <div class="info-costrow">
+                        <span class="text-xs text-light">M {{uMetalCost}}</span>
+                        <span class="text-xs text-warning">E {{uEnergyCost}}</span>
+                    </div>
+                    <div class="info-hp">
+                        <div class="hp-track bg-darkest">
+                            <div data-attr-class="hpBarClass + ' hp-fill'" data-style-width="hpPct + '%'"></div>
+                        </div>
+                        <span data-attr-class="hpTextClass + ' hp-val text-xxs'">{{hpCur}}/{{hpMax}}</span>
+                    </div>
+                    <div class="info-flow">
+                        <span class="info-flow-label text-xxs text-medium">{{mLabel}}</span>
+                        <span class="flow-make text-xxs text-success">{{mMake}}</span>
+                        <span class="text-xxs text-danger">{{mUse}}</span>
+                    </div>
+                    <div class="info-flow">
+                        <span class="info-flow-label text-xxs text-medium">{{eLabel}}</span>
+                        <span class="flow-make text-xxs text-success">{{eMake}}</span>
+                        <span class="text-xxs text-danger">{{eUse}}</span>
+                    </div>
+                </div>
+
+                <div class="col-stats">
+                    <div data-for="s : stats" class="stat-row">
+                        <span class="text-xxs text-medium">{{s.label}}</span>
+                        <span data-attr-class="s.valueClass + ' text-xxs text-right'">{{s.value}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MULTI-SELECT -->
+            <div class="info-pane" data-visible="mode == 'selection'">
+                <div class="col-tally">
+                    <div class="info-headrow">
+                        <span class="text-sm text-light font-bold">{{headerLabel}}</span>
+                    </div>
+                    <div class="tally-grid">
+                        <div data-for="c : typeCells" class="info-cell">
+                            <img data-attr-src="c.icon" class="info-cell-icon" />
+                            <span class="info-cell-count text-xxs text-light font-bold">{{c.count}}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-seltotals">
+                    <div class="info-costrow">
+                        <span class="text-xs text-light">M {{selMetalCost}}</span>
+                        <span class="text-xs text-warning">E {{selEnergyCost}}</span>
+                    </div>
+                    <div class="info-flow">
+                        <span class="info-flow-label text-xxs text-medium">Metal</span>
+                        <span class="flow-make text-xxs text-success">{{selMMake}}</span>
+                        <span class="text-xxs text-danger">{{selMUse}}</span>
+                    </div>
+                    <div class="info-flow">
+                        <span class="info-flow-label text-xxs text-medium">Energy</span>
+                        <span class="flow-make text-xxs text-success">{{selEMake}}</span>
+                        <span class="text-xxs text-danger">{{selEUse}}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="text-xxs text-medium">Kills</span>
+                        <span class="text-xxs text-right text-light">{{selKills}}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</rml>
