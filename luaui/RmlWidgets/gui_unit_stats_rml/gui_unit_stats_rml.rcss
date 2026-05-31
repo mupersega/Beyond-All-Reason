@@ -1,0 +1,55 @@
+/* gui_unit_stats_rml — hold-hotkey unit detail panel (v1, core stats).
+   Full-screen transparent overlay; the panel is parked off-screen and
+   positioned at the cursor by our Lua (transform). Compact + square per
+   design-conventions (frame radius via style-mode axis; interior square).
+   LAYOUT ONLY — colour via utility classes in the .rml. */
+
+#gui_unit_stats_rml-widget {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100vw;
+	height: 100vh;
+	pointer-events: none;
+}
+
+#widget-container {
+	display: block;
+	position: relative;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+/* The detail panel — parked off-screen by Lua, positioned at the cursor.
+   Hard width so value changes don't relayout; height content-driven. */
+.stats-panel {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 160dp;
+	pointer-events: none;
+}
+
+.stats-head {
+	display: flex;
+	align-items: center;
+	height: 20dp;
+	margin-bottom: 3dp;
+}
+
+/* display:block required so data-if can toggle the icon on/off */
+.stats-icon {
+	display: block;
+	width: 18dp;
+	height: 18dp;
+	margin-right: 4dp;
+}
+
+/* ── statRow component (established here, reused by detail/info panels) ──
+   Label left, value right, fixed height → single-pass, no measurement. */
+.stat-row {
+	display: flex;
+	justify-content: space-between;
+	height: 13dp;
+}

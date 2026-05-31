@@ -1,0 +1,38 @@
+<rml>
+<head>
+    <title>Unit Stats RML</title>
+
+    <!-- Stylesheet order matters (do not reorder) -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="gui_unit_stats_rml.rcss" type="text/rcss" />
+</head>
+<!-- Full-screen transparent overlay (pe-none) so the panel floats unclipped,
+     cursor-anchored. We own the panel + model + positioning (transform);
+     proven pattern. -->
+<body id="gui_unit_stats_rml-widget" class="pe-none">
+    <div id="widget-container" data-model="gui_unit_stats_rml_model" class="pe-none">
+
+        <!-- Parked, model-bound detail panel. Content is DATA-BOUND (no
+             inner_rml): updating the model updates it. -->
+        <div id="stats-panel" data-attr-class="ccg.panel.general + ' stats-panel p-2 bg-darkest'">
+            <div class="stats-head">
+                <img data-if="hasIcon" data-attr-src="iconPath" class="stats-icon" />
+                <span class="text-sm text-light font-bold">{{name}}</span>
+            </div>
+            <div data-for="row : general" data-attr-class="my.statRow">
+                <span data-attr-class="my.statLabel">{{row.label}}</span>
+                <span data-attr-class="row.valueClass + ' text-xs text-right'">{{row.value}}</span>
+            </div>
+        </div>
+
+    </div>
+</body>
+</rml>
