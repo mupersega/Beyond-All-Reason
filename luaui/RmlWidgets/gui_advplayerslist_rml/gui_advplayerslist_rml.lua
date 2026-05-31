@@ -456,8 +456,6 @@ end
 -- target (self / enemy / dead / spectating) simply no-ops, so the overlay only
 -- opens for valid recipients.
 local function startShare(team, name, kind)
-	Spring.Echo("[advplayerslist_rml] startShare FIRED team=" .. tostring(team)
-		.. " kind=" .. tostring(kind) .. " eligible=" .. tostring(shareEligible(team)))  -- TEMP diagnostic
 	if not shareEligible(team) then return end
 	shareTeam, shareKind = team, kind
 	shareStock = spGetTeamResources(spGetMyTeamID(), kind) or 0
