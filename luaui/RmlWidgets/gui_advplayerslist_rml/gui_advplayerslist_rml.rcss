@@ -1,0 +1,169 @@
+/* gui_advplayerslist_rml — Advanced Player List v1 (display + collapse)
+   Bottom-right anchored vertical panel (matches the FlowUI original's corner).
+
+   Styling is utility-class / CCG ONLY (palette + rml-utility-classes). This
+   sheet carries only the LAYOUT GEOMETRY utilities can't express: the screen
+   anchor, the name nowrap, the collapse animation, the disclosure caret, and
+   the master-toggle pennant.
+
+   NOTE: no scroll in v1. Short lists; the panel grows to fit its contents.
+   Re-add an overflow container with a max-height when player counts exceed ~10. */
+
+#gui_advplayerslist_rml-widget {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 200dp;
+    display: block;
+}
+
+#widget-container {
+    display: block;
+    position: relative;   /* offset parent for the absolute share overlay (does
+                             NOT affect the rail handle, whose offset parent is the
+                             nearer relative .rail div) */
+}
+
+/* Player name: keep it on ONE line (no 2-line wrap). white-space:nowrap is SAFE
+   for text here (gui_options_rml / gui_tech_points use it); only overflow:hidden
+   vanishes glyphs in this build — so we DON'T clip. Paired with min-w-0 in the
+   class list so the flex item shrinks to its slot rather than pushing the eco
+   bars off the panel. Long names may spill slightly (accepted residual). */
+.pname {
+    white-space: nowrap;
+}
+
+/* ── Collapse animation ───────────────────────────────────────────────────
+   A player row's open height comes from the h-4 utility (16dp). When its
+   section closes, the .row-collapsed class (appended via data-attr-class) drives
+   height + opacity to 0; .prow's transition animates the change. overflow:hidden
+   clips the content as it shrinks (non-text container → safe). row-collapsed
+   loads AFTER the h-4 utility to win the height (widget sheet is linked last). */
+.prow {
+    transition: height 0.13s quadratic-out, opacity 0.13s quadratic-out;
+    overflow: hidden;
+}
+.row-collapsed {
+    height: 0dp;
+    opacity: 0;
+}
+
+/* Disclosure caret: ">" that rotates to point down when the section is open. */
+.caret {
+    width: 8dp;
+    text-align: center;
+    transition: transform 0.13s quadratic-out;
+}
+.caret-open {
+    transform: rotate(90deg);
+}
+
+/* ── Master toggle — a plain click strip with a bottom fade ─────────────────
+   The rail (my.rail = relative w-3-5) is a transparent 14dp flex column that
+   stretches to the full list height. The HANDLE fills it (inset 0), has NO
+   background, and is the only click target (onToggleAll). Its single child
+   .rail-fade sits at the BOTTOM with the bg-gradient utility (transparent→dark).
+   Opening grows the fade taller for a touch of feedback. Tune: the two heights. */
+.rail-handle {
+    position: absolute;
+    left: 0;
+    right: 0;                      /* fills the 14dp rail column */
+    top: 10%;                      /* closed: flag starts near the top; .rail-open → 50% */
+    bottom: 0;                     /* fills DOWN to the bottom → the bottom portion */
+    clip: always;                  /* trims the oversized wedge to the handle box */
+    cursor: pointer;
+    transition: top 0.13s quadratic-out;
+}
+.rail-handle.rail-open {
+    top: 50%;                      /* open: rises to ~50% */
+}
+
+/* The wedge fill: a BIG square rotated 60° whose top corner sits at the panel edge
+   on the %-line and fills solidly down; the handle clips it to a flag with a 30°
+   top edge. left/top pin the corner. KEEP IT OVERSIZED — that's what makes it a
+   flag, not a chevron. */
+.rail-wedge {
+    position: absolute;
+    left: -123dp;
+    top: 37dp;
+    width: 200dp;
+    height: 200dp;
+    transform: rotate(60deg);
+}
+
+/* CHEEKY gradient: a separate transparent→dark overlay covering the BOTTOM HALF of
+   the rail, on TOP of the solid wedge, so the fade reads. pe-none → clicks fall
+   through to the handle. */
+.rail-gradient {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;                      /* bottom half of the rail */
+    bottom: 0;
+}
+
+/* Eco-bar hit target: full row height (h-4 = 16dp) and the bar's width, so the
+   press is easy to land even though the visible bar is only 4dp tall. */
+.share-hit {
+    width: 20dp;
+    height: 16dp;
+}
+
+/* ── Share overlay ──────────────────────────────────────────────────────────
+   ONE shared element covering the whole panel; fades in (share-on) while a bar
+   is press-held. pe-none everywhere — the gesture is polled from Spring mouse
+   state vs this element's screen rect, so it never eats clicks. LAYOUT ONLY here;
+   ALL colour is utility classes in the .rml (scrim bg, granular-track bg, accent
+   fill/chip). */
+.share-ov {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    padding: 3dp;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.1s quadratic-out;
+}
+.share-on {
+    opacity: 1;
+}
+
+.share-head {
+    display: block;
+    height: 22dp;
+    margin-bottom: 2dp;
+}
+
+/* Body fills the remaining height; left granular column + right preset column. */
+.share-body {
+    position: absolute;
+    left: 3dp;
+    right: 3dp;
+    top: 24dp;
+    bottom: 3dp;
+}
+
+/* LEFT: granular slider track; the fill grows up from the bottom (data-style-
+   height = sharePct%). Square; bg via utility in the .rml. */
+.share-gran {
+    margin-right: 4dp;
+}
+.share-gran-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: block;
+}
+
+/* RIGHT: preset chips spread top→bottom; fixed width so the granular column
+   takes the rest. Base bg via utility in the .rml; active accent overrides. */
+.share-presets {
+    width: 34dp;
+}
+.share-chip {
+    height: 16dp;
+    transition: background-color 0.08s quadratic-out;
+}

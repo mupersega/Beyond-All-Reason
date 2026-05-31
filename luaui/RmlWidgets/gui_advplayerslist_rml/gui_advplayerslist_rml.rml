@@ -1,0 +1,129 @@
+<rml>
+<head>
+    <title>AdvPlayerList RML</title>
+
+    <!-- Stylesheet order matters (do not reorder) -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="gui_advplayerslist_rml.rcss" type="text/rcss" />
+</head>
+<!-- No `rounded-lg` on the body: frame radius is owned by the style-mode radius
+     axis. Styling is utility-class / CCG only; the widget rcss carries layout
+     geometry only (anchor, name nowrap, collapse animation, rail pennant). -->
+<body id="gui_advplayerslist_rml-widget">
+    <!-- THE PANEL is the CONTAINER itself (dark bg + shadow + frame), so the
+         background spans the FULL width of the widget. Inside is a simple flex
+         row: a fixed-width RAIL + the flex-1 LIST. (Earlier the panel bg sat on
+         the flex-1 child only, leaving the rail's ~14dp column with no background
+         — the "not full width" bug. Putting the bg on the container fixes it.) -->
+    <div id="widget-container" class="px-dp pb-dp widget-shadow" data-model="gui_advplayerslist_rml_model" data-attr-class="my.panel">
+        <div class="flex">
+
+            <!-- RAIL — fixed width (w-3-5 = 14dp), transparent (shows the panel
+                 bg behind it), relative so the toggle HANDLE can ride a %-line
+                 vertically inside it. The handle is the only click target
+                 (onToggleAll); its wedge fill is pe-none. -->
+            <div data-attr-class="my.rail">
+                <div data-attr-class="my.railHandle + (openAll ? ' rail-open' : '')" data-event-click="onToggleAll()">
+                    <div class="rail-wedge bg-primary pe-none"></div>
+                </div>
+                <!-- CHEEKY gradient: transparent→dark overlay across the rail's bottom
+                     half, on top of the wedge; pe-none so clicks reach the handle. -->
+                <div class="rail-gradient bg-gradient pe-none"></div>
+            </div>
+
+            <!-- LIST — flex-1, fills the rest. Carries the canonical panel fill
+                 (ccg.panel.general) — NOT the container — so it matches the order
+                 menu / top bar while the rail to its left stays transparent and the
+                 tab reads as poking out. NOTE: layout classes MUST live INSIDE the
+                 data-attr-class expression — data-attr-class OVERWRITES the static
+                 `class` attribute, so a separate class="" would be dropped (that's
+                 what lost flex-1 and the full-width sizing). -->
+            <div id="list-panel" data-attr-class="ccg.panel.general + ' flex-1 block bg-darkest border-left border-dark-alpha'">
+                <div data-for="row : rows">
+
+                    <!-- Group label = per-section COLLAPSE TOGGLE. Scalar-
+                         compared-per-row → toggling re-evaluates classes WITHOUT
+                         reassigning the data-for array (reassignment recreates
+                         elements + kills the transition). -->
+                    <div data-if="row.isLabel" data-attr-class="my.label" data-event-click="onToggle(row.section)">
+                        <!-- no chevron; header text uses the theme PRIMARY colour -->
+                        <span class="text-xs text-upper text-primary font-bold">{{row.text}}</span>
+                    </div>
+
+                    <!-- Player / team / spectator row. Fixed-width slots, always
+                         present (placeholder when empty) so rows align. The
+                         row-collapsed class (animated via .prow's transition) is
+                         appended when this row's section is closed. -->
+                    <div data-if="row.isPlayer" data-attr-class="my.row + (row.section == 'allies' ? (openAllies ? '' : ' row-collapsed') : (row.section == 'enemies' ? (openEnemies ? '' : ' row-collapsed') : (row.section == 'specs' ? (openSpecs ? '' : ' row-collapsed') : (openPlayers ? '' : ' row-collapsed'))))">
+                        <!-- icon slot (reserved so names start at the same x) -->
+                        <div class="w-3 h-3 block">
+                            <img class="block w-3 h-3" data-if="row.hasSide" data-attr-src="row.sideIcon" />
+                        </div>
+
+                        <!-- Team colour: arbitrary runtime RGB via data-style-color
+                             (CONFIRMED in-game). NEVER add overflow-hidden to
+                             my.name — it makes the text vanish in this build. -->
+                        <span data-attr-class="my.name" data-style-color="row.nameColor">{{row.name}}</span>
+
+                        <!-- eco slot: fixed width (reserved even when empty). Each
+                             bar is press-hold to SHARE that resource. The clickable
+                             element is a TALLER (h-4, full row height) transparent
+                             hit target so it's easy to grab — the visible bar (my.bar,
+                             4dp) is centred inside it. mousedown begins the share aim
+                             (onShareStart re-checks the target is a living ally). -->
+                        <div class="w-11 flex justify-end items-center gap-1">
+                            <div data-if="row.showEco" class="share-hit flex items-center cursor-pointer" data-event-mousedown="onShareStart(row.team, row.name, 'metal')">
+                                <div data-attr-class="my.bar"><div class="block h-full bg-light" data-style-width="row.mPct + '%'"></div></div>
+                            </div>
+                            <div data-if="row.showEco" class="share-hit flex items-center cursor-pointer" data-event-mousedown="onShareStart(row.team, row.name, 'energy')">
+                                <div data-attr-class="my.bar"><div class="block h-full bg-warning" data-style-width="row.ePct + '%'"></div></div>
+                            </div>
+                        </div>
+
+                        <!-- info slot: ping|cpu (humans) OR AI marker, right-aligned -->
+                        <div class="w-8 text-right">
+                            <span class="text-xxs text-medium" data-if="row.showPingCpu">{{row.ping}}|{{row.cpu}}</span>
+                            <span class="text-xxs font-bold text-warning" data-if="row.isAI">AI</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- SHARE OVERLAY (shared, ONE element — never per-row). Fades in over
+             the whole panel while a bar is press-held. The gesture is tracked by
+             Spring mouse polling against this element's screen rect (see
+             shareOverlayRect / updateShareFrame), so the whole thing is pe-none.
+             LEFT half = granular slider (fill height = sharePct); RIGHT half =
+             preset chips (25/50/100, the active one highlighted via
+             sharePresetIdx). Header shows who + which resource + the live %. -->
+        <div id="share-overlay" data-attr-class="my.shareOverlay + (sharing ? ' share-on' : '')">
+            <div class="share-head text-center">
+                <div data-attr-class="'text-xs font-bold ' + shareAccentText">{{shareName}}</div>
+                <div class="text-xxs text-medium">{{shareLabel}} {{sharePct}}% &middot; {{shareAmount}}</div>
+            </div>
+            <div class="share-body flex">
+                <!-- LEFT: granular vertical slider; fill rises from the bottom -->
+                <div class="share-gran flex-1 relative bg-darkest-alpha">
+                    <div data-attr-class="shareAccent + ' share-gran-fill'" data-style-height="sharePct + '%'"></div>
+                </div>
+                <!-- RIGHT: preset chips, top→bottom = 100/50/25 (higher = more) -->
+                <div class="share-presets flex flex-col justify-between">
+                    <div data-attr-class="my.shareChip + (sharePresetIdx == 3 ? ' ' + shareAccent + ' text-darkest' : '')">100</div>
+                    <div data-attr-class="my.shareChip + (sharePresetIdx == 2 ? ' ' + shareAccent + ' text-darkest' : '')">50</div>
+                    <div data-attr-class="my.shareChip + (sharePresetIdx == 1 ? ' ' + shareAccent + ' text-darkest' : '')">25</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</rml>
