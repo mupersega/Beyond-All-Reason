@@ -39,7 +39,9 @@ local consoleElement
 local scrollAnchor
 local autoScroll = true
 local copiedTimer
-local copiedLineIndex
+local selAnchor       -- selection start line index (set on a plain click)
+local selFocus        -- selection end line index (set on click / shift-click)
+local copiedCount     -- number of lines in the last copy (for the COPIED badge)
 local copiedTextElement
 
 local L_DEPRECATED = LOG.DEPRECATED
@@ -144,11 +146,15 @@ local function flushToConsole()
 		lines = newLines
 	end
 
+	-- Selected range (sorted) — highlights every line the last copy grabbed.
+	local selLo, selHi = selAnchor, selFocus
+	if selLo and selHi and selLo > selHi then selLo, selHi = selHi, selLo end
+
 	-- Build RML: one <p> per line, each with an index attribute for click-to-copy
 	local parts = {}
 	for i, entry in ipairs(lines) do
 		local cls = "console-line"
-		if copiedLineIndex == i then
+		if selLo and i >= selLo and i <= selHi then
 			cls = cls .. " console-line-copied"
 		end
 		cls = cls .. entry.cls
@@ -190,6 +196,8 @@ local function initModel()
 
 		clearConsole = function()
 			lines = {}
+			selAnchor = nil
+			selFocus = nil
 			dirty = true
 		end,
 
@@ -221,15 +229,41 @@ local function initModel()
 		-- the actual clicked <p> (read its line-index), not the bound
 		-- container — the one legitimate use of target_element over
 		-- current_element (event delegation onto string-injected rows).
+		--
+		-- Plain click selects (and copies) a single line and sets it as the
+		-- anchor; shift+click extends the selection from that anchor to the
+		-- clicked line and copies the whole range. The shift state rides on
+		-- the click event itself (ev.parameters.shift_key, int 0/1) — the
+		-- engine dispatches EventId::Click with the key-modifier parameters.
 		copyLine = function(ev)
 			local el = ev and ev.target_element
 			local idx = el and tonumber(el:GetAttribute("line-index"))
-			if idx and lines[idx] then
-				Spring.SetClipboard(lines[idx].text)
-				copiedTimer = spGetTimer()
-				copiedLineIndex = idx
-				dirty = true
+			if not (idx and lines[idx]) then return end
+
+			local params = ev.parameters
+			local shift = params and (params.shift_key == 1 or params.shift_key == true)
+
+			if shift and selAnchor then
+				selFocus = idx               -- extend the existing selection
+			else
+				selAnchor = idx              -- start a fresh single-line selection
+				selFocus = idx
 			end
+
+			local lo, hi = selAnchor, selFocus
+			if lo > hi then lo, hi = hi, lo end
+
+			local textParts = {}
+			for i = lo, hi do
+				if lines[i] then textParts[#textParts + 1] = lines[i].text end
+			end
+			local text = table.concat(textParts, "\n")
+			if text ~= "" then
+				Spring.SetClipboard(text)
+				copiedTimer = spGetTimer()
+				copiedCount = #textParts
+			end
+			dirty = true
 		end,
 
 		onScroll = function()
@@ -288,7 +322,9 @@ function widget:Shutdown()
 	consoleElement = nil
 	scrollAnchor = nil
 	copiedTextElement = nil
-	copiedLineIndex = nil
+	selAnchor = nil
+	selFocus = nil
+	copiedCount = nil
 	lines = {}
 end
 
@@ -321,14 +357,16 @@ function widget:Update()
 		local elapsed = spDiffTimers(now, copiedTimer)
 		if elapsed >= 5 then
 			copiedTimer = nil
-			copiedLineIndex = nil
+			selAnchor = nil
+			selFocus = nil
+			copiedCount = nil
 			dm_handle.copiedAgo = ""
 			if copiedTextElement then
 				copiedTextElement:SetAttribute("style", "opacity: 1;")
 			end
 			flushToConsole()
 		else
-			dm_handle.copiedAgo = "COPIED"
+			dm_handle.copiedAgo = (copiedCount and copiedCount > 1) and ("COPIED " .. copiedCount) or "COPIED"
 			if copiedTextElement then
 				local opacity = 1.0 - (elapsed / 5.0)
 				copiedTextElement:SetAttribute("style", "opacity: " .. string.format("%.2f", opacity) .. ";")
