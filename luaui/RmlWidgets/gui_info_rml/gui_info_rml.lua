@@ -11,10 +11,11 @@
 -- values on FIXED elements: constant-length arrays (STAT_ROWS, TALLY_CELLS —
 -- blanks reserved, never grown/shrunk) and live scalars.
 --
--- LAYOUT (owner-directed, deduced from the siblings' hard-coded anchors):
---   build grid = left:0 bottom:150dp width:232dp ;  order menu = left:33vw
+-- LAYOUT (owner-directed, all hard-coded):
+--   build grid = left:0 bottom:140dp width:232dp (right edge 232dp = the tab edge);
+--   order menu = left:300dp (flush against this widget's right edge).
 --   order-menu height = 6 rows × round(18dp·dpRatio) + 5 gaps + 2 padding px.
--- → widget root: left:0 bottom:0 width:33vw height:140dp (== ROOT_H_DP;
+-- → widget root: left:0 bottom:0 width:300dp height:140dp (== ROOT_H_DP;
 --   transparent — NO bg on the widget). Tops out at 140dp → a 10dp gap below
 --   the grid (no overlap). The BACKGROUND lives ONLY on the lower info section,
 --   whose TOP edge is set to the order-menu height (the "line across"). A 232dp
@@ -34,6 +35,18 @@ end
 
 local widget = widget ---@type Widget
 local utils = VFS.Include("luaui/Include/rml_utilities/utils.lua")
+local svgShapes = VFS.Include("luaui/Include/rml_utilities/svg_shapes.lua")
+
+-- Decorative background texture: a MIRRORED PAIR of faint SVG tapers (svg_shapes —
+-- the rml_starter taper examples), generated ONCE and laid BEHIND the body content
+-- to break up the flat panel symmetrically. DARK fill (recedes as depth) at low
+-- opacity (set by the opacity utility on each element in the .rml). Static; bound
+-- via data-attr-src. A = side=right+flip (top-right cut, dark mass on the LEFT); B =
+-- side=left, no flip (bottom-left cut → a diagonal descending from the top-left down
+-- to the bottom). Each is confined to its OWN HALF in the .rcss (A left half, B
+-- right half) so they sit apart.
+local DECO_TAPER_A = svgShapes.taper({ side = "right", flip = true, depth = 55, fill = "rgb(0,0,0)", opacity = 1 })
+local DECO_TAPER_B = svgShapes.taper({ side = "left", depth = 55, fill = "rgb(0,0,0)", opacity = 1 })
 
 local WIDGET_ID = "gui_info_rml"
 local MODEL_NAME = "gui_info_rml_model"
@@ -372,6 +385,8 @@ local function initModel()
         mode = "none",
         bodyH = "108px",     -- lower-section height; set from dp ratio in pushSizes
         tabH = "8px",        -- bridge-tab height (rootH - bodyH); set in pushSizes
+        decoA = DECO_TAPER_A, -- faint background taper (texture); static
+        decoB = DECO_TAPER_B, -- its horizontal mirror (counterpart on the right)
         headerLabel = "",    -- unit name / "N units"
         ownerLabel = "",     -- owning player (unit mode)
 

@@ -19,15 +19,26 @@
 <body id="gui_info_rml-widget" class="pe-none">
     <div id="widget-container" data-model="gui_info_rml_model" class="pe-none">
 
-        <!-- BLANK notched bridge: 232dp = build-grid width, flush-left. Fills the
-             thin strip from the body's top up to the build grid. No text. -->
-        <div class="info-tab bg-dark" data-style-height="tabH">
+        <!-- ANGLED FLAG TAB (build-grid builder-flag motif): an oversized rotated
+             wedge (bg-primary) clipped to a clean diagonal right end via clip:always,
+             plus a subtle fade. 232dp = build-grid width, flush-left → its angled
+             right end sits at the grid's right edge; the wider body pokes out below.
+             The owner label rides on top of the flag. -->
+        <div class="info-tab" data-style-bottom="bodyH">
+            <div class="info-flag-clip pe-none"><div class="info-flag bg-primary pe-none"></div><div class="info-flag-fade bg-gradient-subtle-h pe-none"></div></div>
             <span class="info-tab-label text-xs text-light font-bold">{{ownerLabel}}</span>
         </div>
 
         <!-- LOWER INFO SECTION — the ONLY element with a background. Its TOP is
              set to the order-menu height (bodyH) so the line runs across. -->
         <div class="info-body" data-style-height="bodyH" data-attr-class="ccg.panel.general + ' info-body widget-shadow pe-none'">
+
+            <!-- Faint background TEXTURE: a MIRRORED PAIR of dark SVG tapers
+                 (svg_shapes taper) laid BEHIND the content (pe-none, low opacity) —
+                 A on the LEFT half, B (mirror) on the RIGHT half (see .rcss widths),
+                 so they sit apart. Tune presence via the opacity-* utility on each. -->
+            <svg data-attr-src="decoA" class="info-deco info-deco-a pe-none opacity-10" />
+            <svg data-attr-src="decoB" class="info-deco info-deco-b pe-none opacity-10" />
 
             <!-- SINGLE UNIT -->
             <div class="info-pane" data-visible="mode == 'unit'">

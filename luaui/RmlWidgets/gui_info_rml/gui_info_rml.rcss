@@ -10,16 +10,18 @@
      - `.info-tab` is a 232dp bridge (= build-grid width, flush-left) carrying the
        owner; fills from the body's top up to the widget top (140dp). SQUARE.
 
-   POSITION (deduced from the siblings' hard-coded anchors):
-     build grid = left:0 bottom:150dp width:232dp ;  order menu = left:33vw.
-     The info widget tops out at 140dp → a 10dp gap below the grid (no overlap). */
+   POSITION (all hard-coded, owner-directed):
+     build grid = left:0 bottom:140dp width:232dp (right edge = 232dp).
+     The 232dp tab's right edge aligns with the build grid's right edge (the notch).
+     This widget's body is a little wider (300dp); the order menu sits FLUSH against
+     its right edge at left:300dp. The info tops out at 140dp → 10dp gap below grid. */
 
 #gui_info_rml-widget {
     position: absolute;
     left: 0;
     bottom: 0;
-    width: 33vw;        /* span across to the order menu (left:33vw) */
-    height: 140dp;      /* up to the build grid's (moved-up) bottom edge; keep == ROOT_H_DP */
+    width: 300dp;       /* hard-coded: a little wider than the 232dp tab/grid edge; order menu docks flush at left:300dp */
+    height: 140dp;      /* up to the build grid's bottom edge; keep == ROOT_H_DP */
     display: block;
     pointer-events: none;
 }
@@ -33,31 +35,89 @@
     pointer-events: none;
 }
 
-/* The bridge tab. top:0 = info-widget top (a gap below the build grid);
-   height = tabH (data-style) fills from the body's top up to the widget top.
-   232dp = build-grid width, flush-left so they align. SQUARE — no radius
-   (owner). Carries the owning player. Fill = bg-dark utility (.rml). */
+/* The bridge tab — an ANGLED FLAG (build-grid builder-flag motif, Decoration
+   Pattern #2). FIXED 24dp tall, BOTTOM-anchored on the order-menu line via
+   data-style-bottom="bodyH" so it pokes UP exactly 24dp from the body's top — the
+   body stays locked to the order-menu height (the "line across"). The BUILD GRID is
+   lowered to rest on this flag's top (= order-menu height + 24dp). 24dp keeps the
+   wedge's top:-118dp centering EXACT. WIDTH 300dp = the clip box for the wedge (the
+   alignment lever for the diagonal, NOT the child `right`). NO bg / NO radius. */
 .info-tab {
+    position: absolute;
+    left: 0;
+    bottom: 108px;       /* fallback ≈ body top; data-style-bottom="bodyH" drives it live */
+    width: 300dp;
+    height: 24dp;
+    display: flex;
+    align-items: center;
+}
+/* FLAG clip box — fills the tab (inset 0); clip:always trims the oversized rotated
+   wedge to a clean diagonal (transformed children escape plain overflow — the
+   documented force-clip). Absolute + first child → paints BEHIND the label; pe-none. */
+.info-flag-clip {
     position: absolute;
     top: 0;
     left: 0;
-    width: 232dp;
-    display: flex;
-    align-items: center;
+    right: 0;
+    bottom: 0;
+    clip: always;
+}
+/* The wedge: an OVERSIZED square rotated so its edge becomes the flag's diagonal
+   RIGHT end after the clip. Fill = bg-primary (.rml), matching the build-grid flag.
+   TUNABLES (guess-and-check): transform:rotate() = the ANGLE; `right` = where the
+   diagonal falls — in THIS config SMALLER `right` moves the diagonal LEFT (owner-
+   confirmed in-game; this is the OPPOSITE of what the build-grid flag's comment
+   claims, so trust this one); `top` = -(width - tabH)/2 to vertically centre the
+   wedge (tabH ≈ 25dp → -118dp). */
+.info-flag {
+    position: absolute;
+    width: 260dp;
+    height: 260dp;
+    top: -118dp;
+    right: 80dp;
+    transform: rotate(-28deg);
+}
+/* Subtle left→right fade over the flag (build-grid trick); same inset box; pe-none. */
+.info-flag-fade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 .info-tab-label {
     padding-left: 8dp;
 }
 
 /* LOWER INFO SECTION — the ONLY element with a background (ccg.panel.general
-   in the .rml). bottom:0; height = bodyH (data-style) → top aligns with the
-   order menu. It is the positioning context for the two overlaid panes. */
+   in the .rml). bottom:0; height = bodyH (data-style) = the order-menu height, so
+   its TOP sits exactly on the order-menu line ("one line across"). Positioning
+   context for the two overlaid panes. */
 .info-body {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
     /* height set via data-style-height="bodyH" */
+}
+
+/* Faint decorative tapers (texture) in the body bg — absolute, BEHIND the content
+   (first children → DOM paint order), pe-none. A MIRRORED PAIR, each confined to
+   its OWN HALF (no overlap): A on the left half, B (mirror) on the right half →
+   they sit apart and read as a symmetric pair. Opacity set by the opacity-* utility
+   in the .rml. The svg scales to fill its box (viewBox). */
+.info-deco {
+    position: absolute;
+    top: 0;
+    height: 100%;
+}
+.info-deco-a {
+    left: 0;
+    width: 50%;
+}
+.info-deco-b {
+    right: 0;
+    width: 50%;
 }
 
 /* Two persistent panes overlaid in the body (absolute → overlap, no summing);
