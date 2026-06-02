@@ -165,6 +165,12 @@
 .bg-gradient-subtle-h {
     decorator: linear-gradient(90deg, #1d1d1d66 0%, #1d1d1d00 100%);
 }
+/* Stronger, less-dark horizontal counterpart: ~80% of the lighter `dark` grey
+   (#4a4a4a, not the near-black darkest) at the LEFT → transparent at the RIGHT
+   (90deg). A more present but softer (less black) left-to-right fade. */
+.bg-gradient-dark-h {
+    decorator: linear-gradient(90deg, #4a4a4acc 0%, #4a4a4a00 100%);
+}
 .bg-gradient-light {
     decorator: linear-gradient(150deg, #e5e7eb00 0%, #e5e7eb80 100%);
 }

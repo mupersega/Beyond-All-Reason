@@ -2,9 +2,10 @@
    LAYOUT ONLY — all colour comes from utility classes in the .rml (per
    doctrine: never hard-code colours in widget RCSS).
 
-   Bottom-CENTRE-LEFT: sits along the bottom edge, left of screen centre
-   (roughly where the FlowUI order menu lived, beside the centred build menu).
-   `left` is in vw so it stays proportional across resolutions.
+   Bottom-left cluster: sits along the bottom edge FLUSH against the right edge of
+   the info widget (info is left:0 width:300dp → this docks at left:300dp). All
+   hard-coded (owner-directed); the info widget, this, and the unit-groups strip
+   form one contiguous bottom band.
 
    PX-SNAP SPACING (build-grid style, gui_gridmenu_rml): the slot width/height
    come from the model as INTEGER px (data-style cellW/cellH, computed from the dp
@@ -16,7 +17,7 @@
 
 #gui_ordermenu_rml-widget {
     position: absolute;
-    left: 33vw;
+    left: 300dp;         /* flush against the info widget's right edge (info width = 300dp) */
     bottom: 0;
     width: 312dp;        /* upper-bound box (≥ dynamic panelW); the px panel sits inside, height auto */
     display: block;      /* no height → auto-sizes to the dynamic-px panel (grows up from bottom:0) */
