@@ -46,7 +46,7 @@
                  data-attr-class expression — data-attr-class OVERWRITES the static
                  `class` attribute, so a separate class="" would be dropped (that's
                  what lost flex-1 and the full-width sizing). -->
-            <div id="list-panel" data-attr-class="ccg.panel.general + ' flex-1 block bg-darkest border-left border-dark-alpha'">
+            <div id="list-panel" data-attr-class="ccg.panel.general + ' flex-1 block relative bg-darkest border-left border-dark-alpha'">
                 <div data-for="row : rows">
 
                     <!-- Group label = per-section COLLAPSE TOGGLE. Scalar-
@@ -62,7 +62,7 @@
                          present (placeholder when empty) so rows align. The
                          row-collapsed class (animated via .prow's transition) is
                          appended when this row's section is closed. -->
-                    <div data-if="row.isPlayer" data-attr-class="my.row + (row.section == 'allies' ? (openAllies ? '' : ' row-collapsed') : (row.section == 'enemies' ? (openEnemies ? '' : ' row-collapsed') : (row.section == 'specs' ? (openSpecs ? '' : ' row-collapsed') : (openPlayers ? '' : ' row-collapsed'))))">
+                    <div data-if="row.isPlayer" data-attr-class="my.row + (spaceHeld ? '' : (row.section == 'allies' ? (openAllies ? '' : ' row-collapsed') : (row.section == 'enemies' ? (openEnemies ? '' : ' row-collapsed') : (row.section == 'specs' ? (openSpecs ? '' : ' row-collapsed') : (openPlayers ? '' : ' row-collapsed')))))">
                         <!-- icon slot (reserved so names start at the same x) -->
                         <div class="w-3 h-3 block">
                             <img class="block w-3 h-3" data-if="row.hasSide" data-attr-src="row.sideIcon" />
@@ -73,18 +73,29 @@
                              my.name — it makes the text vanish in this build. -->
                         <span data-attr-class="my.name" data-style-color="row.nameColor">{{row.name}}</span>
 
-                        <!-- eco slot: fixed width (reserved even when empty). Each
-                             bar is press-hold to SHARE that resource. The clickable
-                             element is a TALLER (h-4, full row height) transparent
-                             hit target so it's easy to grab — the visible bar (my.bar,
-                             4dp) is centred inside it. mousedown begins the share aim
-                             (onShareStart re-checks the target is a living ally). -->
-                        <div class="w-11 flex justify-end items-center gap-1">
-                            <div data-if="row.showEco" class="share-hit flex items-center cursor-pointer" data-event-mousedown="onShareStart(row.team, row.name, 'metal')">
-                                <div data-attr-class="my.bar"><div class="block h-full bg-light" data-style-width="row.mPct + '%'"></div></div>
+                        <!-- eco slot (reserved even when empty): METAL bar then ENERGY bar,
+                             SIDE BY SIDE. Each bar shares that resource. The picker OPENS on
+                             MOUSEDOWN so it pops the INSTANT you press (before any drag), but the
+                             gesture itself is the RmlUi drag: drag aims (we also poll the cursor
+                             in widget:Update), and it FINISHES on dragend (a real drag) OR mouseup
+                             (a plain click that never crossed the drag threshold). onShareDragStart
+                             is guarded so the later dragstart doesn't re-open. -->
+                        <div class="w-16 flex justify-end items-center gap-1">
+                            <div data-if="row.showEco" class="share-hit flex items-center cursor-pointer"
+                                 data-event-mousedown="onShareDragStart(row.team, row.name, 'metal')"
+                                 data-event-dragstart="onShareDragStart(row.team, row.name, 'metal')"
+                                 data-event-drag="onShareDrag()"
+                                 data-event-dragend="onShareDragEnd()"
+                                 data-event-mouseup="onShareDragEnd()">
+                                <div class="share-bar bg-dark w-full"><div class="share-bar-fill bg-light" data-style-width="row.mPct + '%'"></div></div>
                             </div>
-                            <div data-if="row.showEco" class="share-hit flex items-center cursor-pointer" data-event-mousedown="onShareStart(row.team, row.name, 'energy')">
-                                <div data-attr-class="my.bar"><div class="block h-full bg-warning" data-style-width="row.ePct + '%'"></div></div>
+                            <div data-if="row.showEco" class="share-hit flex items-center cursor-pointer"
+                                 data-event-mousedown="onShareDragStart(row.team, row.name, 'energy')"
+                                 data-event-dragstart="onShareDragStart(row.team, row.name, 'energy')"
+                                 data-event-drag="onShareDrag()"
+                                 data-event-dragend="onShareDragEnd()"
+                                 data-event-mouseup="onShareDragEnd()">
+                                <div class="share-bar bg-dark w-full"><div class="share-bar-fill bg-warning" data-style-width="row.ePct + '%'"></div></div>
                             </div>
                         </div>
 
@@ -96,31 +107,49 @@
                     </div>
 
                 </div>
-            </div>
-        </div>
 
-        <!-- SHARE OVERLAY (shared, ONE element — never per-row). Fades in over
-             the whole panel while a bar is press-held. The gesture is tracked by
-             Spring mouse polling against this element's screen rect (see
-             shareOverlayRect / updateShareFrame), so the whole thing is pe-none.
-             LEFT half = granular slider (fill height = sharePct); RIGHT half =
-             preset chips (25/50/100, the active one highlighted via
-             sharePresetIdx). Header shows who + which resource + the live %. -->
-        <div id="share-overlay" data-attr-class="my.shareOverlay + (sharing ? ' share-on' : '')">
-            <div class="share-head text-center">
-                <div data-attr-class="'text-xs font-bold ' + shareAccentText">{{shareName}}</div>
-                <div class="text-xxs text-medium">{{shareLabel}} {{sharePct}}% &middot; {{shareAmount}}</div>
-            </div>
-            <div class="share-body flex">
-                <!-- LEFT: granular vertical slider; fill rises from the bottom -->
-                <div class="share-gran flex-1 relative bg-darkest-alpha">
-                    <div data-attr-class="shareAccent + ' share-gran-fill'" data-style-height="sharePct + '%'"></div>
-                </div>
-                <!-- RIGHT: preset chips, top→bottom = 100/50/25 (higher = more) -->
-                <div class="share-presets flex flex-col justify-between">
-                    <div data-attr-class="my.shareChip + (sharePresetIdx == 3 ? ' ' + shareAccent + ' text-darkest' : '')">100</div>
-                    <div data-attr-class="my.shareChip + (sharePresetIdx == 2 ? ' ' + shareAccent + ' text-darkest' : '')">50</div>
-                    <div data-attr-class="my.shareChip + (sharePresetIdx == 1 ? ' ' + shareAccent + ' text-darkest' : '')">25</div>
+                <!-- SHARE POPUP (shared, ONE element — never per-row). A compact box that
+                     re-anchors ABOVE the dragged bar each dragstart: it's an absolute child
+                     of #list-panel (position:relative) and its left/top come from the model
+                     (popupLeft/popupTop, context px; rcss margins centre it on the bar and
+                     lift it fully above). pe-none: the gesture runs off RmlUi drag events +
+                     a Spring-cursor poll, never RmlUi click input. Shown via `sharing`
+                     (data-if). TOP = green readout (live amount); below = granular control
+                     (left) + preset chips 25/50/75/100 (right); the inactive control dims. -->
+                <div id="share-overlay" data-if="sharing" data-attr-class="my.shareOverlay + ' ' + shareAccent + (sharing ? ' share-in' : '')"
+                     data-style-left="popupLeft + 'px'" data-style-top="popupTop + 'px'">
+                    <!-- READOUT: the live amount — shareAccentText flips for contrast on the
+                         panel (light on the metal texture, dark on the energy yellow). -->
+                    <div data-attr-class="'share-readout text-center text-xs font-bold ' + shareAccentText">{{shareAmount}}</div>
+                    <div class="share-body flex">
+                        <!-- LEFT: granular slider (flex-1). A recessed dark WELL (bg-darkest, darker
+                             than the panel) is the housing — it NEVER changes. The resource-coloured
+                             fill rises from the bottom within it (its rendered height IS the drag
+                             travel, read in Lua, so it tracks the cursor 1:1 — hence the id), and only
+                             the FILL ghosts (share-dim) when the preset side is aimed, never the well. -->
+                        <div id="share-gran-track" class="share-gran flex-1 relative bg-darkest">
+                            <!-- the FILL is the ACTIVE RAIL PART; its border breathes ONLY while the
+                                 rail (granular) is the side being aimed (data-if), so the pulse follows
+                                 the selected side. The well bg stays constant. -->
+                            <div data-attr-class="shareFill + ' share-gran-fill' + (shareZone == 'granular' ? '' : ' share-dim')" data-style-height="sharePct + '%'">
+                                <div class="share-pulse border-light" data-if="shareZone == 'granular'"></div>
+                            </div>
+                        </div>
+                        <!-- RIGHT: preset chips (flex-1) top→bottom = 100/75/50/25 (higher = more;
+                             position only, no numbers). Same constant dark WELL (bg-darkest housing).
+                             Every chip ALWAYS carries the resource fill but sits at a ghosted opacity
+                             (share-dim) so the presets are already visible — they don't pop in from
+                             nowhere; selecting just brightens them to full, cumulatively from the bottom
+                             up to sharePresetIdx (so 75 lights 25+50+75). The well never changes. EACH
+                             chip carries its OWN breathing border, shown only while the preset side is
+                             aimed (data-if), so the pulse follows the selected side per-chip. -->
+                        <div class="share-presets flex-1 flex flex-col bg-darkest">
+                            <div data-attr-class="'share-chip flex-1 relative ' + shareFill + ((shareZone == 'preset' && sharePresetIdx >= 4) ? '' : ' share-dim')"><div class="share-pulse border-light" data-if="shareZone == 'preset'"></div></div>
+                            <div data-attr-class="'share-chip flex-1 relative ' + shareFill + ((shareZone == 'preset' && sharePresetIdx >= 3) ? '' : ' share-dim')"><div class="share-pulse border-light" data-if="shareZone == 'preset'"></div></div>
+                            <div data-attr-class="'share-chip flex-1 relative ' + shareFill + ((shareZone == 'preset' && sharePresetIdx >= 2) ? '' : ' share-dim')"><div class="share-pulse border-light" data-if="shareZone == 'preset'"></div></div>
+                            <div data-attr-class="'share-chip flex-1 relative ' + shareFill + ((shareZone == 'preset' && sharePresetIdx >= 1) ? '' : ' share-dim')"><div class="share-pulse border-light" data-if="shareZone == 'preset'"></div></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

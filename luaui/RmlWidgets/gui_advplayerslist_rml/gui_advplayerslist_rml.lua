@@ -15,9 +15,13 @@
 -- section header toggles just its own section. Driven by top-level open* scalars
 -- compared per-row (no array reassignment → animates cleanly).
 --
--- DELIBERATELY DEFERRED (v2): resource SHARING (the drag-to-share gesture was
--- prototyped then pulled back to stabilise this baseline — rebuild separately),
--- column show/hide & reorder, rank icons, country flags, TrueSkill, alliances,
+-- Resource SHARING: press-hold an ally's metal/energy bar and DRAG — up sets the
+-- amount, a rightward drift switches from the granular slider to preset bands
+-- (25/50/75/100); release shares that % of your stock. See the share gesture
+-- section below.
+--
+-- DELIBERATELY DEFERRED (v2): column show/hide & reorder, rank icons, country
+-- flags, TrueSkill, alliances,
 -- camera-lock/tracked dot, map-draw markers, FPS/GPU/system tooltips, anonymous
 -- mode, leaderboard ranking, auto-compress at high counts, dead/resigned "take"
 -- rows, scroll past ~10 players, and publishing WG['advplayerlist_api'] (the
@@ -41,6 +45,8 @@ local RML_PATH = "luaui/RmlWidgets/gui_advplayerslist_rml/gui_advplayerslist_rml
 
 local document
 local dm_handle
+local listPanelEl   -- #list-panel ref; the share popup's offset parent (for placement)
+local granEl        -- #share-gran-track ref; its rendered height IS the drag travel
 
 -- Localised Spring API (per the original's perf convention)
 local spGetPlayerList = Spring.GetPlayerList
@@ -89,11 +95,16 @@ local sinceStruct = 0
 local sinceLive = 0
 local structDirty = true
 
--- Section collapse state (Lua source-of-truth; mirrored to dm_handle.openX
--- scalars that the per-row class expressions compare against). Default all OPEN.
--- `all` is the MASTER (left rail): collapses/expands every section at once.
--- Per-section scalars still toggle just their own section.
-local openState = { all = true, allies = true, enemies = true, specs = true, players = true }
+-- Section collapse state (Lua source-of-truth; mirrored to dm_handle.openX scalars
+-- the per-row class expressions compare against). Default all CLOSED — the list rests
+-- collapsed (section headers only); you HOLD SPACE to peek it fully open, or click a
+-- header to pin one section. A row is shown OPEN when (spaceHeld OR openState[section]),
+-- so the SPACE master takes precedence without a separate "all" latch fighting the
+-- per-section states. `all` only mirrors the rail's expand-all/collapse-all visual.
+local openState = { all = false, allies = false, enemies = false, specs = false, players = false }
+-- SPACE held → momentary master "peek all open" (precedence over the per-section states).
+local spaceHeld = false
+local SPACE_KEYCODE = (Spring.GetKeyCode and Spring.GetKeyCode("space")) or 32
 
 -- After a collapse toggle we briefly suppress the live rows-array push so an
 -- eco/ping refresh can't reassign the data-for array and recreate the rows
@@ -103,24 +114,33 @@ local TOGGLE_SUPPRESS = 0.3
 local pushSuppressTimer = 0
 
 -- ── share gesture state ────────────────────────────────────────────────────
--- Press-hold a player's metal/energy BAR → share mode (overlay over the list).
--- Cursor in the LEFT half of the overlay = granular vertical slider; RIGHT half =
--- preset bands (25/50/100, bottom→top). Release shares that % of MY current stock
--- to that ally. Polled in widget:Update between the bar mousedown and LMB release.
--- Geometry: read the overlay's absolute screen rect (same method as
--- gfx_rml_guishader_bridge) and compare to Spring.GetMouseState (both y-up px).
+-- DRAG an ally's metal/energy BAR → share picker (overlay over the list). The bar
+-- opts into RmlUi DRAG EVENTS with `drag: drag` in rcss: dragstart REVEALS the
+-- picker, dragend COMMITS. RmlUi only starts a drag once the cursor moves past its
+-- own threshold, so a plain click never opens it. The AIM is tracked from
+-- Spring.GetMouseState (px, y-up — the proven, dp-immune source) as a RELATIVE
+-- delta from the dragstart origin; it's updated both on the `drag` event AND polled
+-- in widget:Update while dragging (so tracking can't silently fail), and a button-up
+-- poll self-heals the finish if a `dragend` is ever missed.
+-- The X axis PICKS the control around the bar's CENTRE (= the popup middle): cursor
+-- LEFT → granular, RIGHT → preset. The two controls sit FLUSH (no middle track);
+-- SHARE_PICK_X is just a tiny hysteresis so the pick doesn't flicker at the boundary.
+-- The Y axis sets the amount (0→100% over the control's height). The shared amount
+-- is % of MY CURRENT (live) stock — read every frame, so it tracks my metal/energy
+-- as it moves, NOT frozen at dragstart. Release shares it to that ally (clamped to
+-- the receiver's free storage).
 local spGetMouseState = Spring.GetMouseState
 local spShareResources = Spring.ShareResources
-local spGetViewGeometry = Spring.GetViewGeometry
 local mathMax = math.max
-local SHARE_PRESETS = { 25, 50, 100 }   -- ascending; custom preset deferred (owner)
-local SHARE_DEADZONE = 6   -- px from the press point before any amount registers
-local shareActive = false
-local shareTeam, shareKind, shareStock
+local SHARE_PRESETS = { 25, 50, 75, 100 }   -- ascending; bottom→top in the chip column
+local SHARE_TRAVEL = 80      -- FALLBACK px (first frame); real travel = granular control's rendered height
+local SHARE_PICK_X = 2       -- px hysteresis each side of the bar centre (anti-flicker; no neutral)
+local shareDragging = false  -- true between dragstart and dragend (suppresses row refresh)
+local shareTeam, shareKind
 local sharePct = 0
-local shareOriginX, shareOriginY   -- where the press began (for the dead-zone)
-local shareEngaged = false         -- has the cursor left the dead-zone yet?
-local sharePrevLmb = false
+local shareZone = "granular" -- 'granular' | 'preset' (left/right of the bar centre)
+local shareStartY            -- press point Y (Spring px) — the Y origin for the amount
+local shareCenterX           -- dragged bar's CENTRE x (Spring px) — the X origin for the pick split
 
 -- ── helpers ───────────────────────────────────────────────────────────────
 
@@ -424,16 +444,10 @@ local function shareEligible(team)
 	return recvAlly == spGetMyAllyTeamID()
 end
 
--- Overlay screen rect in y-up Spring PIXELS (matches Spring.GetMouseState).
--- Method copied from gfx_rml_guishader_bridge (the proven one): RmlUi has NO
--- absolute_left/top, so walk offset_left/offset_top up the offset_parent chain,
--- then flip Y (RmlUi top-down → Spring bottom-up). The bridge treats RmlUi
--- context px as Spring screen px (no dp multiply), so we match it. Returns
--- left, bottom, width, height — or nil if the element/geometry isn't ready.
-local function shareOverlayRect()
-	if not document then return nil end
-	local el = document:GetElementById("share-overlay")
-	if not el then return nil end
+-- Top-left of `el` in RmlUi context px (the proven guishader-bridge walk up the
+-- offset_parent chain). rml-dom-escape: element geometry can't be expressed via
+-- data binding; we read offsets to place the absolutely-positioned popup.
+local function rootOffset(el)
 	local x, y = 0, 0
 	local node = el
 	while node do
@@ -446,96 +460,122 @@ local function shareOverlayRect()
 		end
 		node = parent
 	end
-	local w, h = el.offset_width or 0, el.offset_height or 0
-	if w <= 0 or h <= 0 then return nil end
-	local _, vsy = spGetViewGeometry()
-	return x, vsy - (y + h), w, h   -- left, bottom (y-up), width, height
+	return x, y
 end
 
--- Begin a share aim on a bar press. Eligibility is re-derived here; an ineligible
--- target (self / enemy / dead / spectating) simply no-ops, so the overlay only
--- opens for valid recipients.
-local function startShare(team, name, kind)
+-- Place the popup CENTERED above the dragged bar. The popup is an absolute child of
+-- #list-panel, so its left/top are relative to #list-panel: (bar - listPanel) in
+-- context px. We set left to the bar's CENTRE x (the rcss margin-left:-half-width
+-- centres it) and top to the bar's top (the rcss margin-top lifts it fully above).
+-- We also stash the bar centre in SCREEN px (rootOffset x == Spring x) as the X
+-- origin for the granular/preset pick split, so it maps to the popup middle no
+-- matter WHERE on the bar the drag began.
+local function placePopupAbove(barEl)
+	if not (barEl and listPanelEl) then return end
+	local bx, by = rootOffset(barEl)
+	local lx, ly = rootOffset(listPanelEl)
+	local halfW = (barEl.offset_width or 0) * 0.5
+	dm_handle.popupLeft = bx - lx + halfW
+	dm_handle.popupTop = by - ly
+	shareCenterX = bx + halfW
+	-- Y base for the amount = the bar's TOP edge (a FIXED reference, NOT the variable press
+	-- point). `by` is context px (y-down from the screen top); flip to Spring px (y-up) with
+	-- vsy - by. The well sits directly above the bar, so basing here aligns the fill's top
+	-- edge with the cursor 1:1, the same no matter where on the 16dp bar the press landed.
+	local _, vsy = Spring.GetViewGeometry()
+	shareStartY = vsy - by
+end
+
+-- DRAGSTART on a bar → open the picker above THAT bar. Eligibility is re-derived
+-- here; an ineligible target (self / enemy / dead / spectating) no-ops. The Y origin
+-- (for the amount) comes from Spring.GetMouseState; the X origin (for the pick split)
+-- is the bar centre, captured in placePopupAbove.
+local function shareDragBegin(ev, team, name, kind)
+	if shareDragging then return end   -- already open (mousedown started it; ignore the later dragstart)
 	if not shareEligible(team) then return end
+	shareStartY = select(2, spGetMouseState())   -- fallback Y base (press point); placePopupAbove
+	placePopupAbove(ev and (ev.current_element or ev.target_element))   -- overrides w/ the bar's TOP edge
 	shareTeam, shareKind = team, kind
-	shareStock = spGetTeamResources(spGetMyTeamID(), kind) or 0
 	sharePct = 0
-	shareActive = true
-	-- Capture the press point + a NOT-engaged flag. The overlay opens at 0% and
-	-- stays neutral until the cursor leaves the dead-zone; a plain click (press +
-	-- release without moving) therefore commits NOTHING — you must drag to aim.
-	shareOriginX, shareOriginY = spGetMouseState()
-	shareEngaged = false
-	sharePrevLmb = true            -- the button is down right now (this IS the press)
-	dm_handle.sharing = true
+	shareZone = "granular"
+	shareDragging = true
+	dm_handle.sharing = true       -- reveal the picker now that a drag has begun
 	dm_handle.shareName = name or "?"
 	dm_handle.shareLabel = (kind == "metal") and "Metal" or "Energy"
-	dm_handle.shareAccent = (kind == "metal") and "bg-light" or "bg-warning"
-	dm_handle.shareAccentText = (kind == "metal") and "text-light" or "text-warning"
+	-- Panel = a neutral gray a step LIGHTER than the list (bg-dark vs the list's
+	-- bg-darkest) + a radial vignette. The bar + selected preset chips (shareFill) use the
+	-- RESOURCE colour — metal = light (with the scratched metal texture, whose dark scratches
+	-- read nicely on the light base), energy = warning yellow. Readout is LIGHT text on the
+	-- gray panel. Same panel for both resources.
+	dm_handle.shareAccent = "bg-dark radial-focus-center-feint"
+	dm_handle.shareFill = (kind == "metal") and "bg-light metal-texture" or "bg-warning"
+	dm_handle.shareAccentText = "text-light"
 	dm_handle.sharePct = 0
 	dm_handle.shareAmount = "0"
 	dm_handle.shareZone = "granular"
 	dm_handle.sharePresetIdx = 0
 end
 
-local function endShare(commit)
-	if not shareActive then return end
-	shareActive = false
-	sharePrevLmb = false
+-- Aim update — relative delta from the dragstart origin, read from Spring (px,
+-- y-up: dragging UP increases y, so dy = my - startY is positive for up). Called
+-- both from the RmlUi `drag` event AND polled in widget:Update while dragging.
+local function shareDragMove()
+	if not shareDragging then return end
+	local mx, my = spGetMouseState()
+	local dx = mx - (shareCenterX or mx)   -- X relative to the BAR CENTRE (= popup middle)
+	local dy = my - (shareStartY or my)     -- Y relative to the bar's TOP edge (fixed base = amount)
+	-- X axis PICKS the control: left of the bar centre → granular, right → preset. The
+	-- two controls sit flush; SHARE_PICK_X is a tiny hysteresis so it doesn't flicker
+	-- right at the boundary. No neutral middle.
+	if dx >= SHARE_PICK_X then
+		shareZone = "preset"
+	elseif dx <= -SHARE_PICK_X then
+		shareZone = "granular"
+	end
+	-- Y axis = amount; travel is the granular control's OWN rendered height (context px
+	-- = Spring px) so the fill tracks the cursor 1:1 — drag up by the control's height
+	-- to go 0→100%. Fall back to the constant for the first frame (before the just-shown
+	-- popup has been laid out and offset_height is still 0).
+	local travel = (granEl and granEl.offset_height) or 0
+	if travel <= 0 then travel = SHARE_TRAVEL end
+	local frac = dy / travel
+	if frac < 0 then frac = 0 elseif frac > 1 then frac = 1 end
+	if shareZone == "preset" then
+		-- Preset bands (bottom→top = ascending presets).
+		local n = #SHARE_PRESETS
+		local idx = mathFloor(frac * n) + 1
+		if idx < 1 then idx = 1 elseif idx > n then idx = n end
+		sharePct = SHARE_PRESETS[idx]
+		dm_handle.shareZone = "preset"
+		dm_handle.sharePresetIdx = idx
+	else
+		sharePct = mathFloor(frac * 100 + 0.5)
+		dm_handle.shareZone = "granular"
+		dm_handle.sharePresetIdx = 0
+	end
+	dm_handle.sharePct = sharePct
+	-- LIVE amount: % of my CURRENT stock (read every frame), so the number tracks my
+	-- metal/energy as it changes — never frozen at dragstart.
+	local stock = spGetTeamResources(spGetMyTeamID(), shareKind) or 0
+	dm_handle.shareAmount = tostring(mathFloor(stock * sharePct / 100))
+end
+
+-- DRAGEND → hide the picker and commit (clamped to the receiver's free storage).
+-- Commits only if a non-zero % was aimed (a tap with no upward drag → 0 → no-op).
+-- The committed amount is % of my stock AT RELEASE (read live), matching the readout.
+local function shareDragFinish()
+	if not shareDragging then return end
+	shareDragging = false
 	dm_handle.sharing = false
-	if commit and shareTeam and shareEligible(shareTeam) and sharePct > 0 then
-		local amount = mathFloor((shareStock or 0) * sharePct / 100)
+	if shareTeam and shareEligible(shareTeam) and sharePct > 0 then
+		local stock = spGetTeamResources(spGetMyTeamID(), shareKind) or 0
+		local amount = mathFloor(stock * sharePct / 100)
 		local rcur, rstor = spGetTeamResources(shareTeam, shareKind)
 		local free = (rstor and rcur) and mathMax(0, rstor - rcur) or amount
 		if amount > free then amount = mathFloor(free) end
 		if amount > 0 then spShareResources(shareTeam, shareKind, amount) end
 	end
-	shareTeam, shareKind, shareStock, sharePct = nil, nil, 0, 0
-	shareEngaged = false
-end
-
--- Polled each frame while sharing. LEFT half = granular (vertical 0-100%), RIGHT
--- half = nearest preset band. Release (LMB up) commits; right-click cancels.
-local function updateShareFrame()
-	local mx, my, lmb, _, rmb = spGetMouseState()
-	if rmb then endShare(false); return end
-	-- Dead-zone: until the cursor moves SHARE_DEADZONE px from the press point,
-	-- stay neutral (0%). This is what stops a plain click from committing — you
-	-- must deliberately drag to engage the picker.
-	if not shareEngaged then
-		local dx = mx - (shareOriginX or mx)
-		local dy = my - (shareOriginY or my)
-		if (dx * dx + dy * dy) >= (SHARE_DEADZONE * SHARE_DEADZONE) then
-			shareEngaged = true
-		end
-	end
-	if shareEngaged then
-		local rx, ry, rw, rh = shareOverlayRect()
-		if rw and rw > 0 then
-			local frac = (my - ry) / rh           -- 0 at bottom, 1 at top
-			if frac < 0 then frac = 0 elseif frac > 1 then frac = 1 end
-			if (mx - rx) < rw * 0.5 then
-				-- LEFT: granular slider
-				sharePct = mathFloor(frac * 100 + 0.5)
-				dm_handle.shareZone = "granular"
-				dm_handle.sharePresetIdx = 0
-			else
-				-- RIGHT: preset bands (bottom→top = ascending presets)
-				local n = #SHARE_PRESETS
-				local idx = mathFloor(frac * n) + 1
-				if idx < 1 then idx = 1 elseif idx > n then idx = n end
-				sharePct = SHARE_PRESETS[idx]
-				dm_handle.shareZone = "preset"
-				dm_handle.sharePresetIdx = idx
-			end
-			dm_handle.sharePct = sharePct
-			dm_handle.shareAmount = tostring(mathFloor((shareStock or 0) * sharePct / 100))
-		end
-	end
-	-- Release: commit only if engaged AND a non-zero amount was aimed; otherwise
-	-- a plain click just closes the picker with no share.
-	if sharePrevLmb and not lmb then endShare(shareEngaged); return end
-	sharePrevLmb = lmb
+	shareTeam, shareKind, sharePct = nil, nil, 0
 end
 
 -- ── model ───────────────────────────────────────────────────────────────
@@ -547,26 +587,32 @@ local function initModel()
 
 		-- Section collapse state — TOP-LEVEL scalars compared per-row in the .rml
 		-- (toggling re-evaluates row classes and animates WITHOUT reassigning the
-		-- rows array, which would recreate elements + kill the transition).
-		-- openAll = the master left rail (collapses every section at once).
-		openAll = true,
-		openAllies = true,
-		openEnemies = true,
-		openSpecs = true,
-		openPlayers = true,
+		-- rows array, which would recreate elements + kill the transition). Default
+		-- CLOSED (the list rests collapsed). spaceHeld = the SPACE master "peek all
+		-- open" override; a row is open when (spaceHeld OR its section scalar).
+		openAll = false,
+		openAllies = false,
+		openEnemies = false,
+		openSpecs = false,
+		openPlayers = false,
+		spaceHeld = false,
 
-		-- Share gesture overlay (all scalar-driven; the overlay is ONE shared
-		-- element, never per-row). shareZone = 'granular'|'preset'; sharePresetIdx
+		-- Share gesture popup (ONE shared element, never per-row). It re-anchors
+		-- ABOVE the dragged bar each dragstart via popupLeft/popupTop (context px,
+		-- relative to #list-panel). shareZone = 'granular'|'preset'; sharePresetIdx
 		-- 1..#SHARE_PRESETS (0 = none) highlights the active preset chip.
 		sharing = false,
 		shareName = "",
 		shareLabel = "",
-		shareAccent = "bg-light",
-		shareAccentText = "text-light",
+		shareAccent = "bg-dark radial-focus-center-feint",  -- panel: neutral gray (lighter than list) + vignette
+		shareFill = "bg-light metal-texture",               -- bar + selected chips (metal = light+texture / energy = warning)
+		shareAccentText = "text-light",                     -- readout text (light on the gray panel)
 		sharePct = 0,
 		shareAmount = "0",
 		shareZone = "granular",
 		sharePresetIdx = 0,
+		popupLeft = 0,
+		popupTop = 0,
 
 		-- Utility-class bundles for parts that combine a static set with a
 		-- per-row dynamic class. Everything purely static is inline in the .rml.
@@ -574,7 +620,7 @@ local function initModel()
 		-- NEVER add overflow-hidden / nowrap here — they make the text vanish
 		-- (confirmed by bisect). Clip long names another way if needed.
 		my = {
-			row = "flex items-center gap-1 h-4 prow",
+			row = "flex items-center gap-1 h-4 px-1 prow",
 			-- bg-darkest-alpha LAYERS over the list's ccg.panel.general fill so the
 			-- SECTION HEADER bars (ALLIES/ENEMIES) read as a darker tier; player rows
 			-- stay flat on the panel.
@@ -599,11 +645,13 @@ local function initModel()
 			-- rail as an unwanted band. The list carries its own tint; the rail stays
 			-- see-through so only the tab reads.
 			panel = "",
-			bar = "w-5 h-1 bg-darkest-alpha block relative",
-			-- share overlay box (scrim bg via utility) + preset chip (NO base bg
-			-- so the active accent bg wins the cascade — §P).
-			shareOverlay = "share-ov block pe-none bg-black-semi-alpha",
-			shareChip = "share-chip text-xxs font-bold text-center text-medium",
+			-- Share popup: a compact box that floats above the dragged bar (positioned via
+			-- popupLeft/popupTop). The PANEL treatment is per-resource (shareAccent, appended
+			-- in the .rml): METAL = the dark scratched metal TEXTURE with LIGHT bars; ENERGY =
+			-- a yellow panel (+ radial vignette) with BLACK bars — so the fill/text colour
+			-- flips too (shareFill / shareAccentText). A drop shadow lifts it off the list.
+			-- pe-none — gesture polled.
+			shareOverlay = "share-ov block pe-none box-shadow-lg",
 		},
 
 		-- Collapse toggle. Flips the section's open-scalar (per-row classes
@@ -620,12 +668,14 @@ local function initModel()
 			pushSuppressTimer = TOGGLE_SUPPRESS
 		end,
 
-		-- Master rail toggle: flips openAll AND forces every section to match, so
-		-- one click collapses/expands the whole list. Keeping the per-section
-		-- scalars in sync lets each row's class expression stay SIMPLE.
+		-- Master rail toggle (expand-all / collapse-all). PRECEDENCE FIX: derive the
+		-- target from the LIVE section states — if ANY section is open, collapse them all,
+		-- else expand them all. (The old code toggled a separate `all` latch that drifted
+		-- out of sync with the per-section toggles.) SPACE is the primary master now; this
+		-- stays as a click affordance.
 		onToggleAll = function()
-			openState.all = not openState.all
-			local v = openState.all
+			local v = not (openState.allies or openState.enemies or openState.specs or openState.players)
+			openState.all = v
 			openState.allies = v
 			openState.enemies = v
 			openState.specs = v
@@ -638,12 +688,13 @@ local function initModel()
 			pushSuppressTimer = TOGGLE_SUPPRESS
 		end,
 
-		-- Press-hold a player's eco bar to begin a share aim. data-event passes
-		-- the Event implicitly first, then the bound args (team, name, kind).
-		-- Polled in widget:Update; see startShare / updateShareFrame / endShare.
-		onShareStart = function(_, team, name, kind)
-			startShare(team, name, kind)
-		end,
+		-- DRAG a player's eco bar to share. The bar opts into RmlUi drag events
+		-- (drag: drag in rcss), which fire on a real drag, never a plain click.
+		-- data-event passes the Event implicitly first, then the bound args.
+		-- See shareDragBegin / shareDragMove / shareDragFinish.
+		onShareDragStart = function(ev, team, name, kind) shareDragBegin(ev, team, name, kind) end,
+		onShareDrag = function(_) shareDragMove() end,
+		onShareDragEnd = function(_) shareDragFinish() end,
 	}
 end
 
@@ -686,13 +737,17 @@ function widget:Initialize()
 	-- body, which also spans the transparent rail/tab and would blur under it.
 	-- Always-open → no isVisible predicate; the bridge polls the rect and only
 	-- re-pushes on change. See gfx_rml_guishader_bridge.lua.
-	if WG['rml_guishader'] then
+	-- rml-dom-escape: the share popup is absolutely positioned and must anchor above
+	-- the bar being dragged; we read element offsets for placement + size the drag
+	-- travel from the granular control's rendered height (the sanctioned geometry-read
+	-- escape, same as the guishader bridge). Stored once here.
+	listPanelEl = document:GetElementById("list-panel")
+	granEl = document:GetElementById("share-gran-track")
+
+	if WG['rml_guishader'] and listPanelEl then
 		-- rml-dom-escape: bridge registration needs the panel element reference
 		-- (the sanctioned guishader pattern; ordermenu/topbar do the same).
-		local panel = document:GetElementById("list-panel")
-		if panel then
-			WG['rml_guishader'].register(WIDGET_ID, panel, {})
-		end
+		WG['rml_guishader'].register(WIDGET_ID, listPanelEl, {})
 	end
 
 	return true
@@ -704,13 +759,42 @@ function widget:PlayerAdded() structDirty = true end
 function widget:PlayerRemoved() structDirty = true end
 function widget:TeamDied() structDirty = true end
 
+-- SPACE = HOLD-TO-EXPAND master. Hold → every section peeks open (precedence via the
+-- (spaceHeld OR section) row class); release → back to the per-section states (collapsed
+-- by default). We DON'T consume the key (return false) so SPACE keeps its other bindings;
+-- if that overlap is unwanted, return true here to make it exclusive. The pushSuppress
+-- keeps a roster refresh from recreating the rows mid expand/collapse transition.
+function widget:KeyPress(key)
+	if key == SPACE_KEYCODE and not spaceHeld then
+		spaceHeld = true
+		if dm_handle then dm_handle.spaceHeld = true end
+		pushSuppressTimer = TOGGLE_SUPPRESS
+	end
+	return false
+end
+
+function widget:KeyRelease(key)
+	if key == SPACE_KEYCODE and spaceHeld then
+		spaceHeld = false
+		if dm_handle then dm_handle.spaceHeld = false end
+		pushSuppressTimer = TOGGLE_SUPPRESS
+	end
+	return false
+end
+
 function widget:Update(dt)
 	if not dm_handle then return end
 	dt = dt or 0
 	if pushSuppressTimer > 0 then pushSuppressTimer = math.max(0, pushSuppressTimer - dt) end
-	-- While sharing, poll the gesture and skip roster refresh (the rows array
-	-- must stay still so the pressed bar isn't recreated under the cursor).
-	if shareActive then updateShareFrame(); return end
+	-- Press-held: poll the aim (Spring cursor position — still live during an RmlUi drag)
+	-- and skip roster refresh so the pressed bar isn't recreated under the cursor. The
+	-- picker OPENS on mousedown but FINISHES on the dragend/mouseup events — we must NOT
+	-- poll the mouse BUTTON here: while RmlUi holds the drag capture Spring reports it
+	-- released, which would finish on frame 1. (See rmlui-drag-events-bar.)
+	if shareDragging then
+		shareDragMove()
+		return
+	end
 	sinceStruct = sinceStruct + dt
 	sinceLive = sinceLive + dt
 	if structDirty or sinceStruct >= STRUCT_INTERVAL then
@@ -735,9 +819,11 @@ function widget:Shutdown()
 	}, document, dm_handle)
 	document = nil
 	dm_handle = nil
+	listPanelEl = nil
+	granEl = nil
 	players = {}
 	rowPlan = {}
 	lastSig = nil
-	shareActive = false
-	sharePrevLmb = false
+	shareDragging = false
+	spaceHeld = false
 end

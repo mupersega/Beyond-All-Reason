@@ -102,54 +102,122 @@
     bottom: 0;
 }
 
-/* Eco-bar hit target: full row height (h-4 = 16dp) and the bar's width, so the
-   press is easy to land even though the visible bar is only 4dp tall. */
+/* Eco-bar hit target: a transparent handle, full row height (16dp) for an easy grab,
+   with the thin gray TRACK centred inside (flex items-center). Metal + energy sit SIDE
+   BY SIDE. The picker OPENS on mousedown (pops the instant you press) but the GESTURE is
+   the RmlUi drag (dragstart capture is reliable; we track via the cursor and FINISH on
+   dragend OR mouseup — never by polling the button, which RmlUi's capture makes lie).
+   `drag: drag` is required for the drag/dragend events. */
 .share-hit {
-    width: 20dp;
+    width: 30dp;
     height: 16dp;
+    drag: drag;
+}
+/* The bar TRACK: a thin gray bar (gray bg + w-full via utilities in the .rml). */
+.share-bar {
+    height: 5dp;
+    position: relative;     /* anchor for the absolute fill */
+    transition: transform 0.1s quadratic-out;
+}
+/* HOVER JUICE on the eco bars — the track fattens (and the fill with it) when the
+   cursor is over its hit target, so it's clear you're about to grab/drag it. :hover
+   propagates from the bar up to .share-hit, so hovering anywhere in the grab area counts. */
+.share-hit:hover .share-bar {
+    transform: scaleY(1.8);
+}
+/* The FILL: grows from the LEFT to data-style-width = current %, full track height;
+   colour (metal light / energy warning) via utility in the .rml. */
+.share-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    display: block;
 }
 
-/* ── Share overlay ──────────────────────────────────────────────────────────
-   ONE shared element covering the whole panel; fades in (share-on) while a bar
-   is press-held. pe-none everywhere — the gesture is polled from Spring mouse
-   state vs this element's screen rect, so it never eats clicks. LAYOUT ONLY here;
-   ALL colour is utility classes in the .rml (scrim bg, granular-track bg, accent
-   fill/chip). */
+/* ── Share popup ────────────────────────────────────────────────────────────
+   A COMPACT box that floats ABOVE the dragged bar. Absolute child of #list-panel;
+   left/top are set per-drag from the model (popupLeft/popupTop, context px = the
+   bar's centre-x / top). The negative margins do the rest WITHOUT needing the dp
+   ratio in Lua: margin-left:-half-width centres it on the bar; margin-top lifts it
+   fully above (popup height + a small gap), so its bottom sits just over the bar.
+
+   SHOWN/HIDDEN BY data-if="sharing" → display:none when idle. We deliberately do
+   NOT gate visibility with opacity: in RmlUi opacity is INHERITED and a child's
+   own opacity OVERRIDES the inherited value (NOT composite/multiply like CSS), so
+   .share-dim (0.22 on the inactive control) would punch through an opacity:0 parent
+   and the chips would show permanently — display:none removes the whole subtree.
+   pe-none — the gesture is polled from Spring, never RmlUi input. */
 .share-ov {
+    position: absolute;
+    display: block;       /* explicit so data-if has a non-none display to restore */
+    box-sizing: border-box;
+    width: 44dp;
+    height: 76dp;
+    margin-left: -22dp;   /* half of width → centres the popup on the bar's centre-x */
+    margin-top: -72dp;    /* anchor is the hit-target TOP; the gray bar sits ~5.5dp into it,
+                             so this lift (= -(height-4)) drops the popup bottom to ~2dp above the bar */
+    padding: 2dp;
+    pointer-events: none;
+}
+
+/* ENTRANCE JUICE: the popup pops in each time it opens. `.share-in` is toggled by
+   `sharing` in the .rml, so (re)adding the class restarts the animation. back-out gives
+   a small overshoot for the juice; transform-origin is the popup centre (default). */
+.share-in {
+    animation: 0.17s back-out 1 share-pop-in;
+}
+@keyframes share-pop-in {
+    0%   { transform: scale(0.78); }
+    100% { transform: scale(1); }
+}
+
+/* "IN FLUX" pulse: a breathing border on the ACTIVE side only — the granular FILL (the
+   active rail part) while the rail is aimed, and EACH preset chip while the presets are
+   aimed (shown via data-if on shareZone in the .rml). Same opacity-breathe pattern as the
+   order menu's armed cell — a LEAF border element so its opacity breathes independently of
+   the parent's (the fill/chip keeps its own colour + ghost); width here, colour from the
+   border-light utility. Absolute inset 0 frames its parent (the fill is positioned; chips
+   get position: relative). pe-none so it never eats the gesture. */
+.share-pulse {
     position: absolute;
     left: 0;
     top: 0;
     right: 0;
     bottom: 0;
-    padding: 3dp;
-    opacity: 0;
+    border-width: 1dp;
     pointer-events: none;
-    transition: opacity 0.1s quadratic-out;
+    animation: 1.0s sine-in-out infinite share-pulse-kf;
 }
-.share-on {
-    opacity: 1;
+@keyframes share-pulse-kf {
+    0%   { opacity: 1.0; }
+    50%  { opacity: 0.3; }
+    100% { opacity: 1.0; }
 }
 
-.share-head {
+/* Readout at the top — the live amount, text only (colour via utility in the .rml). */
+.share-readout {
     display: block;
-    height: 22dp;
-    margin-bottom: 2dp;
+    height: 13dp;
+    margin-bottom: 1dp;
 }
 
-/* Body fills the remaining height; left granular column + right preset column. */
+/* Controls fill the rest of the popup below the readout: granular (left, flex-1) and
+   presets (right, flex-1), each a recessed dark well, with a 1px gap between so they read
+   as two distinct housings (the panel colour shows in the seam). The inset (3dp sides /
+   bottom, 18dp top under the readout) is the PADDING that keeps the wells off the edge. */
 .share-body {
     position: absolute;
     left: 3dp;
     right: 3dp;
-    top: 24dp;
+    top: 18dp;
     bottom: 3dp;
+    gap: 1px;
 }
 
-/* LEFT: granular slider track; the fill grows up from the bottom (data-style-
-   height = sharePct%). Square; bg via utility in the .rml. */
-.share-gran {
-    margin-right: 4dp;
-}
+/* LEFT control: granular slider (flex-1, bg + relative via utilities in the .rml);
+   the fill grows up from the bottom (data-style-height = sharePct%). It sits FLUSH
+   against the preset chips (no middle track). */
 .share-gran-fill {
     position: absolute;
     left: 0;
@@ -158,12 +226,20 @@
     display: block;
 }
 
-/* RIGHT: preset chips spread top→bottom; fixed width so the granular column
-   takes the rest. Base bg via utility in the .rml; active accent overrides. */
+/* RIGHT control: preset chips fill the column as 4 equal flex-1 segments with a 1px
+   gap — tight, like a stepped version of the granular bar. Colour (gray vs accent)
+   is per-chip in the .rml (gray unless cursor on the preset side AND filled up to it). */
 .share-presets {
-    width: 34dp;
+    gap: 1px;
 }
-.share-chip {
-    height: 16dp;
-    transition: background-color 0.08s quadratic-out;
+
+/* SHADOWED/ghost state for unlit content — the granular FILL when the preset side is
+   aimed, and any preset chip that isn't the selected level. The fills always carry the
+   resource colour and just fade to this, so unlit presets are already visible (not
+   popping in from nowhere) and the recessed WELLS behind them never change. Applied to
+   the leaf fills ONLY, never a well/container, so there's no opacity-inheritance leak
+   (the overlay itself is hidden via display/data-if — see .share-ov + the opacity note). */
+.share-dim {
+    opacity: 0.3;
+    transition: opacity 0.08s quadratic-out;
 }
