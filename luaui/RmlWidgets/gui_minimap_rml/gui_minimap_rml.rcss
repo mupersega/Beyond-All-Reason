@@ -1,0 +1,85 @@
+/* ── Minimap RML companion: map-view-mode toggle tab ─────────────────────────
+   The whole layer is click-through (pe-none); only .mm-mode-btn captures clicks,
+   so the minimap surface and the rest of the screen stay interactive. All
+   geometry is anchored to the live minimap frame rect via data-style bindings. */
+
+#widget-container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+/* ── MODE BAR (inverted tab) ──────────────────────────────────────────────────
+   left:0; top + width are data-bound to the minimap frame. A bit taller than the
+   15dp buttons so the tab background shows as padding above/below the toggles.
+   pe-none so only the buttons inside capture clicks. */
+.mm-modebar {
+	position: absolute;
+	left: 0;
+	height: 22dp;
+	pointer-events: none;
+}
+
+/* Tab background: an OVERSIZED rotated bg-dark square clipped to a clean diagonal
+   RIGHT end (build-grid builder-flag motif). TUNABLES: .mm-flag transform rotate()
+   = angle, right = where the diagonal falls; top is derived to centre it. */
+.mm-flag-clip {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	clip: always;
+}
+
+.mm-flag {
+	position: absolute;
+	width: 180dp;
+	height: 180dp;
+	top: -79dp;
+	right: 30dp;
+	transform: rotate(28deg);
+}
+
+/* Subtle left→right darken over the tab. */
+.mm-flag-fade {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+/* Toggle row — LEFT-justified + top-aligned with a little padding on the tab.
+   position:relative so the buttons paint OVER the absolute tab wedge. */
+.mm-btn-row {
+	position: relative;
+	justify-content: flex-start;
+	align-items: flex-start;
+	padding-top: 3dp;
+	padding-left: 4dp;
+}
+
+.mm-mode-wrap {
+	display: block;
+	width: 40dp;               /* fixed compact width, not a full-quarter stretch */
+	height: 15dp;
+	margin: 0 1dp;
+}
+
+.mm-mode-btn {
+	/* Centre the label on BOTH axes with flex. line-height centring left a
+	   font-metric gap (more space above the glyphs than below) — flex ignores
+	   that. padding:0 so the button fills its slot exactly (ccg's base padding
+	   made it overflow + touch its neighbours). */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 15dp;
+	padding: 0;
+	pointer-events: auto;   /* the only click target on the whole layer */
+}

@@ -1,0 +1,55 @@
+<rml>
+<head>
+    <title>Minimap RML</title>
+
+    <!-- Mandatory stylesheet order (do not reorder) -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="gui_minimap_rml.rcss" type="text/rcss" />
+</head>
+<!-- Body is a full-screen, click-through layer (pe-none in rcss). Only the mode
+     buttons capture clicks, so the minimap surface + the rest of the screen stay
+     interactive. See rml_fullscreen_clickthrough_overlay. -->
+<body id="gui_minimap_rml-widget" class="pe-none">
+    <div id="widget-container" data-model="gui_minimap_rml_model">
+
+        <!-- MODE BAR — the inverted build-grid "tab" docked beneath the minimap.
+             top + width are bound from the live minimap geometry. -->
+        <div class="mm-modebar"
+             data-visible="shown"
+             data-style-top="frameH + 'dp'"
+             data-style-width="frameW + 'dp'">
+
+            <!-- Tab background: an oversized rotated bg-dark wedge clipped to a
+                 clean diagonal RIGHT end (build-grid builder-flag motif). Sits
+                 BEHIND the buttons (they're position:relative so they paint over
+                 it); pe-none. -->
+            <div class="mm-flag-clip pe-none">
+                <div class="mm-flag bg-dark pe-none"></div>
+                <div class="mm-flag-fade bg-gradient-subtle-h pe-none"></div>
+            </div>
+
+            <!-- The four toggles, LEFT-justified with top/left padding on the tab.
+                 data-for on the wrapper; bindings on the inner element
+                 (rmlui_data_for_outer_binding_quirk). Active highlight compares the
+                 row's mode to the polled activeMode scalar — no array reassignment.
+                 Flat utility backgrounds (idle/active). -->
+            <div class="mm-btn-row flex h-full pe-none">
+                <div data-for="m : modes" class="mm-mode-wrap">
+                    <div data-attr-class="(m.mode == activeMode ? my.active : my.idle) + ' ' + my.btn"
+                         data-event-click="setMode(m.id)">
+                        <span class="pe-none">{{m.label}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</rml>
