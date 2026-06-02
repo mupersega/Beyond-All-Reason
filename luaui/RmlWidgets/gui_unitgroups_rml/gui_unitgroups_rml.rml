@@ -1,0 +1,121 @@
+<rml>
+<head>
+    <title>Unit Groups RML</title>
+
+    <!-- Stylesheet order matters (do not reorder) -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="gui_unitgroups_rml.rcss" type="text/rcss" />
+</head>
+<!--
+  PERMANENT 2x5 GRID — the layout is done ONCE and never changes. Ten boxes
+  (top row groups 1-5, bottom row 6,7,8,9,0) are ALWAYS laid out; the only thing
+  that ever changes is per-slot MODEL VALUES. No data-for, no collapse, no display
+  toggling.
+
+  SUBPIXEL-SAFE PX-SPLIT GRID (build-grid / order-menu pushSizes): the panel + each
+  box are sized in INTEGER px via data-style (panelW/panelH + cell); 1px gaps via
+  mr-px (in my.box, zeroed on the last col by :nth-child in the rcss) + mb-px (top
+  row); flex-shrink:0 keeps each box's px exact.
+
+  Each box: the unit picture (opacity-0 when src ""); a TAPER svg backing in the
+  top-right (bound via data-attr-src="taperSvg" — a static string built ONCE in the
+  .lua, NO DOM manipulation); the hotkey number on top of it; the count bottom-left;
+  and an inset selection-ring overlay (border-primary when groupN.selected). The
+  box becomes interactive (cursor/hover) only when groupN.has. Tenth box = "0" key.
+
+  PANEL: ccg.panel.general (matches the order menu's coloration), docked BESIDE the
+  order menu via data-style-left="posLeft", bottom-aligned, 1px padding. The
+  full-width body/container band is pe-none so empty space stays click-through.
+-->
+<body id="gui_unitgroups_rml-widget">
+    <div id="widget-container" data-model="gui_unitgroups_rml_model">
+        <div data-attr-class="ccg.panel.general + ' ug-panel'" data-style-left="posLeft" data-style-width="panelW" data-style-height="panelH">
+
+            <div class="ug-row mb-px">
+                <div data-attr-class="my.box + (group1.has ? ' cursor-pointer hover-brighten' : ' opacity-20')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onGroup(1)" data-event-mouseover="onHover(1)" data-event-mouseout="onUnhover(1)">
+                    <img data-attr-class="'ug-icon' + (group1.hasIcon ? '' : ' opacity-0')" data-attr-src="group1.icon" />
+                    <svg data-attr-src="taperSvg" class="ug-taper pe-none" />
+                    <span class="ug-hotkey text-xs font-bold text-light text-outline-darkest pe-none">1</span>
+                    <span class="ug-count text-xs font-bold text-light text-outline-darkest pe-none">{{group1.count}}</span>
+                    <div data-attr-class="my.hl + (group1.selected ? ' border-primary' : '')"></div>
+                </div>
+                <div data-attr-class="my.box + (group2.has ? ' cursor-pointer hover-brighten' : ' opacity-20')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onGroup(2)" data-event-mouseover="onHover(2)" data-event-mouseout="onUnhover(2)">
+                    <img data-attr-class="'ug-icon' + (group2.hasIcon ? '' : ' opacity-0')" data-attr-src="group2.icon" />
+                    <svg data-attr-src="taperSvg" class="ug-taper pe-none" />
+                    <span class="ug-hotkey text-xs font-bold text-light text-outline-darkest pe-none">2</span>
+                    <span class="ug-count text-xs font-bold text-light text-outline-darkest pe-none">{{group2.count}}</span>
+                    <div data-attr-class="my.hl + (group2.selected ? ' border-primary' : '')"></div>
+                </div>
+                <div data-attr-class="my.box + (group3.has ? ' cursor-pointer hover-brighten' : ' opacity-20')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onGroup(3)" data-event-mouseover="onHover(3)" data-event-mouseout="onUnhover(3)">
+                    <img data-attr-class="'ug-icon' + (group3.hasIcon ? '' : ' opacity-0')" data-attr-src="group3.icon" />
+                    <svg data-attr-src="taperSvg" class="ug-taper pe-none" />
+                    <span class="ug-hotkey text-xs font-bold text-light text-outline-darkest pe-none">3</span>
+                    <span class="ug-count text-xs font-bold text-light text-outline-darkest pe-none">{{group3.count}}</span>
+                    <div data-attr-class="my.hl + (group3.selected ? ' border-primary' : '')"></div>
+                </div>
+                <div data-attr-class="my.box + (group4.has ? ' cursor-pointer hover-brighten' : ' opacity-20')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onGroup(4)" data-event-mouseover="onHover(4)" data-event-mouseout="onUnhover(4)">
+                    <img data-attr-class="'ug-icon' + (group4.hasIcon ? '' : ' opacity-0')" data-attr-src="group4.icon" />
+                    <svg data-attr-src="taperSvg" class="ug-taper pe-none" />
+                    <span class="ug-hotkey text-xs font-bold text-light text-outline-darkest pe-none">4</span>
+                    <span class="ug-count text-xs font-bold text-light text-outline-darkest pe-none">{{group4.count}}</span>
+                    <div data-attr-class="my.hl + (group4.selected ? ' border-primary' : '')"></div>
+                </div>
+                <div data-attr-class="my.box + (group5.has ? ' cursor-pointer hover-brighten' : ' opacity-20')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onGroup(5)" data-event-mouseover="onHover(5)" data-event-mouseout="onUnhover(5)">
+                    <img data-attr-class="'ug-icon' + (group5.hasIcon ? '' : ' opacity-0')" data-attr-src="group5.icon" />
+                    <svg data-attr-src="taperSvg" class="ug-taper pe-none" />
+                    <span class="ug-hotkey text-xs font-bold text-light text-outline-darkest pe-none">5</span>
+                    <span class="ug-count text-xs font-bold text-light text-outline-darkest pe-none">{{group5.count}}</span>
+                    <div data-attr-class="my.hl + (group5.selected ? ' border-primary' : '')"></div>
+                </div>
+            </div>
+
+            <div class="ug-row">
+                <div data-attr-class="my.box + (group6.has ? ' cursor-pointer hover-brighten' : ' opacity-20')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onGroup(6)" data-event-mouseover="onHover(6)" data-event-mouseout="onUnhover(6)">
+                    <img data-attr-class="'ug-icon' + (group6.hasIcon ? '' : ' opacity-0')" data-attr-src="group6.icon" />
+                    <svg data-attr-src="taperSvg" class="ug-taper pe-none" />
+                    <span class="ug-hotkey text-xs font-bold text-light text-outline-darkest pe-none">6</span>
+                    <span class="ug-count text-xs font-bold text-light text-outline-darkest pe-none">{{group6.count}}</span>
+                    <div data-attr-class="my.hl + (group6.selected ? ' border-primary' : '')"></div>
+                </div>
+                <div data-attr-class="my.box + (group7.has ? ' cursor-pointer hover-brighten' : ' opacity-20')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onGroup(7)" data-event-mouseover="onHover(7)" data-event-mouseout="onUnhover(7)">
+                    <img data-attr-class="'ug-icon' + (group7.hasIcon ? '' : ' opacity-0')" data-attr-src="group7.icon" />
+                    <svg data-attr-src="taperSvg" class="ug-taper pe-none" />
+                    <span class="ug-hotkey text-xs font-bold text-light text-outline-darkest pe-none">7</span>
+                    <span class="ug-count text-xs font-bold text-light text-outline-darkest pe-none">{{group7.count}}</span>
+                    <div data-attr-class="my.hl + (group7.selected ? ' border-primary' : '')"></div>
+                </div>
+                <div data-attr-class="my.box + (group8.has ? ' cursor-pointer hover-brighten' : ' opacity-20')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onGroup(8)" data-event-mouseover="onHover(8)" data-event-mouseout="onUnhover(8)">
+                    <img data-attr-class="'ug-icon' + (group8.hasIcon ? '' : ' opacity-0')" data-attr-src="group8.icon" />
+                    <svg data-attr-src="taperSvg" class="ug-taper pe-none" />
+                    <span class="ug-hotkey text-xs font-bold text-light text-outline-darkest pe-none">8</span>
+                    <span class="ug-count text-xs font-bold text-light text-outline-darkest pe-none">{{group8.count}}</span>
+                    <div data-attr-class="my.hl + (group8.selected ? ' border-primary' : '')"></div>
+                </div>
+                <div data-attr-class="my.box + (group9.has ? ' cursor-pointer hover-brighten' : ' opacity-20')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onGroup(9)" data-event-mouseover="onHover(9)" data-event-mouseout="onUnhover(9)">
+                    <img data-attr-class="'ug-icon' + (group9.hasIcon ? '' : ' opacity-0')" data-attr-src="group9.icon" />
+                    <svg data-attr-src="taperSvg" class="ug-taper pe-none" />
+                    <span class="ug-hotkey text-xs font-bold text-light text-outline-darkest pe-none">9</span>
+                    <span class="ug-count text-xs font-bold text-light text-outline-darkest pe-none">{{group9.count}}</span>
+                    <div data-attr-class="my.hl + (group9.selected ? ' border-primary' : '')"></div>
+                </div>
+                <div data-attr-class="my.box + (group0.has ? ' cursor-pointer hover-brighten' : ' opacity-20')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onGroup(0)" data-event-mouseover="onHover(0)" data-event-mouseout="onUnhover(0)">
+                    <img data-attr-class="'ug-icon' + (group0.hasIcon ? '' : ' opacity-0')" data-attr-src="group0.icon" />
+                    <svg data-attr-src="taperSvg" class="ug-taper pe-none" />
+                    <span class="ug-hotkey text-xs font-bold text-light text-outline-darkest pe-none">0</span>
+                    <span class="ug-count text-xs font-bold text-light text-outline-darkest pe-none">{{group0.count}}</span>
+                    <div data-attr-class="my.hl + (group0.selected ? ' border-primary' : '')"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</rml>

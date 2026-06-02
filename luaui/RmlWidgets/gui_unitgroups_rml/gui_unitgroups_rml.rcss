@@ -1,0 +1,128 @@
+/* gui_unitgroups_rml — control-group panel. LAYOUT ONLY; all colour comes from
+   utility classes in the .rml/model.
+
+   PERMANENT 2x5 GRID: the layout is done ONCE — a translucent panel holding ten
+   fixed box wells (two block-stacked flex rows of five). Nothing is added,
+   removed, collapsed or toggled at runtime; only per-slot model VALUES change.
+
+   SUBPIXEL-SAFE PX-SPLIT (build-grid / order-menu pushSizes): box width/height +
+   the panel content size are INTEGER px (data-style cell / panelW / panelH, from
+   the dp ratio in the .lua), the inter-cell gaps are a true 1px (mr-px/mb-px) and
+   flex-shrink:0 keeps the px exact — so every gridline lands on a whole pixel at
+   any UI scale (dp-sized cells gave fractional px that swallowed gaps on some rows).
+
+   POSITION: the panel docks BESIDE the order menu (left = data-style-left
+   "posLeft", computed in the .lua as the order menu's right edge + a gap),
+   bottom-aligned. The body/container form a full-width, full-bottom CLICK-THROUGH
+   band (pe-none); the PANEL is pe-auto (a real visible element captures its own
+   clicks) and the empty band passes clicks through to the game. */
+
+#gui_unitgroups_rml-widget {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	height: 76dp;
+	display: block;
+	pointer-events: none;
+}
+
+#widget-container {
+	display: block;
+	position: relative;   /* positioning context for the absolutely-placed panel */
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+/* Panel — ccg.panel.general (in the .rml) so the coloration matches the order menu.
+   Absolutely placed, bottom-aligned; left set dynamically (data-style-left="posLeft").
+   CONTENT size is the integer-px panelW/panelH (data-style) wrapping the grid exactly;
+   1px padding is the panel frame on top (order-menu style — the 1px gaps show it as
+   crisp gridlines). Block layout: the two rows stack top-to-bottom in one pass.
+   pe-auto: captures its own clicks. */
+.ug-panel {
+	position: absolute;
+	bottom: 0;
+	display: block;
+	padding: 1px;
+	pointer-events: auto;
+}
+
+/* A row of five — sanctioned flex-row (px-sized children give a definite cross
+   axis, so no height needed here). Two of these stack via block (NOT flex-column);
+   the top row carries mb-px (in the .rml) for the 1px inter-row gap. */
+.ug-row {
+	display: flex;
+}
+
+/* The box well — a PERMANENT slot (bg-darker-alpha + mr-px in the .rml). width AND
+   height are DYNAMIC integer px (data-style cell), so the grid is subpixel-safe.
+   flex-shrink:0 keeps the px width exact (never rounded to fit). position:relative
+   anchors the absolute overlays; pe-auto so clicks land on the box. */
+.ug-box {
+	display: block;
+	position: relative;
+	flex-shrink: 0;
+	pointer-events: auto;
+}
+
+/* Drop the 1px trailing gap (mr-px) on the last box of each row (5 per row) so the
+   grid wraps the panel content exactly. :nth-child is supported in BAR's RmlUi and
+   outranks the .mr-px utility, so it wins. */
+.ug-row > div:nth-child(5) {
+	margin-right: 0;
+}
+
+/* Main unit picture — fills the box. opacity-0 (in the .rml) hides it when the
+   src is "" (an empty <img> would otherwise render a white quad). pe-none so the
+   whole box is ONE hit target (no parent/child mouseover flicker → no tooltip
+   flicker; clicks always land on the box). */
+.ug-icon {
+	display: block;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+/* Taper backing for the hotkey — a small dark angled block in the TOP-RIGHT,
+   painted ABOVE the unit icon but BELOW the number (DOM order: icon, taper, hotkey)
+   so the number reads against the bright unit pic. The svg fills this box (viewBox
+   scales); src is the pre-built taperSvg (data-attr-src). Absolute + pe-none so it
+   never reflows the box or eats clicks. */
+.ug-taper {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 12dp;
+	height: 9dp;
+}
+
+/* Hotkey (group number) — TOP-RIGHT, always shown (the permanent slot label).
+   Absolute so it never reflows the box; sits on top of the taper. */
+.ug-hotkey {
+	position: absolute;
+	top: 0;
+	right: 2dp;
+}
+
+/* Total count — BOTTOM-LEFT (only non-empty for an ascribed group). Absolute. */
+.ug-count {
+	position: absolute;
+	bottom: 0;
+	left: 2dp;
+}
+
+/* Selection-ring overlay — absolute, fills the box (border-box so the 1dp border
+   draws INSIDE). Border WIDTH from border-0 (loads early); COLOUR from
+   border-primary via data-attr-class when selected, so this rule sets only
+   position + box-sizing + the transition (border-color = paint). */
+.ug-hl {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	transition: border-color 0.1s quadratic-out;
+}

@@ -1,0 +1,173 @@
+/* gui_idle_builders_rml — idle-builder strip. LAYOUT ONLY; all colour comes from
+   utility classes in the .rml/model.
+
+   FIXED-SLOT STRIP (gui_unitgroups_rml doctrine): a translucent panel holding a
+   persistent "zZz" label cell + nine fixed builder slots in one flex row. Nothing
+   is created or destroyed at runtime; the only structural change is unused slots
+   COLLAPSING (the .rml adds `hidden` when !slotN.has) — which happens only when
+   the idle set changes (event-driven), never per frame.
+
+   SUBPIXEL-SAFE PX-SPLIT (build-grid / order-menu pushSizes): the cell size +
+   panel content width are INTEGER px (data-style cell / panelW, from the dp ratio
+   in the .lua), the inter-cell gaps are a true 1px (ml-px in the .rml) and
+   flex-shrink:0 keeps the px exact — so every gridline lands on a whole pixel at
+   any UI scale.
+
+   POSITION: LEFT-ANCHORED at a fixed CENTRAL left (left: 40vw), not centered. The
+   body/container are a full-width CLICK-THROUGH band (pe-none); the PANEL has no
+   background and is pe-none too (only the builder cells capture clicks). top is
+   pinned beneath the top bar (data-style-top="posTop", dp, computed in Lua); the
+   left edge is the static 40vw, so the SVG anchor stays fixed and the strip grows
+   rightward as builders are added. */
+
+#gui_idle_builders_rml-widget {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 200dp;        /* a top band; pe-none so it never blocks the game */
+	display: block;
+	pointer-events: none;
+}
+
+#widget-container {
+	display: block;
+	position: relative;   /* positioning context for the absolutely-placed panel */
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+/* Panel — NO background by design (it's an invisible positioned container; the
+   only painted things are the builder-icon cells and the corner taper). LEFT-
+   ANCHORED to a fixed CENTRAL position (left: 40vw — tune for centrality): the left
+   edge is pinned, so the SVG anchor stays put and the strip GROWS RIGHTWARD as
+   builders are added — only the appended cells move (NOT centered, which would
+   re-position the anchor as the list changes). top is dynamic (data-style-top,
+   pinned to the top bar's bottom). CONTENT width is the integer-px panelW
+   (data-style) wrapping the row exactly. Block layout wraps the single flex row.
+   pe-none so the invisible container is fully click-through; only the builder
+   cells (pe-auto via .ib-box) capture clicks. */
+.ib-panel {
+	position: absolute;
+	top: 0;
+	left: 40vw;
+	display: block;
+	pointer-events: none;
+}
+
+/* The single row of cells — sanctioned flex-row (px-sized children give a definite
+   cross axis, so no height needed here). */
+.ib-row {
+	display: flex;
+}
+
+/* A cell well — bg-darker-alpha + ml-px (icon cells) live in the .rml. width AND
+   height are DYNAMIC integer px (data-style cell), so the strip is subpixel-safe.
+   flex-shrink:0 keeps the px exact; position:relative anchors the icon/count/zzz
+   overlays; pe-auto so clicks land on the cell. */
+.ib-box {
+	display: block;
+	position: relative;
+	flex-shrink: 0;
+	pointer-events: auto;
+}
+
+/* Collapse an unused slot. MUST be a compound selector the widget owns: a bare
+   `.hidden { display:none }` (rml-utility-classes.rcss) ties on specificity with
+   `.ib-box { display:block }` and LOSES on source order (this stylesheet is
+   imported last), so the slot would never actually collapse. `.ib-box.ib-collapsed`
+   is specificity (0,0,2,0) and wins deterministically. The .rml adds `ib-collapsed`
+   when !slotN.has — so the strip wraps exactly the K visible cells (panelW). */
+.ib-box.ib-collapsed {
+	display: none;
+}
+
+/* Main unit picture — fills the cell. opacity-0 (in the .rml) hides it when the
+   src is "" (an empty <img> would otherwise render a white quad). pe-none so the
+   whole cell is ONE hit target (no parent/child mouseover flicker → no tooltip
+   flicker; clicks always land on the cell). */
+.ib-icon {
+	display: block;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+/* Idle-unit count — BOTTOM-LEFT, shown only when more than one of that type is
+   idle (the .lua leaves countLabel empty otherwise). Absolute so it never reflows
+   the cell. */
+.ib-count {
+	position: absolute;
+	bottom: 0;
+	left: 2dp;
+}
+
+/* The sleeping anchor cell — a full cell-sized bounding box (data-style cell, like
+   the icon cells, so the grid stays consistent) with NO background. The tab + zZz
+   live in .ib-anchor, parked in this box's top-right corner. pe-none: the anchor is
+   purely decorative, so it stays click-through (overrides .ib-box's pe-auto, which
+   the clickable builder cells keep). */
+.ib-label {
+	pointer-events: none;
+}
+
+/* CLIP BOX for the notch — parked in the TOP-RIGHT corner of the cell (~½×⅔ of the
+   30dp cell). clip:always trims the oversized rotated wedge to a clean diagonal (the
+   documented force-clip for transformed children; CLAUDE.md Decoration #2 / gridmenu
+   builder-flag). Absolute so it never reflows the box; pe-none so it never eats
+   clicks. The zZz glyphs also live here (on top of the wedge), within this box. */
+.ib-anchor {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 20dp;
+	height: 15dp;
+	clip: always;
+	pointer-events: none;
+}
+
+/* The WEDGE — an OVERSIZED square rotated so ONE edge becomes the notch's diagonal
+   after the clip. Fill/border/theme come from utility classes in the .rml (a real
+   div — the whole reason we use this over an SVG; currently bg-primary).
+
+   THE MATH THAT MATTERS: the square's CENTRE must sit OUTSIDE the 20×15 clip box, so
+   only one edge slices through (a square centred INSIDE the box covers it whole →
+   solid fill, no diagonal). Here: width 60 → half-side 30; left:10 → centre x = 40
+   (outside the box's 0–20); top:-22 → centre y = 8 (vertically centred). The box's
+   right side (x 10–20, ~21dp from the centre) is INSIDE the square (filled); the
+   left side (x 0–10, ~40dp away) is OUTSIDE (empty); the edge at 30dp from the
+   centre falls between them → the diagonal lands ~mid-box.
+   TUNABLES (guess-and-check): `rotate()` = the diagonal ANGLE (flip the sign to lean
+   the other way); `left` = how much fills (smaller → centre nearer → more fill). */
+.ib-wedge {
+	position: absolute;
+	width: 60dp;
+	height: 60dp;
+	top: -22dp;
+	left: 10dp;
+	transform: rotate(-28deg);
+}
+
+/* "zZz" sleeping motif — three z glyphs INSIDE the taper, drifting up and to the
+   right and increasing in size (faithful to the legacy three-pass print). Kept on
+   the painted side of the taper (its left edge is the angled cut, so the glyphs
+   bias right/top). Absolute + pe-none so they sit purely on top of the taper. */
+.ib-zzz {
+	position: absolute;
+}
+.ib-z1 {
+	font-size: 5dp;
+	left: 6dp;
+	bottom: 0dp;
+}
+.ib-z2 {
+	font-size: 6dp;
+	left: 9dp;
+	bottom: 4dp;
+}
+.ib-z3 {
+	font-size: 9dp;
+	right: 1dp;
+	top: 0dp;
+}

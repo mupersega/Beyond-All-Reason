@@ -1,0 +1,115 @@
+<rml>
+<head>
+    <title>Idle Builders RML</title>
+
+    <!-- Stylesheet order matters (do not reorder) -->
+    <link rel="stylesheet" href="../styles.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../rml-utility-classes.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../palette-standard-global.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../components.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-base.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-armada.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-cortex.rcss" type="text/rcss" />
+    <link rel="stylesheet" href="../themes/theme-legion.rcss" type="text/rcss" />
+
+    <link rel="stylesheet" href="gui_idle_builders_rml.rcss" type="text/rcss" />
+</head>
+<!--
+  FIXED-SLOT STRIP — the layout is done ONCE (gui_unitgroups_rml doctrine). One
+  persistent "zZz" sleeping label cell followed by MAX_SLOTS (9) builder-type
+  slots are laid out a single time. The ONLY things that ever change are per-slot
+  MODEL VALUES (model is king) plus the dynamic px sizes. No data-for iteration.
+
+  VARIABLE WIDTH, STILL DEFINITE — unlike the always-full unit-groups grid, the
+  idle set shrinks/grows, so unused slots COLLAPSE (data-attr-class adds `hidden`
+  when !slotN.has). Slots are packed front-to-back in the .lua, so the visible
+  ones are always contiguous (slot1..slotK). The panel width is a model value
+  (panelW) recomputed in Lua from the live visible count, so the strip stays a
+  DEFINITE width (no content-measurement pass) and re-centers itself. Collapsing
+  only happens when the idle set changes (event-driven, infrequent) — never per
+  frame — so the relayout it triggers is cheap and correct.
+
+  SUBPIXEL-SAFE PX-SPLIT (build-grid / order-menu pushSizes): each cell is an
+  INTEGER px square (data-style width/height = cell), the 1px inter-cell gap is
+  ml-px (on the icon cells; the label cell has no left margin), and panelW wraps
+  the cells exactly so every gridline lands on a whole pixel at any UI scale.
+
+  POSITION: LEFT-ANCHORED at a fixed CENTRAL left (rcss left:40vw), not centered.
+  The body/container form a full-width CLICK-THROUGH band (pe-none); the panel has
+  NO background and is also pe-none — only the builder-icon cells (pe-auto) capture
+  clicks. top (posTop, dp) is pinned beneath the top bar in the .lua; the left edge
+  is the static 40vw, so the SVG anchor stays fixed and the strip grows RIGHTWARD
+  as builders are added.
+-->
+<body id="gui_idle_builders_rml-widget">
+    <div id="widget-container" data-model="gui_idle_builders_rml_model">
+        <div class="ib-panel" data-style-top="posTop" data-style-width="panelW">
+
+            <div class="ib-row">
+
+                <!-- Persistent sleeping anchor (always shown). A full cell-sized
+                     bounding box (grid-consistent with the icon cells) with NO
+                     background; in its TOP-RIGHT corner the notch is the canonical
+                     rotated-div + clip:always TAB pattern (CLAUDE.md Decoration #2 /
+                     gridmenu builder-flag): .ib-anchor is the clip box, .ib-wedge is
+                     an oversized square rotated so its edge becomes the diagonal
+                     after the clip. Being a real div, the wedge takes bg/border/theme
+                     utility classes here (swap/add freely). The three staggered z
+                     glyphs sit on top as the "zZz" motif (wedge first → glyphs over). -->
+                <div class="ib-box ib-label" data-style-width="cell" data-style-height="cell">
+                    <div class="ib-anchor">
+                        <div class="ib-wedge bg-primary pe-none"></div>
+                        <span class="ib-zzz ib-z1 font-bold text-medium text-outline-darkest pe-none">{{sleeping}}</span>
+                        <span class="ib-zzz ib-z2 font-bold text-medium text-outline-darkest pe-none">{{sleeping}}</span>
+                        <span class="ib-zzz ib-z3 font-bold text-medium text-outline-darkest pe-none">{{sleeping}}</span>
+                    </div>
+                </div>
+
+                <!-- FIRST builder position — ALWAYS laid out (never collapses), so a
+                     dark→light L→R gradient placeholder (my.firstBox) always occupies
+                     this slot to pre-empt that a builder will appear here. When the
+                     first idle builder shows up (slot1.has) its opaque icon covers the
+                     gradient. -->
+                <div data-attr-class="my.firstBox + (slot1.has ? ' cursor-pointer hover-brighten' : '')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onSlot(1)" data-event-mouseover="onHover(1)" data-event-mouseout="onUnhover(1)">
+                    <img data-attr-class="'ib-icon' + (slot1.hasIcon ? '' : ' opacity-0')" data-attr-src="slot1.icon" />
+                    <span class="ib-count text-xs font-bold text-light text-outline-darkest pe-none">{{slot1.countLabel}}</span>
+                </div>
+                <div data-attr-class="my.box + (slot2.has ? ' cursor-pointer hover-brighten' : ' ib-collapsed')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onSlot(2)" data-event-mouseover="onHover(2)" data-event-mouseout="onUnhover(2)">
+                    <img data-attr-class="'ib-icon' + (slot2.hasIcon ? '' : ' opacity-0')" data-attr-src="slot2.icon" />
+                    <span class="ib-count text-xs font-bold text-light text-outline-darkest pe-none">{{slot2.countLabel}}</span>
+                </div>
+                <div data-attr-class="my.box + (slot3.has ? ' cursor-pointer hover-brighten' : ' ib-collapsed')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onSlot(3)" data-event-mouseover="onHover(3)" data-event-mouseout="onUnhover(3)">
+                    <img data-attr-class="'ib-icon' + (slot3.hasIcon ? '' : ' opacity-0')" data-attr-src="slot3.icon" />
+                    <span class="ib-count text-xs font-bold text-light text-outline-darkest pe-none">{{slot3.countLabel}}</span>
+                </div>
+                <div data-attr-class="my.box + (slot4.has ? ' cursor-pointer hover-brighten' : ' ib-collapsed')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onSlot(4)" data-event-mouseover="onHover(4)" data-event-mouseout="onUnhover(4)">
+                    <img data-attr-class="'ib-icon' + (slot4.hasIcon ? '' : ' opacity-0')" data-attr-src="slot4.icon" />
+                    <span class="ib-count text-xs font-bold text-light text-outline-darkest pe-none">{{slot4.countLabel}}</span>
+                </div>
+                <div data-attr-class="my.box + (slot5.has ? ' cursor-pointer hover-brighten' : ' ib-collapsed')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onSlot(5)" data-event-mouseover="onHover(5)" data-event-mouseout="onUnhover(5)">
+                    <img data-attr-class="'ib-icon' + (slot5.hasIcon ? '' : ' opacity-0')" data-attr-src="slot5.icon" />
+                    <span class="ib-count text-xs font-bold text-light text-outline-darkest pe-none">{{slot5.countLabel}}</span>
+                </div>
+                <div data-attr-class="my.box + (slot6.has ? ' cursor-pointer hover-brighten' : ' ib-collapsed')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onSlot(6)" data-event-mouseover="onHover(6)" data-event-mouseout="onUnhover(6)">
+                    <img data-attr-class="'ib-icon' + (slot6.hasIcon ? '' : ' opacity-0')" data-attr-src="slot6.icon" />
+                    <span class="ib-count text-xs font-bold text-light text-outline-darkest pe-none">{{slot6.countLabel}}</span>
+                </div>
+                <div data-attr-class="my.box + (slot7.has ? ' cursor-pointer hover-brighten' : ' ib-collapsed')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onSlot(7)" data-event-mouseover="onHover(7)" data-event-mouseout="onUnhover(7)">
+                    <img data-attr-class="'ib-icon' + (slot7.hasIcon ? '' : ' opacity-0')" data-attr-src="slot7.icon" />
+                    <span class="ib-count text-xs font-bold text-light text-outline-darkest pe-none">{{slot7.countLabel}}</span>
+                </div>
+                <div data-attr-class="my.box + (slot8.has ? ' cursor-pointer hover-brighten' : ' ib-collapsed')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onSlot(8)" data-event-mouseover="onHover(8)" data-event-mouseout="onUnhover(8)">
+                    <img data-attr-class="'ib-icon' + (slot8.hasIcon ? '' : ' opacity-0')" data-attr-src="slot8.icon" />
+                    <span class="ib-count text-xs font-bold text-light text-outline-darkest pe-none">{{slot8.countLabel}}</span>
+                </div>
+                <div data-attr-class="my.box + (slot9.has ? ' cursor-pointer hover-brighten' : ' ib-collapsed')" data-style-width="cell" data-style-height="cell" data-event-mousedown="onSlot(9)" data-event-mouseover="onHover(9)" data-event-mouseout="onUnhover(9)">
+                    <img data-attr-class="'ib-icon' + (slot9.hasIcon ? '' : ' opacity-0')" data-attr-src="slot9.icon" />
+                    <span class="ib-count text-xs font-bold text-light text-outline-darkest pe-none">{{slot9.countLabel}}</span>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</body>
+</rml>
