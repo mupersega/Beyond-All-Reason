@@ -11,7 +11,12 @@
 #gui_gridmenu_rml-widget {
 	position: absolute;
 	left: 0;
-	bottom: 140dp;
+	/* Rests on the info widget's 24dp flag: bottom = info-body (order-menu) height +
+	   24dp. Lowered from 140dp to close the gap above the info flag. NOTE: this is a
+	   hard-coded value tuned for the current UI scale (the true band height scales
+	   with ui_scale — see the info widget). Nudge if it overlaps the flag (raise) or
+	   leaves a gap (lower). */
+	bottom: 135dp;
 	width: 232dp;
 	display: block;
 }
@@ -23,8 +28,9 @@
 	display: block;
 }
 
-/* MAIN PANEL — carries ccg.panel.general + bg-darkest (in the .rml). Wraps ONLY
-   the body (tabs + grid + back bar); the flag sits outside/above it so the flag
+/* MAIN PANEL — carries ccg.panel.general + bg-darker (in the .rml; the dark override
+   is intentional — owner prefers a darker grid bg, one step up from bg-darkest).
+   Wraps ONLY the body (tabs + grid + back bar); the flag sits outside/above it so the flag
    reads as a tab. Width is the dynamic panelSize (data-style-width), padded 1px
    for a crisp panel-bg frame around the grid (px, not dp, so it stays a single
    pixel at any UI scale; content-box → the grid keeps its exact px-snapped size,
@@ -136,17 +142,25 @@
    are (chromeShown); toggled via the .hidden utility in the .rml. Fixed height so
    the back-btn appearing/disappearing inside it never shifts the grid. ── */
 .back-panel {
-	display: flex;
-	height: 16dp;
+	/* position:relative so the two mutually-exclusive buttons (back for mobile
+	   builders, quota for factories) can be absolutely positioned, overlapping at
+	   the left — a hidden one's reserved box then can't offset the visible one. */
+	position: relative;
+	height: 20dp;
 	margin-top: 2dp;
 }
 
-/* The Shift back-button: left-aligned, width = content (so it sits on the left of
-   the panel). flex + align-items center vertically centres its label + keycap. */
-.back-btn {
+/* The back button (mobile builders) and the quota toggle (factories) share the
+   same spot + shape; only one is ever visible. Absolute, left-aligned, content
+   width; flex + align-items center vertically centres their label + keycap. */
+.back-btn,
+.quota-btn {
+	position: absolute;
+	left: 0;
+	top: 0;
 	display: flex;
 	align-items: center;
-	height: 16dp;
+	height: 20dp;
 	padding: 0 4dp;
 }
 
@@ -263,4 +277,31 @@
 
 .cell-cost-e {
 	bottom: 1dp;
+}
+
+/* FACTORY QUEUE COUNT — top-right pill: how many of this unit are queued in the
+   SELECTED factory (faithful to the legacy gui_gridmenu `queuenr` badge, which used
+   the same dark-pill + green number). Top-right is the one free corner — group badge
+   owns top-left, type icon bottom-left, cost bottom-right. Absolute so it never
+   reflows the cell. COLOUR (success-green text, dark pill, outline) comes from
+   utilities in the .rml; this rule sets only geometry. Hidden (opacity-0, via the
+   .rml) when the count is "" (not queued). Rounded bottom-left corner so it tucks
+   into the corner. */
+.cell-queue {
+	position: absolute;
+	top: 0;
+	right: 0;
+	padding: 1dp 4dp;
+	border-bottom-left-radius: 5dp;
+}
+
+/* Factory QUOTA readout ("current/target"): a centred strip across the BOTTOM of
+   the cell, so it never collides with the top-right queue badge. opacity-0 (in the
+   .rml) when no quota is set. text-center centres the readout horizontally. */
+.cell-quota {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 0 2dp;
 }

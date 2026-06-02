@@ -53,6 +53,13 @@
 -- ESCAPE (widget:KeyPress), or RIGHT-CLICK the world (widget:MousePress btn 3).
 -- Items use data-event-MOUSEDOWN (fires on press = snappier than click, §S).
 --
+-- FACTORY QUOTA MODE (WG.Quotas from the unit_factory_quota widget): for a factory
+-- the bottom panel hosts a QUOTA toggle (where mobile builders get the Back button)
+-- that flips the engine CMD_QUOTA_BUILD_TOGGLE (= Alt+G). In quota mode each cell
+-- shows a "current/target" overlay and clicks SET the quota (left +, right -, with
+-- ctrl x20 / shift x5 + sounds) instead of queueing — faithful to legacy
+-- gui_gridmenu. quotaMode + per-slot quotaN refresh alongside the queue counts.
+--
 -- Data sources: GetSelectedUnitsSorted() + UnitDefs[builder].buildOptions for
 -- builders; GetUnitCmdDescs(factoryUnitID) for factories (§Q); layout via
 -- gridmenu_config / unit_buildmenu_config; type icons via gamedata/icontypes.lua.
@@ -121,8 +128,11 @@ local spGetCmdDescIndex = Spring.GetCmdDescIndex
 local spSetActiveCommand = Spring.SetActiveCommand
 local spGetModKeyState = Spring.GetModKeyState
 local spGetMouseState = Spring.GetMouseState
+local spGiveOrderToUnit = Spring.GiveOrderToUnit
+local spPlaySoundFile = Spring.PlaySoundFile
 local spI18N = Spring.I18N
 local mathFloor = math.floor
+local mathMax = math.max
 local tonumber = tonumber
 local tostring = tostring
 
@@ -150,9 +160,36 @@ local curHoveredD = -1          -- last hoveredD pushed to the model
 local lastSlot = {}             -- [d] = { has, icon, typeIcon, badge, metal, energy }
 local lastBuilder = {}          -- [i] = { present, icon }
 local lastActiveCat = -1
-local lastChromeShown = nil     -- tabs + back-panel present (non-factory builder)
+local lastChromeShown = nil     -- category tabs present (non-factory builder)
 local lastInCategory = nil      -- back button visible (inside a category)
 local lastBuilderActive = -1
+local lastFactorySel = nil      -- a factory is the active builder (quota button)
+local lastBottomShown = nil     -- bottom panel laid out (any builder selected)
+
+-- Factory build-queue count badges (faithful to legacy gui_gridmenu `queuenr`): the
+-- count of each unit currently queued in the SELECTED factory, read from that factory
+-- unit's build cmdDesc params[1] (the engine's queued count). FACTORY-ONLY — mobile
+-- builders' grid options are SYNTHETIC cmds with params={} (gridmenu_config), so they
+-- never carry a count. We re-read engine truth (no client-side prediction math, so it
+-- stays correct under factory REPEAT mode and external dequeues) on a short frame
+-- countdown after a queue-changing call-in (the queue hasn't settled the same tick —
+-- legacy used the same ~2-frame delay), plus a cheap periodic re-read in the selection
+-- poll as a safety net regardless of which call-ins fire.
+local activeBuilderUnitID = nil   -- the specific factory unit whose queue we mirror
+local lastQueue = {}              -- [d] = last queue string pushed to the model
+local QUEUE_REFRESH_FRAMES = 2    -- frames to wait for the engine queue to settle
+local queueRefreshLeft = 0
+
+-- Factory quota mode (WG.Quotas, from the unit_factory_quota widget — ships
+-- enabled): a factory maintains a TARGET count of each unit type. quotaMode = the
+-- engine toggle (CMD_QUOTA_BUILD_TOGGLE / Alt+G); quotaN per slot = "current/target"
+-- overlay. WG.Quotas.getQuotas() returns the LIVE table BY REFERENCE, so writing it
+-- sets the quota (faithful to legacy updateQuotaNumber). Refreshed alongside the
+-- queue counts (mode flips on Alt+G; the current count ticks as units build).
+local SOUND_QUEUE_ADD = "LuaUI/Sounds/buildbar_add.wav"
+local SOUND_QUEUE_REM = "LuaUI/Sounds/buildbar_rem.wav"
+local lastQuotaMode = nil
+local lastQuota = {}              -- [d] = last quota overlay string pushed
 
 -- Selection-membership poll
 local POLL_INTERVAL = 0.15
@@ -281,9 +318,121 @@ local function pushSlots()
 	end
 end
 
--- Chrome state: the active tab index, plus the two visibility scalars that gate
--- the tabs + bottom back-panel (chromeShown) and the back button (inCategory).
--- 4 fixed tab elements; all written only on change.
+-- Per-slot factory queue count: own top-level scalar key queueN ("" = not queued, so
+-- the badge is opacity-0 and hidden). Separate from the slotN struct because the count
+-- has a different lifetime (it ticks as you queue/produce) than the static slot content
+-- (icon/badge/cost, set on rebuild). Written only on change → a queue tick is a
+-- text+opacity paint on one badge, never a slot rewrite. <1 collapses to "" so a
+-- de-queued unit (or "0") shows no badge.
+local function pushQueues()
+	if not dm_handle then return end
+	for d = 1, NUM_SLOTS do
+		local c = gridCells[d]
+		local n = c and c.queue
+		local str = (n and n >= 1) and tostring(n) or ""
+		if lastQueue[d] ~= str then
+			lastQueue[d] = str
+			dm_handle["queue" .. d] = str
+		end
+	end
+end
+
+local function scheduleQueueRefresh()
+	queueRefreshLeft = QUEUE_REFRESH_FRAMES
+end
+
+-- Re-read the SELECTED factory's live queue counts from its build cmdDescs and update
+-- only the queue fields (no full rebuild). Maps each build cmdDesc back to its display
+-- slot via cmdIdToD (keyed by cmd.id = -defID), so off-page / non-build descs are
+-- naturally ignored. Engine truth → correct under repeat mode and external dequeues.
+local function refreshQueues()
+	if not dm_handle or not builderIsFactory or not activeBuilderUnitID then return end
+	local descs = spGetUnitCmdDescs(activeBuilderUnitID)
+	if not descs then return end
+	for d = 1, NUM_SLOTS do
+		if gridCells[d] then gridCells[d].queue = nil end
+	end
+	-- pairs (not numeric) to match how gridmenu_config reads the same cmdDescs.
+	for _, cmd in pairs(descs) do
+		if type(cmd) == "table" and cmd.id then
+			local d = cmdIdToD[cmd.id]
+			if d and gridCells[d] then
+				gridCells[d].queue = cmd.params and tonumber(cmd.params[1]) or nil
+			end
+		end
+	end
+	pushQueues()
+end
+
+-- ── factory quota (WG.Quotas from the unit_factory_quota widget) ───────────
+
+-- Is the active factory currently in quota mode? (engine CMD_QUOTA_BUILD_TOGGLE)
+local function isQuotaModeActive()
+	return (builderIsFactory and WG.Quotas and activeBuilderUnitID
+		and WG.Quotas.isOnQuotaMode(activeBuilderUnitID)) or false
+end
+
+-- The active factory's current quota TARGET for slot d's unit (0 if none).
+local function quotaTargetFor(d)
+	local c = gridCells[d]
+	if not c or not c.defID or not WG.Quotas or not activeBuilderUnitID then return 0 end
+	local q = WG.Quotas.getQuotas()
+	return (q[activeBuilderUnitID] and q[activeBuilderUnitID][c.defID]) or 0
+end
+
+-- quotaMode scalar + per-slot "current/target" overlay (quotaN), written only on
+-- change. Empty for non-factory selections. Called after rebuildGrid (contents
+-- changed) and in the poll (mode + current-count are live).
+local function refreshQuota()
+	if not dm_handle then return end
+	local mode = isQuotaModeActive()
+	if lastQuotaMode ~= mode then
+		lastQuotaMode = mode
+		dm_handle.quotaMode = mode
+	end
+	local fq
+	if builderIsFactory and WG.Quotas and activeBuilderUnitID then
+		fq = WG.Quotas.getQuotas()[activeBuilderUnitID]
+	end
+	for d = 1, NUM_SLOTS do
+		local str = ""
+		local c = gridCells[d]
+		if fq and c and c.defID then
+			local target = fq[c.defID]
+			if target and target > 0 then
+				local cur = WG.Quotas.getUnitAmount(activeBuilderUnitID, c.defID) or 0
+				str = cur .. "/" .. target
+			end
+		end
+		if lastQuota[d] ~= str then
+			lastQuota[d] = str
+			dm_handle["quota" .. d] = str
+		end
+	end
+end
+
+-- Change slot d's quota by delta for EVERY selected factory of the active type
+-- (faithful to legacy updateQuotaNumber: clamp >=0, add/remove sound). Refreshes
+-- the overlay immediately so the readout doesn't wait for the poll.
+local function changeQuota(d, delta)
+	local c = gridCells[d]
+	if not c or not c.defID or not WG.Quotas or delta == 0 then return end
+	local sel = spGetSelectedUnitsSorted()
+	local list = sel and sel[activeBuilder]
+	if not list then return end
+	local quotas = WG.Quotas.getQuotas()
+	for i = 1, #list do
+		local fid = list[i]
+		quotas[fid] = quotas[fid] or {}
+		quotas[fid][c.defID] = mathMax((quotas[fid][c.defID] or 0) + delta, 0)
+	end
+	spPlaySoundFile(delta > 0 and SOUND_QUEUE_ADD or SOUND_QUEUE_REM, 0.75, "ui")
+	refreshQuota()
+end
+
+-- Chrome state: the active tab index, plus the visibility scalars that gate the
+-- category tabs (chromeShown), the bottom panel (bottomShown), the back button
+-- (inCategory) and the factory quota button (factorySelected). Written on change.
 local function pushTabs()
 	if not dm_handle then return end
 	local idx = 0
@@ -310,6 +459,21 @@ local function pushTabs()
 	if lastInCategory ~= inCategory then
 		lastInCategory = inCategory
 		dm_handle.inCategory = inCategory
+	end
+	-- The bottom panel is laid out whenever ANY builder/factory is selected: it
+	-- holds the back button for mobile builders, the quota toggle for factories.
+	local bottomShown = (activeBuilder ~= nil)
+	if lastBottomShown ~= bottomShown then
+		lastBottomShown = bottomShown
+		dm_handle.bottomShown = bottomShown
+	end
+	-- Factory quota toggle shows when a factory is the active builder AND the quota
+	-- read API is present (unit_factory_quota widget enabled, not spectating) — no
+	-- point offering it with no live mode/overlay feedback.
+	local factorySel = (builderIsFactory and WG.Quotas ~= nil)
+	if lastFactorySel ~= factorySel then
+		lastFactorySel = factorySel
+		dm_handle.factorySelected = factorySel
 	end
 end
 
@@ -411,6 +575,7 @@ end
 local function rebuildGrid()
 	gridCells = {}
 	cmdIdToD = {}
+	activeBuilderUnitID = nil
 	if activeBuilder then
 		local gridOpts
 		if builderIsFactory then
@@ -420,6 +585,7 @@ local function rebuildGrid()
 			local sel = spGetSelectedUnitsSorted()
 			local builderList = sel and sel[activeBuilder]
 			local builderUnitID = builderList and builderList[1]
+			activeBuilderUnitID = builderUnitID    -- whose queue counts we mirror
 			if builderUnitID then
 				gridOpts = grid.getSortedGridForLab(activeBuilder, spGetUnitCmdDescs(builderUnitID) or {})
 			end
@@ -438,6 +604,9 @@ local function rebuildGrid()
 						defID = defID,
 						name = cmd.name,
 						iconPath = iconPathFor(defID),
+						-- factory-only: the engine's queued count (params[1]); nil for
+						-- mobile builders (synthetic cmds carry params={}).
+						queue = builderIsFactory and cmd.params and tonumber(cmd.params[1]) or nil,
 					}
 					cmdIdToD[cmd.id] = d
 				end
@@ -446,7 +615,12 @@ local function rebuildGrid()
 	end
 	clearHover()        -- grid contents changed -> old hover invalid
 	pushSlots()
+	pushQueues()
+	-- queue counts in the freshly-read cmdDescs can lag a tick after a queue change;
+	-- re-sync once the engine settles (no-op for non-factory: refreshQueues guards).
+	if builderIsFactory then scheduleQueueRefresh() end
 	refreshArmed(true)
+	refreshQuota()       -- quota mode + per-slot overlays for the new contents
 end
 
 local function refreshAll()
@@ -467,6 +641,23 @@ local function armCell(d)
 	local alt, ctrl, meta, shift = spGetModKeyState()
 	spSetActiveCommand(idx, 1, true, false, alt, ctrl, meta, shift)
 	refreshArmed()
+end
+
+-- Right-press a FACTORY slot -> DEQUEUE one. Faithful to legacy decreaseQueue:
+-- SetActiveCommand(idx, 3, false, true, <modkeys>) = a RIGHT-click on the build
+-- command, which the engine processes as "remove from the factory build queue";
+-- ctrl/shift multiply the amount via the live modifier state, exactly mirroring the
+-- add path. The engine clamps at 0, so no queue>0 guard is needed. Schedules a queue
+-- re-read so the badge ticks down (and refreshes the armed highlight).
+local function dequeueCell(d)
+	local c = gridCells[d]
+	if not c or not c.cmdID then return end
+	local idx = spGetCmdDescIndex(c.cmdID)
+	if not idx then return end
+	local alt, ctrl, meta, shift = spGetModKeyState()
+	spSetActiveCommand(idx, 3, false, true, alt, ctrl, meta, shift)
+	refreshArmed()
+	scheduleQueueRefresh()
 end
 
 -- Back out of the current category to home (legacy clearCategory). Cancels the
@@ -516,7 +707,17 @@ local function gridKeyHandler(_, _, args)
 	local row = tonumber(args and args[1])
 	local col = tonumber(args and args[2])
 	if not row or not col or row < 1 or row > 3 or col < 1 or col > 4 then return false end
-	armCell((3 - row) * 4 + col)
+	local d = (3 - row) * 4 + col
+	-- In quota mode a grid key sets the quota instead of arming (alt bypasses).
+	local alt, ctrl, _, shift = spGetModKeyState()
+	if isQuotaModeActive() and not alt then
+		local step = 1
+		if ctrl then step = step * 20 end
+		if shift then step = step * 5 end
+		changeQuota(d, step)
+		return true
+	end
+	armCell(d)
 	return true
 end
 
@@ -546,8 +747,11 @@ local function initModel()
 		tab3label = categoryStrings[CAT_KEYS[3]] or "",
 		tab4label = categoryStrings[CAT_KEYS[4]] or "",
 		activeCat = 0,       -- 0 = home, 1..4 = category
-		chromeShown = false, -- tabs + back-panel shown (non-factory builder selected)
+		chromeShown = false, -- category tabs shown (non-factory builder selected)
 		inCategory = false,  -- back button shown (inside a category)
+		bottomShown = false, -- bottom panel laid out (any builder selected)
+		factorySelected = false, -- factory active -> show the quota toggle
+		quotaMode = false,   -- the active factory is in quota mode
 
 		-- dynamic px-snap sizes (recomputed from dp ratio; default = ratio 1).
 		cellSize = "49px",   -- per-cell width+height (integer px → crisp gaps)
@@ -582,11 +786,47 @@ local function initModel()
 			-- hover-brighten gives inactive tabs a hover affordance.
 			catTab = "cat-tab text-xs text-upper text-center cursor-pointer hover-brighten",
 			builderBtn = "builder-btn cursor-pointer hover-brighten bg-darker border-0",
+			-- Quota toggle (sits where the back button does, for factories). The
+			-- active/inactive colour is the data-attr-class ternary in the .rml.
+			quotaBtn = "quota-btn text-xs text-upper text-center cursor-pointer hover-brighten",
 		},
 
-		-- Left-press a slot -> arm/queue (display index d, literal per slot).
-		onSlot = function(_, d)
-			armCell(tonumber(d) or 0)
+		-- Slot press. RmlUi button on mousedown: 0 = left, 1 = right
+		-- (ev.parameters.button — the gui_unitgroups_rml pattern). Modifiers via
+		-- GetModKeyState (live press state, matching the legacy mouse path).
+		--   MOBILE BUILDER: left = arm a placement; right = nothing.
+		--   FACTORY, QUOTA MODE (and not alt): left = +quota, right = -quota (or
+		--     dequeue if no quota), with ctrl x20 / shift x5 multipliers + sounds.
+		--   FACTORY, NORMAL: left = queue; right = dequeue (or -quota if no queue).
+		-- Faithful to legacy gui_gridmenu (updateQuotaNumber / decreaseQuota/Queue).
+		onSlot = function(ev, d)
+			d = tonumber(d) or 0
+			local p = ev and ev.parameters
+			local button = (p and p.button) or 0
+			local alt, ctrl, _, shift = spGetModKeyState()
+
+			if not builderIsFactory then
+				if button == 0 then armCell(d) end
+				return
+			end
+
+			local step = 1
+			if ctrl then step = step * 20 end
+			if shift then step = step * 5 end
+			local quotaMode = isQuotaModeActive() and not alt
+
+			if button == 0 then
+				-- LEFT: +quota in quota mode, otherwise queue/arm.
+				if quotaMode then changeQuota(d, step) else armCell(d) end
+			else
+				-- RIGHT: decrement quota or dequeue, per legacy cross-logic.
+				if quotaMode then
+					if quotaTargetFor(d) > 0 then changeQuota(d, -step) else dequeueCell(d) end
+				else
+					local q = (gridCells[d] and gridCells[d].queue) or 0
+					if q > 0 then dequeueCell(d) else changeQuota(d, -step) end
+				end
+			end
 		end,
 
 		-- Hover a slot -> reveal its cost (hoveredD scalar) + cache name/desc for
@@ -626,10 +866,32 @@ local function initModel()
 		onBack = function()
 			backToHome()
 		end,
+
+		-- Click the factory quota toggle -> flip quota mode for the selected
+		-- factories of the active type. We issue the ICON_MODE command directly
+		-- (GiveOrderToUnit with the explicit new state) rather than the action
+		-- string — the latter didn't reliably fire. Alt+G still works in parallel
+		-- (the engine keybind). Refresh now so the button reacts on click.
+		onQuotaToggle = function()
+			if not builderIsFactory or not WG.Quotas then return end
+			local cmd = GameCMD and GameCMD.QUOTA_BUILD_TOGGLE
+			if not cmd then return end
+			local sel = spGetSelectedUnitsSorted()
+			local list = sel and sel[activeBuilder]
+			if not list then return end
+			local newState = isQuotaModeActive() and 0 or 1
+			for i = 1, #list do
+				spGiveOrderToUnit(list[i], cmd, { newState }, 0)
+			end
+			refreshQuota()
+		end,
 	}
-	-- 12 fixed slot sub-structs (each its own top-level key).
+	-- 12 fixed slot sub-structs (each its own top-level key) + a sibling factory
+	-- queue-count scalar per slot ("" = no badge).
 	for d = 1, NUM_SLOTS do
 		m["slot" .. d] = { has = false, hasIcon = false, hasBadge = false, hasType = false, icon = "", typeIcon = "", badge = "", metal = "", energy = "" }
+		m["queue" .. d] = ""
+		m["quota" .. d] = ""
 	end
 	-- MAX_BUILDERS fixed builder sub-structs.
 	for i = 1, MAX_BUILDERS do
@@ -658,7 +920,7 @@ end
 function widget:GetInfo()
 	return {
 		name = "Build Grid RML",
-		desc = "RML port of the build grid (v4: persistent fixed-slot grid; type+badge icons, hover cost + tooltip). Coexists with the original; enable to preview.",
+		desc = "RML port of the build grid (v4: persistent fixed-slot grid; type+badge icons, hover cost + tooltip; factory quota mode). Coexists with the original; enable to preview.",
 		author = "mupersega",
 		date = "2026",
 		license = "GNU GPL, v2 or later",
@@ -672,6 +934,8 @@ function widget:Initialize()
 		categoryStrings[CAT_KEYS[i]] = spI18N("ui.buildMenu.category_" .. CAT_KEYS[i])
 	end
 	for d = 1, NUM_SLOTS do lastSlot[d] = { has = false, icon = "", typeIcon = "", badge = "", metal = "", energy = "" } end
+	for d = 1, NUM_SLOTS do lastQueue[d] = "" end
+	for d = 1, NUM_SLOTS do lastQuota[d] = "" end
 	for i = 1, MAX_BUILDERS do lastBuilder[i] = { present = false, icon = "" } end
 
 	local result = utils.initializeRmlWidget(self, {
@@ -702,6 +966,28 @@ end
 function widget:CommandsChanged()
 	if not dm_handle then return end
 	if builderIsFactory then rebuildGrid() end
+end
+
+-- Factory queue-count refresh triggers (legacy hooked the same call-ins). Each just
+-- schedules a re-read of engine truth a couple frames later (the queue hasn't settled
+-- the same tick); we only use the unambiguous leading args (unitID/factID, cmdID), so
+-- the cmdParams/cmdOpts arg-order ambiguity between engine versions is irrelevant.
+-- UnitCommand = the selected factory was given a build/queue order; UnitCmdDone = one
+-- of its commands completed/was removed; UnitFromFactory = it produced a unit (the
+-- queue ticked down, or held under repeat). Gated to the mirrored factory unit.
+function widget:UnitCommand(unitID)
+	if not dm_handle or not builderIsFactory then return end
+	if unitID == activeBuilderUnitID then scheduleQueueRefresh() end
+end
+
+function widget:UnitCmdDone(unitID)
+	if not dm_handle or not builderIsFactory then return end
+	if unitID == activeBuilderUnitID then scheduleQueueRefresh() end
+end
+
+function widget:UnitFromFactory(_, _, _, factID)
+	if not dm_handle or not builderIsFactory then return end
+	if factID == activeBuilderUnitID then scheduleQueueRefresh() end
 end
 
 -- Faithful auto-return (legacy CommandNotify): after a BUILD command is placed
@@ -751,6 +1037,13 @@ function widget:Update(dt)
 		if selectionSig() ~= lastSelSig then
 			refreshAll()
 		end
+		-- Safety net: re-sync factory queue counts every poll regardless of which
+		-- call-ins fired (cheap cmdDesc read; pushes only changed badges). Guarantees
+		-- freshness even if a queue-changing call-in is missed. No-op for non-factory.
+		if builderIsFactory then
+			refreshQueues()
+			refreshQuota()   -- mode flips on Alt+G; current count ticks as units build
+		end
 	end
 
 	-- Armed highlight + flash: every frame, scalars only (paint, no layout).
@@ -759,6 +1052,16 @@ function widget:Update(dt)
 		flashFramesLeft = flashFramesLeft - 1
 		if flashFramesLeft <= 0 and dm_handle.flashD ~= 0 then
 			dm_handle.flashD = 0
+		end
+	end
+
+	-- Event-scheduled factory queue re-read: fire once the countdown (set by a
+	-- queue-changing call-in) elapses, so the badge updates ~2 frames after you
+	-- queue/dequeue — snappier than waiting for the next poll tick.
+	if queueRefreshLeft > 0 then
+		queueRefreshLeft = queueRefreshLeft - 1
+		if queueRefreshLeft <= 0 then
+			refreshQueues()
 		end
 	end
 
@@ -802,10 +1105,12 @@ function widget:Shutdown()
 	gridCells = {}
 	cmdIdToD = {}
 	activeBuilder = nil
+	activeBuilderUnitID = nil
 	currentCategory = nil
 	lastSelSig = nil
 	curArmedD = 0
 	flashFramesLeft = 0
+	queueRefreshLeft = 0
 	wasShiftDown = false
 	curHoveredD = -1
 end

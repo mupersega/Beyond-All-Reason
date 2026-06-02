@@ -77,7 +77,7 @@
              (category tabs + the build grid + the bottom back/shift bar). The flag
              above sits outside it → reads as a tab. Width is the dynamic panelSize so
              the panel hugs the grid (4 cells + 3 gaps). -->
-        <div data-attr-class="ccg.panel.general + ' grid-panel bg-darkest'" data-style-width="panelSize">
+        <div data-attr-class="ccg.panel.general + ' grid-panel bg-darker'" data-style-width="panelSize">
 
             <!-- CATEGORY TABS — 4 fixed tabs. The WHOLE row is hidden (data-visible →
                  visibility:hidden, KEEPS its layout box) unless a non-factory builder
@@ -105,6 +105,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot1.hasType ? '' : ' opacity-0')" data-attr-src="slot1.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (1 == hoveredD ? '' : ' opacity-0')">{{slot1.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (1 == hoveredD ? '' : ' opacity-0')">{{slot1.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue1 != '' ? '' : ' opacity-0')">{{queue1}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota1 != '' ? '' : ' opacity-0')">{{quota1}}</span>
                         <div data-attr-class="my.cellHl + (1 == flashD ? ' border-light' : (1 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                     <div data-attr-class="(slot2.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(2)" data-event-mouseover="onHover(2)" data-event-mouseout="onUnhover(2)">
@@ -113,6 +115,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot2.hasType ? '' : ' opacity-0')" data-attr-src="slot2.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (2 == hoveredD ? '' : ' opacity-0')">{{slot2.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (2 == hoveredD ? '' : ' opacity-0')">{{slot2.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue2 != '' ? '' : ' opacity-0')">{{queue2}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota2 != '' ? '' : ' opacity-0')">{{quota2}}</span>
                         <div data-attr-class="my.cellHl + (2 == flashD ? ' border-light' : (2 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                     <div data-attr-class="(slot3.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(3)" data-event-mouseover="onHover(3)" data-event-mouseout="onUnhover(3)">
@@ -121,6 +125,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot3.hasType ? '' : ' opacity-0')" data-attr-src="slot3.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (3 == hoveredD ? '' : ' opacity-0')">{{slot3.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (3 == hoveredD ? '' : ' opacity-0')">{{slot3.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue3 != '' ? '' : ' opacity-0')">{{queue3}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota3 != '' ? '' : ' opacity-0')">{{quota3}}</span>
                         <div data-attr-class="my.cellHl + (3 == flashD ? ' border-light' : (3 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                     <div data-attr-class="(slot4.has ? my.unitCell : my.cellEmpty)" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(4)" data-event-mouseover="onHover(4)" data-event-mouseout="onUnhover(4)">
@@ -129,6 +135,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot4.hasType ? '' : ' opacity-0')" data-attr-src="slot4.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (4 == hoveredD ? '' : ' opacity-0')">{{slot4.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (4 == hoveredD ? '' : ' opacity-0')">{{slot4.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue4 != '' ? '' : ' opacity-0')">{{queue4}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota4 != '' ? '' : ' opacity-0')">{{quota4}}</span>
                         <div data-attr-class="my.cellHl + (4 == flashD ? ' border-light' : (4 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                 </div>
@@ -139,6 +147,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot5.hasType ? '' : ' opacity-0')" data-attr-src="slot5.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (5 == hoveredD ? '' : ' opacity-0')">{{slot5.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (5 == hoveredD ? '' : ' opacity-0')">{{slot5.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue5 != '' ? '' : ' opacity-0')">{{queue5}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota5 != '' ? '' : ' opacity-0')">{{quota5}}</span>
                         <div data-attr-class="my.cellHl + (5 == flashD ? ' border-light' : (5 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                     <div data-attr-class="(slot6.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(6)" data-event-mouseover="onHover(6)" data-event-mouseout="onUnhover(6)">
@@ -147,6 +157,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot6.hasType ? '' : ' opacity-0')" data-attr-src="slot6.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (6 == hoveredD ? '' : ' opacity-0')">{{slot6.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (6 == hoveredD ? '' : ' opacity-0')">{{slot6.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue6 != '' ? '' : ' opacity-0')">{{queue6}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota6 != '' ? '' : ' opacity-0')">{{quota6}}</span>
                         <div data-attr-class="my.cellHl + (6 == flashD ? ' border-light' : (6 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                     <div data-attr-class="(slot7.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(7)" data-event-mouseover="onHover(7)" data-event-mouseout="onUnhover(7)">
@@ -155,6 +167,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot7.hasType ? '' : ' opacity-0')" data-attr-src="slot7.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (7 == hoveredD ? '' : ' opacity-0')">{{slot7.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (7 == hoveredD ? '' : ' opacity-0')">{{slot7.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue7 != '' ? '' : ' opacity-0')">{{queue7}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota7 != '' ? '' : ' opacity-0')">{{quota7}}</span>
                         <div data-attr-class="my.cellHl + (7 == flashD ? ' border-light' : (7 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                     <div data-attr-class="(slot8.has ? my.unitCell : my.cellEmpty)" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(8)" data-event-mouseover="onHover(8)" data-event-mouseout="onUnhover(8)">
@@ -163,6 +177,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot8.hasType ? '' : ' opacity-0')" data-attr-src="slot8.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (8 == hoveredD ? '' : ' opacity-0')">{{slot8.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (8 == hoveredD ? '' : ' opacity-0')">{{slot8.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue8 != '' ? '' : ' opacity-0')">{{queue8}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota8 != '' ? '' : ' opacity-0')">{{quota8}}</span>
                         <div data-attr-class="my.cellHl + (8 == flashD ? ' border-light' : (8 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                 </div>
@@ -173,6 +189,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot9.hasType ? '' : ' opacity-0')" data-attr-src="slot9.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (9 == hoveredD ? '' : ' opacity-0')">{{slot9.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (9 == hoveredD ? '' : ' opacity-0')">{{slot9.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue9 != '' ? '' : ' opacity-0')">{{queue9}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota9 != '' ? '' : ' opacity-0')">{{quota9}}</span>
                         <div data-attr-class="my.cellHl + (9 == flashD ? ' border-light' : (9 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                     <div data-attr-class="(slot10.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(10)" data-event-mouseover="onHover(10)" data-event-mouseout="onUnhover(10)">
@@ -181,6 +199,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot10.hasType ? '' : ' opacity-0')" data-attr-src="slot10.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (10 == hoveredD ? '' : ' opacity-0')">{{slot10.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (10 == hoveredD ? '' : ' opacity-0')">{{slot10.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue10 != '' ? '' : ' opacity-0')">{{queue10}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota10 != '' ? '' : ' opacity-0')">{{quota10}}</span>
                         <div data-attr-class="my.cellHl + (10 == flashD ? ' border-light' : (10 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                     <div data-attr-class="(slot11.has ? my.unitCell : my.cellEmpty) + ' mr-px'" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(11)" data-event-mouseover="onHover(11)" data-event-mouseout="onUnhover(11)">
@@ -189,6 +209,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot11.hasType ? '' : ' opacity-0')" data-attr-src="slot11.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (11 == hoveredD ? '' : ' opacity-0')">{{slot11.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (11 == hoveredD ? '' : ' opacity-0')">{{slot11.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue11 != '' ? '' : ' opacity-0')">{{queue11}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota11 != '' ? '' : ' opacity-0')">{{quota11}}</span>
                         <div data-attr-class="my.cellHl + (11 == flashD ? ' border-light' : (11 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                     <div data-attr-class="(slot12.has ? my.unitCell : my.cellEmpty)" data-style-width="cellSize" data-style-height="cellSize" data-event-mousedown="onSlot(12)" data-event-mouseover="onHover(12)" data-event-mouseout="onUnhover(12)">
@@ -197,6 +219,8 @@
                         <img data-attr-class="'cell-type pe-none' + (slot12.hasType ? '' : ' opacity-0')" data-attr-src="slot12.typeIcon" />
                         <span data-attr-class="'cell-cost cell-cost-m text-xs text-light text-outline-darkest pe-none' + (12 == hoveredD ? '' : ' opacity-0')">{{slot12.metal}}</span>
                         <span data-attr-class="'cell-cost cell-cost-e text-xs text-warning text-outline-darkest pe-none' + (12 == hoveredD ? '' : ' opacity-0')">{{slot12.energy}}</span>
+                        <span data-attr-class="'cell-queue text-lg font-bold text-success text-outline-darkest-lg bg-darkest-semi-alpha pe-none' + (queue12 != '' ? '' : ' opacity-0')">{{queue12}}</span>
+                        <span data-attr-class="'cell-quota text-sm font-bold text-info text-outline-darkest bg-darkest-semi-alpha text-center pe-none' + (quota12 != '' ? '' : ' opacity-0')">{{quota12}}</span>
                         <div data-attr-class="my.cellHl + (12 == flashD ? ' border-light' : (12 == armedD ? ' border-primary' : ''))"></div>
                     </div>
                 </div>
@@ -208,11 +232,22 @@
                  shown only inside a category (inCategory); the panel is fixed-height so the
                  button toggling never shifts anything. Click it or release Shift to go home.
                  Label text is in <span>s so the flex back-btn can center it (§AA). -->
-            <div class="back-panel" data-visible="chromeShown">
+            <div class="back-panel" data-visible="bottomShown">
+                <!-- Mobile builder: Shift back-button (shown inside a category). -->
                 <div class="back-btn cursor-pointer hover-brighten bg-darker" data-visible="inCategory" data-event-mousedown="onBack()">
                     <span class="gm-chevron border-light pe-none"></span>
                     <span class="text-xs text-light pe-none">Back</span>
                     <span class="back-key text-xs text-medium bg-darkest pe-none">Shift</span>
+                </div>
+                <!-- Factory: quota-mode toggle, in the SAME spot as the back button.
+                     Active when the factory is in quota mode (CMD_QUOTA_BUILD_TOGGLE /
+                     Alt+G). Both buttons are absolutely positioned (they overlap and are
+                     mutually exclusive), so the hidden one's reserved box can't offset
+                     the visible one. -->
+                <div data-visible="factorySelected" data-event-mousedown="onQuotaToggle()"
+                     data-attr-class="my.quotaBtn + (quotaMode ? ' bg-gradient_primary-accent text-darkest font-bold' : ' bg-darker text-medium') + (factorySelected ? '' : ' pe-none')">
+                    <span class="pe-none">Quota</span>
+                    <span class="back-key text-xs text-medium bg-darkest pe-none">Alt+G</span>
                 </div>
             </div>
 
